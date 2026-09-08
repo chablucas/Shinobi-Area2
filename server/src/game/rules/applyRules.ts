@@ -227,6 +227,25 @@ function applyEffect(
   const targetCtxs = effect.side === 'SELF' ? [selfCtx] : opponentCtxs
   if (effect.value === null) return
 
+  if (effect.operation === 'SWAP_WITH_OPPONENT_IF_GREATER') {
+    const target = effect.stat as StatKey
+    const opponent = opponentCtxs.reduce<RuleContext | undefined>((best, candidate) => {
+      if (!(target in candidate.finalStats)) return best
+      return !best || candidate.finalStats[target] > best.finalStats[target] ? candidate : best
+    }, undefined)
+    if (!opponent || !(target in selfCtx.finalStats)) return
+
+    const selfBefore = selfCtx.finalStats[target]
+    const opponentBefore = opponent.finalStats[target]
+    if (opponentBefore <= selfBefore) return
+
+    selfCtx.finalStats[target] = opponentBefore
+    opponent.finalStats[target] = selfBefore
+    selfCtx.appliedRules.push({ ruleId: rule.id, label: rule.name, target, operation: 'set', value: opponentBefore, before: selfBefore, after: opponentBefore })
+    opponent.appliedRules.push({ ruleId: rule.id, label: effect.opponentLabel ?? rule.name, target, operation: 'set', value: selfBefore, before: opponentBefore, after: selfBefore })
+    return
+  }
+
   for (const ctx of targetCtxs) {
     // Effet global sur le TOTAL final déjà calculé (ex: -10% sans Avatar), jamais réparti stat par stat.
     if (effect.operation === 'PERCENT_TOTAL') {
@@ -305,10 +324,7 @@ function applyEffect(
   }
 }
 
-export function applyRules(context: RuleContext, opponents?: RuleContext | RuleContext[]): void {
-  const opponentList = Array.isArray(opponents) ? opponents : opponents ? [opponents] : []
-
-  // Step 1: Update permissions from Clan card
+function updatePermissions(context: RuleContext): void {
   const clanCard = context.cards.clan
   if (clanCard) {
     const clansLower = (clanCard.clans ?? []).map((c) => c.toLowerCase())
@@ -326,11 +342,10 @@ export function applyRules(context: RuleContext, opponents?: RuleContext | RuleC
     context.permissions.rinnegan = true
   }
   context.finalStats.clan = 0
+}
 
-  // Step 2: Evaluate rules from classic.json
+function applyRulePhases(context: RuleContext, opponentList: RuleContext[], phases: string[]): void {
   const enabledRules = getCombatRules().filter((r) => r.enabled !== false)
-
-  const phases = ['VALIDATION_PENALTY', 'MODIFIER', 'FINAL_ADJUSTMENT']
 
   for (const phase of phases) {
     const phaseRules = enabledRules.filter((r) => r.phase === phase).sort((a, b) => b.priority - a.priority)
@@ -372,4 +387,14 @@ export function applyRules(context: RuleContext, opponents?: RuleContext | RuleC
       }
     }
   }
+}
+
+export function applyRules(context: RuleContext, opponents?: RuleContext | RuleContext[]): void {
+  const opponentList = Array.isArray(opponents) ? opponents : opponents ? [opponents] : []
+  updatePermissions(context)
+  applyRulePhases(context, opponentList, ['VALIDATION_PENALTY', 'MODIFIER', 'FINAL_ADJUSTMENT'])
+}
+
+export function applyInteractionRules(context: RuleContext, opponents: RuleContext[]): void {
+  applyRulePhases(context, opponents, ['INTERACTION'])
 }

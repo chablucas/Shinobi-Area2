@@ -5,6 +5,7 @@ import { fetchAllCards } from '../services/cardApi'
 import { useAuthStore } from '../stores/auth'
 import { saveBuild } from '../services/buildApi'
 import { CombatApiError, simulateFight } from '../services/gameApi'
+import { appliedRuleSentence, appliedRuleTone } from '../services/combatRuleDisplay'
 import { calculateRealtimeGameResult, chooseRealtimeGameResult, getGameLobby, getLobbyGame, SocialApiError, type AutoRealtimeResult, type RealtimeGameState } from '../services/socialApi'
 import { connectGameSocket, type GameSocket } from '../services/realtimeApi'
 import type { Card } from '../types/card'
@@ -454,20 +455,21 @@ function drawBonusesFor(card: DrawCardLike | null) {
                 <h3>{{ ranking.rank }}{{ ranking.rank === 1 ? 'er' : 'e' }} · {{ realtimeState.players[ranking.playerIndex]?.displayName }}</h3>
                 <strong>{{ ranking.total }}</strong>
                 <span>{{ ranking.score }} catégorie(s)</span>
+                <div v-if="autoRealtimeResult.players[ranking.playerIndex]?.appliedRules.length" class="rules-applied-section">
+                  <h4>BONUS / MALUS JOUEUR {{ ranking.playerIndex + 1 }}</h4>
+                  <p
+                    v-for="rule in autoRealtimeResult.players[ranking.playerIndex]?.appliedRules"
+                    :key="rule.ruleId + rule.target + rule.after"
+                    class="rule-row"
+                    :class="appliedRuleTone(rule)"
+                  >
+                    {{ appliedRuleSentence(rule) }}
+                  </p>
+                </div>
               </article>
             </div>
             <h2>{{ autoRealtimeResult.isDraw ? 'ÉGALITÉ' : `VAINQUEUR : ${realtimeWinnerName}` }}</h2>
             <p>Résultat calculé par le moteur officiel.</p>
-            <details>
-              <summary>RÈGLES APPLIQUÉES</summary>
-              <p
-                v-for="rule in autoRealtimeResult.players.flatMap((player) => player.appliedRules)"
-                :key="rule.ruleId + rule.target + rule.after"
-                class="rule-row"
-              >
-                {{ rule.label }} · {{ rule.target }} : {{ rule.before }} → {{ rule.after }}
-              </p>
-            </details>
           </template>
           <template v-else>
             <h2>{{ realtimeResultIsDraw ? 'ÉGALITÉ' : `VAINQUEUR : ${realtimeWinnerName}` }}</h2>
@@ -866,10 +868,14 @@ function drawBonusesFor(card: DrawCardLike | null) {
               </div>
 
               <div v-if="player.appliedRules.length" class="rules-applied-section">
-                <h4>Règles appliquées</h4>
-                <p v-for="rule in player.appliedRules" :key="rule.ruleId + rule.target + rule.after" class="rule-row">
-                  {{ rule.label }} · {{ rule.target }} : {{ rule.before }} → {{ rule.after }}
-                  <small>({{ rule.operation }} {{ rule.value }})</small>
+                <h4>BONUS / MALUS JOUEUR {{ index + 1 }}</h4>
+                <p
+                  v-for="rule in player.appliedRules"
+                  :key="rule.ruleId + rule.target + rule.after"
+                  class="rule-row"
+                  :class="appliedRuleTone(rule)"
+                >
+                  {{ appliedRuleSentence(rule) }}
                 </p>
               </div>
             </article>
@@ -1550,6 +1556,14 @@ function drawBonusesFor(card: DrawCardLike | null) {
   font-size: 0.58rem;
   color: var(--text-muted);
   line-height: 1.4;
+}
+
+.rule-row.bonus {
+  color: #8ee6b2;
+}
+
+.rule-row.malus {
+  color: #ffaaaa;
 }
 
 .rule-row small {

@@ -1,5 +1,5 @@
 import { getCardKnowledgeBySlug, getCardKnowledgeById } from './cardKnowledge.js'
-import { applyRules } from './rules/applyRules.js'
+import { applyInteractionRules, applyRules } from './rules/applyRules.js'
 import type { AppliedRule, Card, CombatPermissions, ValidationError, RuleContext } from './rules/types.js'
 
 export const STAT_KEYS = ['chakra', 'invocation', 'iq', 'ninjutsuAttack', 'ninjutsuDefense', 'genjutsu', 'taijutsu', 'avatar', 'body', 'fuinjutsu', 'senjutsu', 'kenjutsu', 'clan', 'speed', 'kekkeiGenkai', 'kekkeiMora'] as const
@@ -119,6 +119,7 @@ export function simulateFightMany(builds: ShinobiBuild[]): MultiFightResult {
   if (builds.length < 2) throw new Error('Une partie nécessite au moins deux builds.')
   const contexts = builds.map(contextFor)
   contexts.forEach((context, index) => applyRules(context, contexts.filter((_, opponentIndex) => opponentIndex !== index)))
+  contexts.forEach((context, index) => applyInteractionRules(context, contexts.filter((_, opponentIndex) => opponentIndex !== index)))
   const results = contexts.map(resultOf)
   const invalid = results.some((result) => result.validationErrors.length > 0)
   const categories = fightCategories

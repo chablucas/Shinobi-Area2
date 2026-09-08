@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { calculateCombat, calculateFinalStats, type CombatStats } from '../src/game/gameEngine.js'
+import { calculateCombat, calculateFinalStats, simulateFight, type CombatStats } from '../src/game/gameEngine.js'
 import { getCombatRules } from '../src/game/rules/combatRuleStore.js'
 import teamAuctionRulesJson from '../src/data/rules/team-auction.json' with { type: 'json' }
 
@@ -22,6 +22,7 @@ const NEW_RULE_IDS = [
   'EIGHT_GATES_USERS_TAIJUTSU_IQ_BOOST',
   'JUGO_BODY_SENJUTSU_BOOST',
   'JUBI_AVATAR_KEKKEI_MORA_POINTS',
+  'ZETSU_BLANC_BODY_SWAP',
 ]
 
 // 1-2. Sans Avatar = -10% sur le TOTAL final (jamais stat par stat)
@@ -190,4 +191,58 @@ test('le bonus Jūbi en Avatar est un bonus fixe de 75 points, pas un pourcentag
 
 test('la règle Jūbi en Avatar est chargée depuis classic.json', () => {
   assert.ok(getCombatRules().some((rule) => rule.id === 'JUBI_AVATAR_KEKKEI_MORA_POINTS'))
+})
+
+test('Zetsu blanc en Body échange sa note avec un Body adverse strictement supérieur', () => {
+  const result = simulateFight(
+    build({ body: 'zetsu-blanc', avatar: card('Avatar J1') }),
+    build({ body: card('Body adverse', { body: 80 }), avatar: card('Avatar J2') }),
+  )
+  assert.equal(result.player1.finalStats.body, 80)
+  assert.equal(result.player2.finalStats.body, 27)
+  assert.ok(result.player1.appliedRules.some((rule) => rule.ruleId === 'ZETSU_BLANC_BODY_SWAP' && rule.before === 27 && rule.after === 80))
+  assert.ok(result.player2.appliedRules.some((rule) => rule.label === 'Zetsu blanc adverse' && rule.before === 80 && rule.after === 27))
+})
+
+test('Zetsu blanc en Body fonctionne quel que soit le joueur qui le possède', () => {
+  const result = simulateFight(
+    build({ body: card('Body adverse', { body: 80 }), avatar: card('Avatar J1') }),
+    build({ body: 'zetsu-blanc', avatar: card('Avatar J2') }),
+  )
+  assert.equal(result.player1.finalStats.body, 27)
+  assert.equal(result.player2.finalStats.body, 80)
+})
+
+for (const opponentBody of [27, 20]) {
+  test(`Zetsu blanc ne fait aucun échange contre un Body adverse à ${opponentBody}`, () => {
+    const result = simulateFight(
+      build({ body: 'zetsu-blanc', avatar: card('Avatar J1') }),
+      build({ body: card('Body adverse', { body: opponentBody }), avatar: card('Avatar J2') }),
+    )
+    assert.equal(result.player1.finalStats.body, 27)
+    assert.equal(result.player2.finalStats.body, opponentBody)
+    assert.ok(!result.player1.appliedRules.some((rule) => rule.ruleId === 'ZETSU_BLANC_BODY_SWAP'))
+  })
+}
+
+test('le malus sans Avatar ne touche que le joueur concerné et ne s’applique qu’une fois', () => {
+  const result = simulateFight(
+    build({ chakra: card('Chakra J1', { chakra: 100 }) }),
+    build({ chakra: card('Chakra J2', { chakra: 100 }), avatar: card('Avatar J2', { avatar: 50 }) }),
+  )
+  assert.equal(result.player1.total, 90)
+  assert.equal(result.player2.total, 150)
+  assert.equal(result.player1.appliedRules.filter((rule) => rule.ruleId === 'NO_AVATAR_FINAL_PENALTY').length, 1)
+  assert.equal(result.player2.appliedRules.filter((rule) => rule.ruleId === 'NO_AVATAR_FINAL_PENALTY').length, 0)
+})
+
+test('deux joueurs sans Avatar reçoivent chacun exactement un malus de 10 %', () => {
+  const result = simulateFight(
+    build({ chakra: card('Chakra J1', { chakra: 100 }) }),
+    build({ chakra: card('Chakra J2', { chakra: 200 }) }),
+  )
+  assert.equal(result.player1.total, 90)
+  assert.equal(result.player2.total, 180)
+  assert.equal(result.player1.appliedRules.filter((rule) => rule.ruleId === 'NO_AVATAR_FINAL_PENALTY').length, 1)
+  assert.equal(result.player2.appliedRules.filter((rule) => rule.ruleId === 'NO_AVATAR_FINAL_PENALTY').length, 1)
 })

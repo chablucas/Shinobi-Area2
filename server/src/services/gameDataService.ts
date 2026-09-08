@@ -52,6 +52,7 @@ export type RuleEffect = {
   stat: string
   operation: 'PERCENT_ADD' | 'SET_FINAL' | 'POINT_ADD' | 'DISABLE_POWER' | string
   value: number | null
+  opponentLabel?: string
 }
 
 export type CombatRule = {
@@ -139,8 +140,8 @@ export function validateGameData(): ValidationStats {
     throw new Error(`Nombre de cartes invalide : ${cards.length} chargées, 163 attendues.`)
   }
 
-  if (rules.length !== 63) {
-    throw new Error(`Nombre de règles invalide : ${rules.length} chargées, 63 attendues.`)
+  if (rules.length !== 64) {
+    throw new Error(`Nombre de règles invalide : ${rules.length} chargées, 64 attendues.`)
   }
 
   const cardSlugs = new Set(cards.map((c) => c.slug))

@@ -4,6 +4,7 @@ import SocialHeader from '../components/SocialHeader.vue'
 import { CATEGORY_DEFINITIONS, type CategorySlug, type PlayerBuild } from '../game/gameEngine'
 import { fetchAllCards } from '../services/cardApi'
 import { simulateFight } from '../services/gameApi'
+import { appliedRuleSentence, appliedRuleTone } from '../services/combatRuleDisplay'
 import type { Card } from '../types/card'
 import type { CombatResult } from '../types/combat'
 
@@ -173,17 +174,35 @@ function replay() {
               <h3>Joueur 1</h3>
               <strong>{{ result.scores.player1 }} pt</strong>
               <span>{{ result.player1.validationErrors.length ? 'Erreurs de validation' : 'Score par catégorie' }}</span>
+              <div v-if="result.player1.appliedRules.length" class="player-rules">
+                <h4>BONUS / MALUS JOUEUR 1</h4>
+                <p v-for="rule in result.player1.appliedRules" :key="`${rule.ruleId}-${rule.target}-${rule.after}`" :class="appliedRuleTone(rule)">
+                  {{ appliedRuleSentence(rule) }}
+                </p>
+              </div>
             </article>
             <div class="versus">VS</div>
             <article>
               <h3>Joueur 2</h3>
               <strong>{{ result.scores.player2 }} pt</strong>
               <span>{{ result.player2.validationErrors.length ? 'Erreurs de validation' : 'Score par catégorie' }}</span>
+              <div v-if="result.player2.appliedRules.length" class="player-rules">
+                <h4>BONUS / MALUS JOUEUR 2</h4>
+                <p v-for="rule in result.player2.appliedRules" :key="`${rule.ruleId}-${rule.target}-${rule.after}`" :class="appliedRuleTone(rule)">
+                  {{ appliedRuleSentence(rule) }}
+                </p>
+              </div>
             </article>
             <article v-if="result.player3">
               <h3>Joueur 3</h3>
               <strong>{{ result.scores.player3 ?? 0 }} pt</strong>
               <span>{{ result.player3.validationErrors.length ? 'Erreurs de validation' : 'Score par catégorie' }}</span>
+              <div v-if="result.player3.appliedRules.length" class="player-rules">
+                <h4>BONUS / MALUS JOUEUR 3</h4>
+                <p v-for="rule in result.player3.appliedRules" :key="`${rule.ruleId}-${rule.target}-${rule.after}`" :class="appliedRuleTone(rule)">
+                  {{ appliedRuleSentence(rule) }}
+                </p>
+              </div>
             </article>
           </div>
 
@@ -198,14 +217,6 @@ function replay() {
             </article>
           </div>
 
-          <div v-if="result.player1.appliedRules.length || result.player2.appliedRules.length" class="rules-list">
-            <h3>Règles appliquées</h3>
-            <ul>
-              <li v-for="rule in [...result.player1.appliedRules, ...result.player2.appliedRules]" :key="`${rule.ruleId}-${rule.target}-${rule.after}`">
-                {{ rule.label }} · {{ rule.target }} : {{ rule.before }} → {{ rule.after }}
-              </li>
-            </ul>
-          </div>
         </section>
       </template>
     </section>
@@ -406,13 +417,27 @@ function replay() {
   letter-spacing: 0.2em;
   color: var(--accent-gold);
 }
-.rules-list {
-  margin-top: 24px;
+.player-rules {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-light);
 }
-.rules-list ul {
-  margin: 12px 0 0;
-  padding-left: 18px;
+.player-rules h4 {
+  margin: 0 0 6px;
+  color: var(--accent-gold);
+  font-size: 0.72rem;
+}
+.player-rules p {
+  margin: 4px 0;
   color: var(--text-muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+.player-rules .bonus {
+  color: #8ee6b2;
+}
+.player-rules .malus {
+  color: #ffaaaa;
 }
 .state-message {
   color: var(--accent-gold);

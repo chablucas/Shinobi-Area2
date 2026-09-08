@@ -9,8 +9,8 @@ function httpError(message: string, statusCode: number) {
   return Object.assign(new Error(message), { statusCode })
 }
 
-const PHASES = ['VALIDATION_PENALTY', 'MODIFIER', 'FINAL_ADJUSTMENT']
-const OPERATIONS = ['POINT_ADD', 'PERCENT_ADD', 'SET_FINAL', 'DISABLE_POWER', 'PERCENT_TOTAL']
+const PHASES = ['VALIDATION_PENALTY', 'MODIFIER', 'INTERACTION', 'FINAL_ADJUSTMENT']
+const OPERATIONS = ['POINT_ADD', 'PERCENT_ADD', 'SET_FINAL', 'DISABLE_POWER', 'PERCENT_TOTAL', 'SWAP_WITH_OPPONENT_IF_GREATER']
 const SIDES = ['SELF', 'OPPONENT']
 
 function normalizeConditions(raw: unknown, group: string): CombatRule['activation']['all'] {
@@ -50,6 +50,7 @@ function normalizeRule(ruleId: string, input: Record<string, unknown>): CombatRu
       stat: effect.stat,
       operation: effect.operation,
       value,
+      ...(typeof effect.opponentLabel === 'string' && effect.opponentLabel.trim() ? { opponentLabel: effect.opponentLabel.trim() } : {}),
     }
   })
 

@@ -57,7 +57,8 @@
       "PERCENT_ADD",
       "SET_FINAL",
       "DISABLE_POWER",
-      "PERCENT_TOTAL"
+      "PERCENT_TOTAL",
+      "SWAP_WITH_OPPONENT_IF_GREATER"
     ],
     "percentageFormula": "scoreAfterPoints * (1 + sum(activePercentModifiers) / 100)",
     "totalMultiplierFormula": "PERCENT_TOTAL agit uniquement sur le TOTAL déjà sommé (finalTotal * (1 + value/100)), jamais sur une statistique individuelle.",
@@ -67,6 +68,7 @@
       "POINT_ADD",
       "PERCENT_ADD",
       "SET_FINAL",
+      "INTERACTION",
       "FINAL_ADJUSTMENT_PERCENT_TOTAL",
       "RESULT"
     ],
@@ -2399,6 +2401,44 @@
       }
     },
     {
+      "id": "ZETSU_BLANC_BODY_SWAP",
+      "name": "Zetsu blanc en Body",
+      "enabled": true,
+      "phase": "INTERACTION",
+      "priority": 300,
+      "activation": {
+        "all": [
+          {
+            "side": "SELF",
+            "slot": "body",
+            "field": "card.slug",
+            "operator": "EQUALS",
+            "value": "zetsu-blanc"
+          }
+        ]
+      },
+      "effects": [
+        {
+          "side": "SELF",
+          "slot": "body",
+          "stat": "body",
+          "operation": "SWAP_WITH_OPPONENT_IF_GREATER",
+          "value": 0,
+          "opponentLabel": "Zetsu blanc adverse"
+        }
+      ],
+      "stacking": {
+        "mode": "STACK_WITH_DIFFERENT_RULES",
+        "group": "ZETSU_BLANC_BODY_SWAP"
+      },
+      "ai": {
+        "considerDuringPlacement": true
+      },
+      "notes": [
+        "Zetsu blanc en Body — Si l’adversaire possède une meilleure note en Body, les deux notes de Body sont échangées."
+      ]
+    },
+    {
       "id": "JUBI_AVATAR_KEKKEI_MORA_POINTS",
       "name": "Jūbi en Avatar",
       "enabled": true,
@@ -2437,7 +2477,7 @@
     },
     {
       "id": "NO_AVATAR_FINAL_PENALTY",
-      "name": "Sans Avatar",
+      "name": "Aucun Avatar",
       "enabled": true,
       "phase": "FINAL_ADJUSTMENT",
       "priority": 100,
@@ -2470,7 +2510,7 @@
         "treatAsMajorRisk": true
       },
       "notes": [
-        "Sans Avatar — Nerf de 10 % sur le total des points du personnage final si aucun Avatar n’est présent.",
+        "Aucun Avatar — Le personnage final subit un malus de 10 %.",
         "S’applique au TOTAL final déjà calculé (total × 0,90), jamais stat par stat."
       ]
     },
