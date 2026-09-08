@@ -1,5 +1,7 @@
 import { prisma } from '../config/prisma.js'
-import { getCardKnowledgeBySlug } from '../game/cardKnowledge.js'
+
+// Comptes créés par les tests automatisés (server/test/*.test.ts) contre la base réelle : jamais de vrais utilisateurs.
+const TECHNICAL_ACCOUNT_FILTER = { email: { endsWith: '@example.test', mode: 'insensitive' as const } }
 
 export async function promoteAdminByEmail(email: string) {
   const normalizedEmail = email.trim().toLowerCase()
@@ -19,32 +21,12 @@ export async function promoteAdminByEmail(email: string) {
 
 export async function getAdminOverview() {
   const [totalUsers, totalAdmins, totalBlocked] = await Promise.all([
-    prisma.user.count(),
-    prisma.user.count({ where: { role: 'ADMIN' } }),
-    prisma.user.count({ where: { blockedAt: { not: null } } }),
+    prisma.user.count({ where: { NOT: TECHNICAL_ACCOUNT_FILTER } }),
+    prisma.user.count({ where: { role: 'ADMIN', NOT: TECHNICAL_ACCOUNT_FILTER } }),
+    prisma.user.count({ where: { blockedAt: { not: null }, NOT: TECHNICAL_ACCOUNT_FILTER } }),
   ])
 
   return { totalUsers, totalAdmins, totalBlocked }
-}
-
-export async function listAdminCards(search: string, rarity: string | null) {
-  const normalizedSearch = search.trim().toLowerCase()
-  const cards = await prisma.card.findMany({
-    orderBy: { name: 'asc' },
-    select: { id: true, slug: true, name: true, imageUrl: true },
-  })
-
-  return cards
-    .map((card) => {
-      const knowledge = getCardKnowledgeBySlug(card.slug)
-      const cardRarity = knowledge?.rarity ?? 'inconnu'
-      return { ...card, rarity: cardRarity }
-    })
-    .filter((card) => {
-      const matchesSearch = !normalizedSearch || card.name.toLowerCase().includes(normalizedSearch) || card.slug.toLowerCase().includes(normalizedSearch)
-      const matchesRarity = !rarity || card.rarity === rarity
-      return matchesSearch && matchesRarity
-    })
 }
 
 const adminUserSelect = { id: true, email: true, displayName: true, role: true, blockedAt: true, wins: true, losses: true, createdAt: true } as const
@@ -56,9 +38,10 @@ function httpError(message: string, statusCode: number) {
 export async function listAdminUsers(search: string) {
   const normalizedSearch = search.trim()
   const users = await prisma.user.findMany({
-    where: normalizedSearch
-      ? { OR: [{ email: { contains: normalizedSearch, mode: 'insensitive' } }, { displayName: { contains: normalizedSearch, mode: 'insensitive' } }] }
-      : undefined,
+    where: {
+      NOT: TECHNICAL_ACCOUNT_FILTER,
+      ...(normalizedSearch ? { OR: [{ email: { contains: normalizedSearch, mode: 'insensitive' } }, { displayName: { contains: normalizedSearch, mode: 'insensitive' } }] } : {}),
+    },
     orderBy: { createdAt: 'desc' },
     select: adminUserSelect,
   })

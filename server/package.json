@@ -15,7 +15,8 @@
     "cards:check-cloudinary": "tsx src/scripts/checkCloudinaryCards.ts",
     "cards:import": "tsx src/scripts/importCards.ts",
     "cards:rebuild-images": "tsx src/scripts/rebuildCardImageMapping.ts",
-    "admin:promote": "tsx src/scripts/promoteAdmin.ts"
+    "admin:promote": "tsx src/scripts/promoteAdmin.ts",
+    "accounts:cleanup-test": "tsx src/scripts/cleanupTestAccounts.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",

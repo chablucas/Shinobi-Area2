@@ -3,16 +3,19 @@ import { adminBulkTeamScores, adminCard, adminRarity, adminStat, adminStatKeys, 
 import { requireAuth } from '../middleware/auth.js'
 import { requireAdmin } from '../middleware/admin.js'
 export const cardAdminRoutes = Router()
-cardAdminRoutes.use(requireAuth, requireAdmin)
+
+// Lecture : la page Cartes est une page normale du site, visible par tous les visiteurs.
 cardAdminRoutes.get('/stat-keys', adminStatKeys)
 cardAdminRoutes.get('/team-scores', adminTeamScores)
-cardAdminRoutes.put('/team-scores', adminBulkTeamScores)
-cardAdminRoutes.put('/team-scores/:slug', adminTeamScore)
-cardAdminRoutes.delete('/team-scores/:slug', removeTeamScore)
 cardAdminRoutes.get('/:slug', adminCard)
-cardAdminRoutes.put('/:slug/stats', adminStats)
-cardAdminRoutes.delete('/:slug/stats', resetStats)
-cardAdminRoutes.put('/:slug/stats/:statKey', adminStat)
-cardAdminRoutes.delete('/:slug/stats/:statKey', resetStat)
-cardAdminRoutes.put('/:slug/rarity', adminRarity)
-cardAdminRoutes.delete('/:slug/rarity', resetRarity)
+
+// Écriture : réservée aux comptes ADMIN, contrôlée côté serveur quelle que soit la page appelante.
+cardAdminRoutes.put('/team-scores', requireAuth, requireAdmin, adminBulkTeamScores)
+cardAdminRoutes.put('/team-scores/:slug', requireAuth, requireAdmin, adminTeamScore)
+cardAdminRoutes.delete('/team-scores/:slug', requireAuth, requireAdmin, removeTeamScore)
+cardAdminRoutes.put('/:slug/stats', requireAuth, requireAdmin, adminStats)
+cardAdminRoutes.delete('/:slug/stats', requireAuth, requireAdmin, resetStats)
+cardAdminRoutes.put('/:slug/stats/:statKey', requireAuth, requireAdmin, adminStat)
+cardAdminRoutes.delete('/:slug/stats/:statKey', requireAuth, requireAdmin, resetStat)
+cardAdminRoutes.put('/:slug/rarity', requireAuth, requireAdmin, adminRarity)
+cardAdminRoutes.delete('/:slug/rarity', requireAuth, requireAdmin, resetRarity)

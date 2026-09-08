@@ -18,14 +18,6 @@ export type AdminUser = {
   createdAt: string
 }
 
-export type AdminCardSummary = {
-  id: number
-  slug: string
-  name: string
-  imageUrl: string | null
-  rarity: string
-}
-
 async function request<T>(path: string, options: RequestInit = {}, token?: string): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
@@ -40,18 +32,11 @@ async function request<T>(path: string, options: RequestInit = {}, token?: strin
   return payload as T
 }
 
-export function fetchAdminOverview(token: string) {
+export async function fetchAdminOverview(token: string) {
   return request<AdminOverview>('/admin/overview', {}, token)
 }
 
-export function fetchAdminCards(token: string, search = '', rarity = '') {
-  const params = new URLSearchParams()
-  if (search.trim()) params.set('search', search.trim())
-  if (rarity.trim()) params.set('rarity', rarity.trim())
-  return request<AdminCardSummary[]>(`/admin/cards${params.toString() ? `?${params.toString()}` : ''}`, {}, token)
-}
-
-export function fetchAdminUsers(token: string, search = '') {
+export async function fetchAdminUsers(token: string, search = '') {
   const params = new URLSearchParams()
   if (search.trim()) params.set('search', search.trim())
   return request<AdminUser[]>(`/admin/users${params.toString() ? `?${params.toString()}` : ''}`, {}, token)

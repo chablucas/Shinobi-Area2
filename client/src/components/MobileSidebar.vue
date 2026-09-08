@@ -18,9 +18,9 @@ const route = useRoute()
 const navItems = computed(() => [
   { label: 'Accueil', path: '/', icon: '⌂' },
   { label: 'Cartes', path: '/personnages', icon: '🂠' },
-  { label: 'Créer mon shinobi', path: '/jouer', icon: '⚔' },
-  { label: 'Combat', path: '/partie', icon: '⚡' },
+  { label: 'Simulation', path: '/simulation', icon: '⚙' },
   { label: 'Règles', path: '/regles', icon: '📜' },
+  ...(auth.user?.role === 'ADMIN' ? [{ label: 'Admin', path: '/admin', icon: '🛡' }] : []),
   { label: 'Profil', path: auth.isAuthenticated ? '/profil' : '/connexion', icon: '👤' },
 ])
 

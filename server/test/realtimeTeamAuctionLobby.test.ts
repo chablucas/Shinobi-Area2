@@ -121,6 +121,7 @@ test('le lobby 1v1 passe de 1/2 à 2/2 et l’hôte reçoit l’état mis à jou
     } finally { socketA.disconnect(); socketB.disconnect() }
   } finally {
     await closeTestServer(io, httpServer)
+    await prisma.user.deleteMany({ where: { id: { in: [host!.id, guest!.id] } } })
   }
 })
 
@@ -147,6 +148,7 @@ test('une reconnexion ne duplique pas le participant du lobby', async () => {
     } finally { socketA.disconnect(); socketB.disconnect() }
   } finally {
     await closeTestServer(io, httpServer)
+    await prisma.user.deleteMany({ where: { id: { in: [host!.id, guest!.id] } } })
   }
 })
 
@@ -193,6 +195,7 @@ test('un invité reconnecté après le lancement retrouve la même partie et ne 
     } finally { socketA.disconnect(); socketB.disconnect() }
   } finally {
     await closeTestServer(io, httpServer)
+    await prisma.user.deleteMany({ where: { id: { in: [host!.id, guest!.id] } } })
   }
 })
 
@@ -218,6 +221,7 @@ test('un salon 1v1v1 atteint 3/3 avant de pouvoir démarrer', async () => {
     } finally { socketA.disconnect(); socketB.disconnect(); socketC.disconnect() }
   } finally {
     await closeTestServer(io, httpServer)
+    await prisma.user.deleteMany({ where: { id: { in: [host!.id, guest!.id, third!.id] } } })
   }
 })
 
@@ -243,6 +247,7 @@ test('l’invitation acceptée propage immédiatement le participant à l’hôt
     } finally { socketA.disconnect(); socketB.disconnect() }
   } finally {
     await closeTestServer(io, httpServer)
+    await prisma.user.deleteMany({ where: { id: { in: [host!.id, guest!.id] } } })
   }
 })
 
@@ -263,5 +268,6 @@ test('un joueur étranger ne peut pas entrer dans un salon issu d’une invitati
     } finally { socketA.disconnect(); socketC.disconnect() }
   } finally {
     await closeTestServer(io, httpServer)
+    await prisma.user.deleteMany({ where: { id: { in: [host!.id, guest!.id, outsider!.id] } } })
   }
 })

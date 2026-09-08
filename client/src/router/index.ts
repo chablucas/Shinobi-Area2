@@ -11,9 +11,6 @@ import Lobby from '../views/Lobby.vue'
 import Personnages from '../views/Personnages.vue'
 import Regles from '../views/Regles.vue'
 import AdminDashboard from '../views/AdminDashboard.vue'
-import AdminCards from '../views/AdminCards.vue'
-import AdminCardEdit from '../views/AdminCardEdit.vue'
-import AdminRules from '../views/AdminRules.vue'
 import Simulation from '../views/Simulation.vue'
 import TeamAuction from '../views/TeamAuction.vue'
 import { useAuthStore } from '../stores/auth'
@@ -42,21 +39,6 @@ const router = createRouter({
     {
       path: '/admin',
       component: AdminDashboard,
-      meta: { requiresAdmin: true },
-    },
-    {
-      path: '/admin/cards',
-      component: AdminCards,
-      meta: { requiresAdmin: true },
-    },
-    {
-      path: '/admin/cards/:slug',
-      component: AdminCardEdit,
-      meta: { requiresAdmin: true },
-    },
-    {
-      path: '/admin/rules',
-      component: AdminRules,
       meta: { requiresAdmin: true },
     },
   ],

@@ -2,7 +2,6 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import SocialHeader from '../components/SocialHeader.vue'
-import AdminNav from '../components/AdminNav.vue'
 import { useAuthStore } from '../stores/auth'
 import { fetchAdminOverview, fetchAdminUsers, updateAdminUserBlocked, updateAdminUserRole, type AdminOverview, type AdminUser } from '../services/adminApi'
 
@@ -98,8 +97,6 @@ function toggleBlocked(user: AdminUser) {
           <p class="subtitle">Gestion des utilisateurs du site.</p>
         </div>
       </header>
-
-      <AdminNav />
 
       <div v-if="loading" class="state-message">Chargement du dashboard...</div>
       <template v-else>

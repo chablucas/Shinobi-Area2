@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import { getAdminOverview, listAdminCards, listAdminUsers, promoteAdminByEmail, setUserBlocked, setUserRole } from '../services/adminService.js'
+import { getAdminOverview, listAdminUsers, promoteAdminByEmail, setUserBlocked, setUserRole } from '../services/adminService.js'
 import type { AuthenticatedRequest } from '../middleware/auth.js'
 
 export async function getAdminOverviewController(_request: Request, response: Response) {
@@ -19,12 +19,6 @@ export async function patchAdminUserRoleController(request: Request, response: R
 export async function patchAdminUserBlockedController(request: Request, response: Response) {
   const actorId = (request as AuthenticatedRequest).userId
   response.json(await setUserBlocked(actorId, Number(request.params.id), request.body?.blocked))
-}
-
-export async function getAdminCardsController(request: Request, response: Response) {
-  const search = typeof request.query.search === 'string' ? request.query.search : ''
-  const rarity = typeof request.query.rarity === 'string' ? request.query.rarity : null
-  response.json(await listAdminCards(search, rarity))
 }
 
 export async function promoteAdminController(request: Request, response: Response) {
