@@ -269,6 +269,21 @@ export function getTeamAuctionGame(gameId: string) {
   return games.get(gameId) ?? null
 }
 
+/** Reconfigure un salon encore en LOBBY (host uniquement, revalidé côté appelant). Réinitialise budgets/équipes des joueurs déjà présents. */
+export function configureTeamAuctionGame(gameId: string, teamSizes: number[], initialBudget: number): TeamAuctionGame {
+  const game = games.get(gameId)
+  if (!game) throw new Error('Partie introuvable.')
+  if (game.phase !== 'LOBBY') throw new Error('La partie a déjà démarré.')
+  validateTeamConfig(teamSizes, initialBudget, game.mode)
+  game.teamSizes = [...teamSizes]
+  game.initialBudget = initialBudget
+  for (const player of game.players) {
+    player.budget = initialBudget
+    player.teams = teamSizes.map(() => [] as number[])
+  }
+  return game
+}
+
 export function startTeamAuctionGame(gameId: string) {
   const game = games.get(gameId)
   if (!game) throw new Error('Partie introuvable.')

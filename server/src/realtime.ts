@@ -9,7 +9,7 @@ import { TEAM_AUCTION_SETTINGS } from './game/teamAuctionSettings.js'
 import { calculateTeamAuctionScore } from './game/teamMode.js'
 import { getTeamAuctionPowerScore } from './game/teamAuctionPower.js'
 import { setGameLobbyChangeHandler } from './services/gameLobbyService.js'
-import { allInTeamBid, chooseAiPlacement, createTeamAuctionGame, drawNextTeamCard, evaluateTeamAuctionAi, getTeamAuctionGame, passTeamBid, placeTeamCard, startTeamAuctionGame, submitTeamBid, type TeamAuctionGame, type TeamAuctionMode } from './services/teamAuctionGameService.js'
+import { allInTeamBid, chooseAiPlacement, configureTeamAuctionGame, createTeamAuctionGame, drawNextTeamCard, evaluateTeamAuctionAi, getTeamAuctionGame, passTeamBid, placeTeamCard, startTeamAuctionGame, submitTeamBid, type TeamAuctionGame, type TeamAuctionMode } from './services/teamAuctionGameService.js'
 
 type SocketData = { userId?: number; gameId?: string }
 let broadcastGameState: ((gameId: string) => Promise<void>) | null = null
@@ -257,6 +257,16 @@ export function attachRealtime(io: Server) {
         await emitTeamAuctionState(gameId)
         acknowledge?.({ ok: true, gameId })
       } catch (error) { acknowledge?.({ ok: false, message: teamAuctionError(error) }); socket.emit('team-auction:error', { message: teamAuctionError(error) }) }
+    })
+    socket.on('team-auction:configure', async (payload: { gameId?: unknown; teamSizes?: unknown; initialBudget?: unknown }) => {
+      try {
+        const gameId = payload?.gameId
+        if (typeof gameId !== 'string' || teamAuctionHosts.get(gameId) !== userId) throw new Error('Seul l’hôte peut configurer ce salon.')
+        const teamSizes = Array.isArray(payload.teamSizes) ? payload.teamSizes.filter((size): size is number => typeof size === 'number') : []
+        const initialBudget = typeof payload.initialBudget === 'number' ? payload.initialBudget : 0
+        configureTeamAuctionGame(gameId, teamSizes, initialBudget)
+        await emitTeamAuctionState(gameId)
+      } catch (error) { socket.emit('team-auction:error', { message: teamAuctionError(error) }) }
     })
     socket.on('team-auction:start', async (gameId: unknown) => {
       try {

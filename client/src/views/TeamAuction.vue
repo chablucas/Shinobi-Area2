@@ -29,6 +29,7 @@ const initialBudget = ref(500)
 const creating = ref(false)
 const joining = ref(false)
 const joinCode = ref('')
+const configSeeded = ref(false)
 
 const localBidAmount = ref(10)
 const configValid = computed(() => teamSizesArray.value.length > 0 && teamSizesArray.value.every((size) => Number.isInteger(size) && size > 0) && Number.isFinite(initialBudget.value) && initialBudget.value > 0)
@@ -125,11 +126,25 @@ watch([isMyTurn, () => state.value?.phase, minimumNextBid], ([myTurn, phase]) =>
   if (myTurn && phase === 'BIDDING') localBidAmount.value = minimumNextBid.value
 })
 
+/** Dès la première réception d'un salon en LOBBY, on aligne les champs éditables du host sur la config serveur (utile en invitation, où le salon existe déjà avant que le host n'ouvre l'écran). */
+watch(state, (next) => {
+  if (!next || next.phase !== 'LOBBY' || configSeeded.value) return
+  teamSizesArray.value = [...next.teamSizes]
+  initialBudget.value = next.initialBudget
+  configSeeded.value = true
+})
+
+/** Synchronise la config au host uniquement, tant que le salon est en LOBBY. */
+function emitConfigUpdate() {
+  if (!socket.value || !gameId.value || !isHost.value || !configValid.value) return
+  if (state.value && state.value.phase !== 'LOBBY') return
+  socket.value.emit('team-auction:configure', { gameId: gameId.value, teamSizes: [...teamSizesArray.value], initialBudget: initialBudget.value })
+}
 function addTeam() {
-  if (teamSizesArray.value.length < 6) teamSizesArray.value.push(3)
+  if (teamSizesArray.value.length < 6) { teamSizesArray.value.push(3); emitConfigUpdate() }
 }
 function removeTeam(index: number) {
-  if (teamSizesArray.value.length > 1) teamSizesArray.value.splice(index, 1)
+  if (teamSizesArray.value.length > 1) { teamSizesArray.value.splice(index, 1); emitConfigUpdate() }
 }
 
 function createGame() {
@@ -265,7 +280,24 @@ onUnmounted(() => {
         <div v-else class="ta-panel ta-lobby">
           <h2>Salon Team Auction</h2>
           <p class="ta-room-code">Code : <strong>{{ gameId }}</strong></p>
-          <p class="ta-recap">{{ state?.teamSizes.length ?? teamSizesArray.length }} équipes · tailles {{ (state?.teamSizes ?? teamSizesArray).join(' / ') }} · budget {{ state?.initialBudget ?? initialBudget }} M</p>
+
+          <template v-if="isHost">
+            <div class="ta-team-list">
+              <div v-for="(size, index) in teamSizesArray" :key="index" class="ta-team-row">
+                <label>Équipe {{ index + 1 }}</label>
+                <input type="number" min="1" max="20" v-model.number="teamSizesArray[index]" @change="emitConfigUpdate" />
+                <button type="button" class="ta-remove" :disabled="teamSizesArray.length <= 1" @click="removeTeam(index)">×</button>
+              </div>
+              <button type="button" class="ta-add" @click="addTeam">+ Ajouter une équipe</button>
+            </div>
+            <label class="ta-budget-label">
+              Budget initial
+              <input type="number" min="10" step="10" v-model.number="initialBudget" @change="emitConfigUpdate" />
+            </label>
+          </template>
+          <p class="ta-recap">{{ state?.teamSizes.length ?? teamSizesArray.length }} équipes · {{ (state?.teamSizes ?? teamSizesArray).reduce((sum, size) => sum + size, 0) }} cartes au total par joueur · budget {{ state?.initialBudget ?? initialBudget }} M</p>
+          <p v-if="!isHost" class="ta-status">Configuration définie par l’hôte.</p>
+
           <ul class="ta-player-list">
             <li v-for="player in state?.players ?? []" :key="String(player.id)">
               ✓ {{ player.displayName }}<span v-if="player.isAi"> (IA)</span><span v-if="state?.hostId !== null && player.id === state?.hostId"> — Hôte</span>
@@ -343,6 +375,15 @@ onUnmounted(() => {
 
           <template v-else-if="state?.phase === 'PLACEMENT'">
             <p v-if="state.winnerId" class="ta-status ta-winner-banner">{{ winnerAnnouncement }}</p>
+            <div v-if="state.currentCard" class="ta-card-reveal ta-card-reveal-placement">
+              <div class="ta-current-image">
+                <img v-if="state.currentCard.imageUrl" :src="state.currentCard.imageUrl" :alt="state.currentCard.name" />
+                <span v-else>{{ state.currentCard.name.slice(0, 1) }}</span>
+              </div>
+              <h2>{{ state.currentCard.name }}</h2>
+              <p class="ta-rarity">NOTE TEAM : {{ state.currentCard.score.toFixed(2) }}</p>
+              <p class="ta-status">Remporté pour : {{ state.currentBid }} M</p>
+            </div>
             <template v-if="amWinner">
               <p class="ta-status">Choisis l’équipe qui recevra la carte.</p>
               <div class="ta-placement-grid">

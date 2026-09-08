@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { getCardKnowledgeBySlug, listCardKnowledge } from '../src/game/cardKnowledge.js'
 import { calculateCharacterOverallScore } from '../src/game/teamMode.js'
-import { evaluateTeamAuctionAi, createTeamAuctionGame, submitTeamBid, startTeamAuctionGame, drawNextTeamCard, passTeamBid, allInTeamBid, placeTeamCard, getTeamAuctionGame, chooseAiPlacement } from '../src/services/teamAuctionGameService.js'
+import { evaluateTeamAuctionAi, createTeamAuctionGame, submitTeamBid, startTeamAuctionGame, drawNextTeamCard, passTeamBid, allInTeamBid, placeTeamCard, getTeamAuctionGame, chooseAiPlacement, configureTeamAuctionGame } from '../src/services/teamAuctionGameService.js'
 
 function makeGame(mode: '1v1-ai' | '1v1-real' | '1v1v1-real' = '1v1-ai', teamSizes = [3, 2], initialBudget = 500) {
   return createTeamAuctionGame({
@@ -23,6 +23,30 @@ test('la configuration du mode équipe est créée correctement', () => {
   assert.deepEqual(game.teamSizes, [3, 4, 2])
   assert.equal(game.initialBudget, 500)
   assert.equal(game.phase, 'LOBBY')
+})
+
+test('le host peut reconfigurer un salon réel tant qu’il est en LOBBY, et cela se répercute sur tous les joueurs', () => {
+  const game = makeGame('1v1-real', [3, 3], 500)
+  configureTeamAuctionGame(game.gameId, [2, 2], 300)
+  const updated = getTeamAuctionGame(game.gameId)!
+  assert.deepEqual(updated.teamSizes, [2, 2])
+  assert.equal(updated.initialBudget, 300)
+  for (const player of updated.players) {
+    assert.equal(player.budget, 300)
+    assert.deepEqual(player.teams, [[], []])
+  }
+})
+
+test('la reconfiguration est refusée une fois la partie démarrée', () => {
+  const game = makeGame('1v1-real', [3, 3], 500)
+  startTeamAuctionGame(game.gameId)
+  assert.throws(() => configureTeamAuctionGame(game.gameId, [2, 2], 300))
+})
+
+test('la reconfiguration rejette une config invalide', () => {
+  const game = makeGame('1v1-real', [3, 3], 500)
+  assert.throws(() => configureTeamAuctionGame(game.gameId, [], 300))
+  assert.throws(() => configureTeamAuctionGame(game.gameId, [2, 2], 0))
 })
 
 test('la rotation de l’ouverture suit le bon ordre', () => {
