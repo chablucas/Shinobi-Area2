@@ -27,6 +27,9 @@ export async function login(email: string, password: string) {
   if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
     throw Object.assign(new Error('Email ou mot de passe incorrect.'), { statusCode: 401 })
   }
+  if (user.blockedAt) {
+    throw Object.assign(new Error('Votre accès au site a été bloqué par un administrateur.'), { statusCode: 403 })
+  }
   return { token: createToken(user.id), user: publicUser(user) }
 }
 

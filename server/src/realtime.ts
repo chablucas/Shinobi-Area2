@@ -5,6 +5,7 @@ import { prisma } from './config/prisma.js'
 import { drawCard, findGame, getGameForUser, placeCard, publicGameState } from './services/realtimeGameService.js'
 import { getCardKnowledgeById } from './game/cardKnowledge.js'
 import { teamAuctionRules } from './game/teamAuctionRules.js'
+import { TEAM_AUCTION_SETTINGS } from './game/teamAuctionSettings.js'
 import { calculateTeamAuctionScore } from './game/teamMode.js'
 import { getTeamAuctionPowerScore } from './game/teamAuctionPower.js'
 import { setGameLobbyChangeHandler } from './services/gameLobbyService.js'
@@ -62,8 +63,8 @@ async function getOrInitTeamAuctionGame(gameId: string, userId: number) {
     gameId: lobby.id,
     mode,
     players,
-    teamSizes: [3, 3],
-    initialBudget: 500,
+    teamSizes: [...TEAM_AUCTION_SETTINGS.defaultTeamSizes],
+    initialBudget: TEAM_AUCTION_SETTINGS.defaultInitialBudget,
   })
   teamAuctionHosts.set(lobby.id, lobby.creatorId)
   return game

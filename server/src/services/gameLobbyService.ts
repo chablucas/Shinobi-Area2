@@ -17,6 +17,7 @@ function invalid(message: string, statusCode = 400) {
 function modeOf(mode: unknown) {
   if (mode === '1v1' || mode === 'team-1v1') return GameMode.ONE_V_ONE
   if (mode === '1v1v1' || mode === 'team-1v1v1') return GameMode.ONE_V_ONE_V_THREE
+  if (mode === '1v1v1v1') return GameMode.ONE_V_ONE_V_ONE_V_FOUR
   throw invalid('Mode de combat invalide.')
 }
 
@@ -35,7 +36,7 @@ function formatLobby(lobby: Awaited<ReturnType<typeof findLobby>>) {
   const isTeam = lobby.id.startsWith('ta_')
   const modeLabel = isTeam
     ? (lobby.mode === GameMode.ONE_V_ONE ? 'team-1v1' : 'team-1v1v1')
-    : (lobby.mode === GameMode.ONE_V_ONE ? '1v1' : '1v1v1')
+    : lobby.mode === GameMode.ONE_V_ONE ? '1v1' : lobby.mode === GameMode.ONE_V_ONE_V_THREE ? '1v1v1' : '1v1v1v1'
   return {
     id: lobby.id,
     mode: modeLabel,
@@ -57,7 +58,9 @@ function formatLobby(lobby: Awaited<ReturnType<typeof findLobby>>) {
 }
 
 export function expectedGameLobbyPlayers(mode: GameMode, includesAi: boolean) {
-  return mode === GameMode.ONE_V_ONE ? 2 : 3
+  if (mode === GameMode.ONE_V_ONE) return 2
+  if (mode === GameMode.ONE_V_ONE_V_THREE) return 3
+  return 4
 }
 
 export function gameLobbyCanStart(lobby: { mode: GameMode; includesAi: boolean; status: GameLobbyStatus; invites: Array<{ status: GameInviteStatus }> }) {
@@ -74,7 +77,7 @@ export async function createGameLobby(creatorId: number, mode: unknown, opponent
   const isTeam = typeof mode === 'string' && mode.startsWith('team-')
   const wantsAi = includesAi === true
   if (wantsAi && gameMode !== GameMode.ONE_V_ONE_V_THREE) throw invalid('L’IA ne peut compléter que le mode 1v1v1.')
-  const requiredOpponents = gameMode === GameMode.ONE_V_ONE ? 1 : wantsAi ? 1 : 2
+  const requiredOpponents = gameMode === GameMode.ONE_V_ONE ? 1 : wantsAi ? 1 : expectedGameLobbyPlayers(gameMode, false) - 1
   if (!Array.isArray(opponentIds) || opponentIds.length !== requiredOpponents) throw invalid('Le nombre d’adversaires ne correspond pas au mode.')
   const ids = opponentIds.map(Number)
   if (ids.some((id) => !Number.isInteger(id) || id <= 0) || new Set(ids).size !== ids.length || ids.includes(creatorId)) throw invalid('Les adversaires doivent être distincts et différents du créateur.')
@@ -93,7 +96,7 @@ export async function listGameInvites(userId: number) {
     const isTeam = invite.lobbyId.startsWith('ta_')
     const modeLabel = isTeam
       ? (invite.lobby.mode === GameMode.ONE_V_ONE ? 'team-1v1' : 'team-1v1v1')
-      : (invite.lobby.mode === GameMode.ONE_V_ONE ? '1v1' : '1v1v1')
+      : invite.lobby.mode === GameMode.ONE_V_ONE ? '1v1' : invite.lobby.mode === GameMode.ONE_V_ONE_V_THREE ? '1v1v1' : '1v1v1v1'
     return {
       id: invite.id,
       lobbyId: invite.lobbyId,
@@ -142,7 +145,7 @@ export async function startGameLobby(userId: number, lobbyId: string) {
       if (alreadyPlaying.creatorId !== userId) throw invalid('Seul le créateur peut démarrer ce salon.', 403)
       const game = await createOrGetGame(lobbyId)
       const lobby = await findLobby(lobbyId)
-      return { lobby: formatLobby(lobby)!, game: { id: game.id, lobbyId: game.lobbyId, mode: game.mode === GameMode.ONE_V_ONE ? '1v1' : '1v1v1', status: game.status } }
+      return { lobby: formatLobby(lobby)!, game: { id: game.id, lobbyId: game.lobbyId, mode: game.mode === GameMode.ONE_V_ONE ? '1v1' : game.mode === GameMode.ONE_V_ONE_V_THREE ? '1v1v1' : '1v1v1v1', status: game.status } }
     }
 
     const started = await prisma.$transaction(async (transaction) => {
@@ -156,7 +159,7 @@ export async function startGameLobby(userId: number, lobbyId: string) {
     })
 
     const game = await createOrGetGame(lobbyId)
-    return { lobby: started.lobby, game: { id: game.id, lobbyId: game.lobbyId, mode: game.mode === GameMode.ONE_V_ONE ? '1v1' : '1v1v1', status: game.status } }
+    return { lobby: started.lobby, game: { id: game.id, lobbyId: game.lobbyId, mode: game.mode === GameMode.ONE_V_ONE ? '1v1' : game.mode === GameMode.ONE_V_ONE_V_THREE ? '1v1v1' : '1v1v1v1', status: game.status } }
   } catch (error) {
     if (error instanceof Error && 'code' in error && error.code === 'P2025') throw invalid('Le salon a déjà été démarré.', 409)
     throw error

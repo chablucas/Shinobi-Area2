@@ -1,5 +1,6 @@
 import type { RuleContext } from './types.js'
-import { rules as combatRules, type CombatRule, type RuleCondition, type RuleEffect } from '../../services/gameDataService.js'
+import { type CombatRule, type RuleCondition, type RuleEffect } from '../../services/gameDataService.js'
+import { getCombatRules } from './combatRuleStore.js'
 import type { StatKey } from '../gameEngine.js'
 
 const activeStats: StatKey[] = [
@@ -308,7 +309,7 @@ export function applyRules(context: RuleContext, opponents?: RuleContext | RuleC
   context.finalStats.clan = 0
 
   // Step 2: Evaluate rules from classic.json
-  const enabledRules = combatRules.filter((r) => r.enabled !== false)
+  const enabledRules = getCombatRules().filter((r) => r.enabled !== false)
 
   const phases = ['VALIDATION_PENALTY', 'MODIFIER']
 

@@ -22,7 +22,7 @@ export type CategorySlug = (typeof CATEGORY_DEFINITIONS)[number][1]
 
 export const CATEGORIES: Category[] = CATEGORY_DEFINITIONS.map(([label, slug]) => ({ label, slug }))
 
-export type PlayerId = 1 | 2 | 3
+export type PlayerId = 1 | 2 | 3 | 4
 
 export type PlayerBuild = {
   playerId: PlayerId
@@ -51,7 +51,7 @@ export function createPlayerBuilds(): [PlayerBuild, PlayerBuild] {
   return [createPlayerBuild(1), createPlayerBuild(2)]
 }
 
-export function createPlayerBuildsForCount(playerCount: 2 | 3): PlayerBuild[] {
+export function createPlayerBuildsForCount(playerCount: 2 | 3 | 4): PlayerBuild[] {
   return Array.from({ length: playerCount }, (_, index) => createPlayerBuild((index + 1) as PlayerId))
 }
 
@@ -85,7 +85,7 @@ export function undoPlacement(build: PlayerBuild, placement: LastPlacement): Pla
   return { ...build, slots: { ...build.slots, [placement.category]: null } }
 }
 
-export function getNextPlayerId(playerId: PlayerId, playerCount: 2 | 3 = 2): PlayerId {
+export function getNextPlayerId(playerId: PlayerId, playerCount: 2 | 3 | 4 = 2): PlayerId {
   return playerId === playerCount ? 1 : ((playerId + 1) as PlayerId)
 }
 

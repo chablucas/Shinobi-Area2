@@ -10,6 +10,7 @@ import { gameRoutes } from './routes/gameRoutes.js'
 import { friendshipRoutes } from './routes/friendshipRoutes.js'
 import { searchRoutes } from './routes/searchRoutes.js'
 import { cardAdminRoutes } from './routes/cardAdminRoutes.js'
+import { ruleAdminRoutes } from './routes/ruleAdminRoutes.js'
 import { adminRoutes } from './routes/adminRoutes.js'
 import { errorHandler, notFound } from './utils/errors.js'
 
@@ -21,6 +22,7 @@ app.use('/api/categories', categoryRoutes)
 app.use('/api/cards', cardRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/admin/cards', cardAdminRoutes)
+app.use('/api/admin/rules', ruleAdminRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/builds', buildRoutes)

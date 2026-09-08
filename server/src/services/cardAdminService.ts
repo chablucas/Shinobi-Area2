@@ -1,28 +1,119 @@
-import { CardModifierDirection, CardModifierOperation, CardModifierTarget } from '@prisma/client'
 import { prisma } from '../config/prisma.js'
 import { getEffectiveCard } from './cardService.js'
-import { getCardKnowledgeBySlug, rarityOrder } from '../game/cardKnowledge.js'
+import { refreshCardStatOverlay, refreshTeamScoreOverlay } from './adminOverlayService.js'
+import { getCardKnowledgeBySlug, listCardKnowledge, rarityOrder } from '../game/cardKnowledge.js'
+import { listTeamAuctionPower } from '../game/teamAuctionPower.js'
+import { resolveCanonicalSlug } from '../game/cardCatalog.js'
 
-const statKeys = ['chakra', 'invocation', 'iq', 'ninjutsuAttack', 'ninjutsuDefense', 'genjutsu', 'taijutsu', 'avatar', 'body', 'fuinjutsu', 'senjutsu', 'kenjutsu', 'speed', 'kekkeiGenkai'] as const
-const allowedTargets = new Set<string>(Object.values(CardModifierTarget))
-function assertCard(slug: string) { if (!getCardKnowledgeBySlug(slug)) throw Object.assign(new Error('Carte inconnue.'), { statusCode: 404 }) }
-function assertValue(statKey: string, value: unknown) { if (!statKeys.includes(statKey as typeof statKeys[number]) || !Number.isInteger(value) || Number(value) < 0 || Number(value) > 100) throw Object.assign(new Error('Statistique ou valeur invalide.'), { statusCode: 400 }) }
-function assertModifier(input: Record<string, unknown>) {
-  const target = typeof input.target === 'string' ? input.target : ''
-  const direction = input.direction
-  const operation = input.operation
-  const value = Number(input.value)
-  const categories = Array.isArray(input.categories) ? input.categories.filter((item): item is string => typeof item === 'string') : []
+// Clés de statistiques dérivées du fichier canonique shinobi-cards-data.json (mode « Créer ton perso »).
+export const CREATOR_STAT_KEYS: string[] = Array.from(new Set(listCardKnowledge().flatMap((card) => Object.keys(card.stats))))
 
-  if (typeof input.name !== 'string' || !input.name.trim() || typeof input.description !== 'string') throw Object.assign(new Error('Nom et description requis.'), { statusCode: 400 })
-  if (!target || !allowedTargets.has(target) || !Object.values(CardModifierDirection).includes(direction as CardModifierDirection) || !Object.values(CardModifierOperation).includes(operation as CardModifierOperation) || !Number.isInteger(value) || Number(value) < -100 || Number(value) > 100) throw Object.assign(new Error('Modificateur invalide.'), { statusCode: 400 })
-  if (categories.length > 0 && !categories.every((category) => typeof category === 'string' && category.trim())) throw Object.assign(new Error('Catégories invalides.'), { statusCode: 400 })
+function httpError(message: string, statusCode: number) {
+  return Object.assign(new Error(message), { statusCode })
 }
-export async function updateStat(slug: string, statKey: string, value: unknown) { assertCard(slug); assertValue(statKey, value); return prisma.cardStatOverride.upsert({ where: { cardSlug_statKey: { cardSlug: slug, statKey } }, create: { cardSlug: slug, statKey, value: Number(value) }, update: { value: Number(value) } }) }
-export async function deleteStat(slug: string, statKey: string) { await prisma.cardStatOverride.deleteMany({ where: { cardSlug: slug, statKey } }) }
-export async function updateRarity(slug: string, rarity: unknown) { assertCard(slug); if (!rarityOrder.some((item) => item.id === rarity)) throw Object.assign(new Error('Rareté invalide.'), { statusCode: 400 }); return prisma.cardRarityOverride.upsert({ where: { cardSlug: slug }, create: { cardSlug: slug, rarity: String(rarity) }, update: { rarity: String(rarity) } }) }
-export async function deleteRarity(slug: string) { await prisma.cardRarityOverride.deleteMany({ where: { cardSlug: slug } }) }
-export async function createModifier(slug: string, input: Record<string, unknown>) { assertCard(slug); assertModifier(input); return prisma.cardModifier.create({ data: { cardSlug: slug, name: input.name as string, description: input.description as string, target: input.target as CardModifierTarget, categories: Array.isArray(input.categories) ? input.categories.map((category) => String(category)) : [], direction: input.direction as CardModifierDirection, operation: input.operation as CardModifierOperation, value: Number(input.value), condition: typeof input.condition === 'string' ? input.condition : null, conditionType: typeof input.conditionType === 'string' ? input.conditionType : null, conditionValue: typeof input.conditionValue === 'string' ? input.conditionValue : null, active: input.active !== false } }) }
-export async function updateModifier(id: number, input: Record<string, unknown>) { assertModifier(input); return prisma.cardModifier.update({ where: { id }, data: { name: input.name as string, description: input.description as string, target: input.target as CardModifierTarget, categories: Array.isArray(input.categories) ? input.categories.map((category) => String(category)) : [], direction: input.direction as CardModifierDirection, operation: input.operation as CardModifierOperation, value: Number(input.value), condition: typeof input.condition === 'string' ? input.condition : null, conditionType: typeof input.conditionType === 'string' ? input.conditionType : null, conditionValue: typeof input.conditionValue === 'string' ? input.conditionValue : null, active: input.active !== false } }) }
-export async function deleteModifier(id: number) { await prisma.cardModifier.delete({ where: { id } }) }
+
+function assertCard(slug: string) {
+  if (!getCardKnowledgeBySlug(slug)) throw httpError('Carte inconnue.', 404)
+}
+
+function assertStatValue(statKey: string, value: unknown) {
+  if (!CREATOR_STAT_KEYS.includes(statKey)) throw httpError(`Statistique inconnue : ${statKey}.`, 400)
+  if (!Number.isInteger(value) || Number(value) < 0 || Number(value) > 100) throw httpError('Valeur de statistique invalide (0-100).', 400)
+}
+
+export async function updateStat(slug: string, statKey: string, value: unknown) {
+  assertCard(slug)
+  assertStatValue(statKey, value)
+  const canonicalSlug = resolveCanonicalSlug(slug)
+  const saved = await prisma.cardStatOverride.upsert({
+    where: { cardSlug_statKey: { cardSlug: canonicalSlug, statKey } },
+    create: { cardSlug: canonicalSlug, statKey, value: Number(value) },
+    update: { value: Number(value) },
+  })
+  await refreshCardStatOverlay()
+  return saved
+}
+
+export async function updateStats(slug: string, stats: unknown) {
+  assertCard(slug)
+  if (!stats || typeof stats !== 'object' || Array.isArray(stats)) throw httpError('Statistiques invalides.', 400)
+  const entries = Object.entries(stats as Record<string, unknown>)
+  if (!entries.length) throw httpError('Aucune statistique à enregistrer.', 400)
+  for (const [statKey, value] of entries) assertStatValue(statKey, value)
+
+  const canonicalSlug = resolveCanonicalSlug(slug)
+  await prisma.$transaction(entries.map(([statKey, value]) => prisma.cardStatOverride.upsert({
+    where: { cardSlug_statKey: { cardSlug: canonicalSlug, statKey } },
+    create: { cardSlug: canonicalSlug, statKey, value: Number(value) },
+    update: { value: Number(value) },
+  })))
+  await refreshCardStatOverlay()
+  return getEffectiveCard(canonicalSlug)
+}
+
+export async function deleteStat(slug: string, statKey: string) {
+  await prisma.cardStatOverride.deleteMany({ where: { cardSlug: resolveCanonicalSlug(slug), statKey } })
+  await refreshCardStatOverlay()
+}
+
+export async function resetCardStats(slug: string) {
+  assertCard(slug)
+  const canonicalSlug = resolveCanonicalSlug(slug)
+  await prisma.cardStatOverride.deleteMany({ where: { cardSlug: canonicalSlug } })
+  await refreshCardStatOverlay()
+  return getEffectiveCard(canonicalSlug)
+}
+
+export async function updateRarity(slug: string, rarity: unknown) {
+  assertCard(slug)
+  if (!rarityOrder.some((item) => item.id === rarity)) throw httpError('Rareté invalide.', 400)
+  const canonicalSlug = resolveCanonicalSlug(slug)
+  return prisma.cardRarityOverride.upsert({ where: { cardSlug: canonicalSlug }, create: { cardSlug: canonicalSlug, rarity: String(rarity) }, update: { rarity: String(rarity) } })
+}
+
+export async function deleteRarity(slug: string) {
+  await prisma.cardRarityOverride.deleteMany({ where: { cardSlug: resolveCanonicalSlug(slug) } })
+}
+
+export function listTeamScores() {
+  return listTeamAuctionPower()
+    .map((entry) => ({ slug: entry.slug, name: entry.name, score: entry.generalScore, baseScore: entry.baseScore ?? entry.generalScore, overridden: entry.overridden === true }))
+    .sort((left, right) => left.name.localeCompare(right.name))
+}
+
+export async function updateTeamScore(slug: string, score: unknown) {
+  assertCard(slug)
+  if (!Number.isInteger(score) || Number(score) < 0 || Number(score) > 100) throw httpError('Note Team invalide (0-100).', 400)
+  const canonicalSlug = resolveCanonicalSlug(slug)
+  const saved = await prisma.teamAuctionScoreOverride.upsert({
+    where: { cardSlug: canonicalSlug },
+    create: { cardSlug: canonicalSlug, score: Number(score) },
+    update: { score: Number(score) },
+  })
+  await refreshTeamScoreOverlay()
+  return saved
+}
+
+export async function updateTeamScores(entries: unknown) {
+  if (!Array.isArray(entries) || !entries.length) throw httpError('Aucune note Team à enregistrer.', 400)
+  const normalized = entries.map((entry) => {
+    const record = entry as { slug?: unknown; score?: unknown }
+    const slug = typeof record.slug === 'string' ? resolveCanonicalSlug(record.slug) : ''
+    if (!slug) throw httpError('Slug Team invalide.', 400)
+    assertCard(slug)
+    if (!Number.isInteger(record.score) || Number(record.score) < 0 || Number(record.score) > 100) throw httpError(`Note Team invalide pour ${slug} (0-100).`, 400)
+    return { slug, score: Number(record.score) }
+  })
+
+  await prisma.$transaction(normalized.map(({ slug, score }) => prisma.teamAuctionScoreOverride.upsert({ where: { cardSlug: slug }, create: { cardSlug: slug, score }, update: { score } })))
+  await refreshTeamScoreOverlay()
+  return listTeamScores()
+}
+
+export async function resetTeamScore(slug: string) {
+  await prisma.teamAuctionScoreOverride.deleteMany({ where: { cardSlug: resolveCanonicalSlug(slug) } })
+  await refreshTeamScoreOverlay()
+  return listTeamScores()
+}
+
 export { getEffectiveCard }

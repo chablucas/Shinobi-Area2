@@ -28,8 +28,16 @@ export type FightResult = {
   scores: { player1: number; player2: number; player3?: number }
   categories: CategoryFightResult[]
 }
+export type MultiFightResult = {
+  winnerIndex: number | null
+  players: CombatResult[]
+  totals: number[]
+  scores: number[]
+  rankings: Array<{ playerIndex: number; total: number; score: number; rank: number }>
+  categories: Array<{ category: string; values: Array<{ card: string; value: number }>; winnerIndex: number | null }>
+}
 
-// shinobi-card-stats.json reste la source des statistiques numériques utilisées ici (via cardKnowledge)
+// Les statistiques numériques viennent de shinobi-cards-data.json via cardKnowledge.
 const categoryStats: Record<string, StatKey[]> = { chakra: ['chakra'], invocation: ['invocation'], iq: ['iq'], ninjutsu: ['ninjutsuAttack', 'ninjutsuDefense'], genjutsu: ['genjutsu'], taijutsu: ['taijutsu'], avatar: ['avatar'], body: ['body'], fuinjutsu: ['fuinjutsu'], 'fūinjutsu': ['fuinjutsu'], senjutsu: ['senjutsu'], kenjutsu: ['kenjutsu'], vitesse: ['speed'], speed: ['speed'], 'kekkei-genkai': ['kekkeiGenkai'], kekkeigenkai: ['kekkeiGenkai'], 'kekkei-mora': ['kekkeiMora'], kekkeimora: ['kekkeiMora'] }
 const fightCategories = ['chakra', 'invocation', 'iq', 'ninjutsu', 'genjutsu', 'taijutsu', 'avatar', 'body', 'fuinjutsu', 'senjutsu', 'kenjutsu', 'clan', 'vitesse', 'kekkei-genkai', 'kekkei-mora']
 
@@ -84,6 +92,60 @@ function finalWinnerFromTotals(totals: Record<string, number>): FightPlayer | 'd
   return winners.length === 1 ? winners[0][0] : 'draw'
 }
 export function simulateFight(player1: ShinobiBuild, player2: ShinobiBuild, player3?: ShinobiBuild): FightResult {
+  const multi = simulateFightMany([player1, player2, ...(player3 ? [player3] : [])])
+  const result = multi.players
+  const winner = multi.winnerIndex === null ? 'draw' : (`player${multi.winnerIndex + 1}` as FightPlayer)
+  const categories = multi.categories.map((category) => ({
+    category: category.category,
+    player1: category.values[0]!,
+    player2: category.values[1]!,
+    ...(category.values[2] ? { player3: category.values[2] } : {}),
+    winner: (category.winnerIndex === null ? 'draw' : (`player${category.winnerIndex + 1}` as FightPlayer)) as FightPlayer | 'draw',
+  }))
+  return {
+    winner,
+    player1: result[0]!,
+    player2: result[1]!,
+    ...(result[2] ? { player3: result[2], player3Total: result[2].total } : {}),
+    player1Total: result[0]!.total,
+    player2Total: result[1]!.total,
+    scores: { player1: multi.scores[0]!, player2: multi.scores[1]!, ...(multi.scores[2] !== undefined ? { player3: multi.scores[2] } : {}) },
+    categories,
+  }
+}
+
+export function simulateFightMany(builds: ShinobiBuild[]): MultiFightResult {
+  if (builds.length < 2) throw new Error('Une partie nécessite au moins deux builds.')
+  const contexts = builds.map(contextFor)
+  contexts.forEach((context, index) => applyRules(context, contexts.filter((_, opponentIndex) => opponentIndex !== index)))
+  const results = contexts.map(resultOf)
+  const invalid = results.some((result) => result.validationErrors.length > 0)
+  const categories = fightCategories
+    .filter((category) => builds.some((build) => slotsOf(build)[category]))
+    .map((category) => {
+      const values = results.map((result, index) => ({ card: cardNameFor(builds[index]!, category), value: categoryValue(result, category) }))
+      const highest = Math.max(...values.map((entry) => entry.value))
+      const winners = values.map((entry, index) => entry.value === highest ? index : null).filter((index): index is number => index !== null)
+      return { category, values, winnerIndex: invalid || winners.length !== 1 ? null : winners[0]! }
+    })
+  const scores = results.map(() => 0)
+  for (const category of categories) if (category.winnerIndex !== null) scores[category.winnerIndex] += 1
+  const totals = results.map((result) => result.total)
+  const highestTotal = Math.max(...totals)
+  const topPlayers = totals.map((total, index) => total === highestTotal ? index : null).filter((index): index is number => index !== null)
+  const winnerIndex = invalid || topPlayers.length !== 1 ? null : topPlayers[0]!
+  const sortedIndexes = totals.map((_, index) => index).sort((left, right) => totals[right]! - totals[left]! || scores[right]! - scores[left]! || left - right)
+  const rankings = sortedIndexes.map((playerIndex, position) => ({ playerIndex, total: totals[playerIndex]!, score: scores[playerIndex]!, rank: position > 0 && totals[playerIndex] === totals[sortedIndexes[position - 1]!] ? rankingsRank(sortedIndexes, totals, position) : position + 1 }))
+  return { winnerIndex, players: results, totals, scores, rankings, categories }
+}
+
+function rankingsRank(sortedIndexes: number[], totals: number[], position: number) {
+  return sortedIndexes.findIndex((index) => totals[index] === totals[sortedIndexes[position]!] ) + 1
+}
+
+/* Legacy duel/triple implementation retained through the generic resolver above. */
+/* istanbul ignore next */
+function unusedLegacyImplementation(player1: ShinobiBuild, player2: ShinobiBuild, player3?: ShinobiBuild): FightResult {
   const builds = [player1, player2, player3].filter((build): build is ShinobiBuild => Boolean(build))
   const contexts = builds.map(contextFor)
   contexts.forEach((context, index) => applyRules(context, contexts.filter((_, opponentIndex) => opponentIndex !== index)))

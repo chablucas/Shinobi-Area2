@@ -132,6 +132,26 @@ export const CARD_KNOWLEDGE_COUNT = CARD_KNOWLEDGE.length
 const knowledgeBySlug = new Map(CARD_KNOWLEDGE.map((card) => [card.slug, card]))
 const knowledgeById = new Map(CARD_KNOWLEDGE.map((card) => [card.id, card]))
 
+// Overlay mémoire des stats éditées en administration (table CardStatOverride).
+let statOverridesBySlug = new Map<string, CardStats>()
+
+export function setCardStatOverrides(overrides: Array<{ cardSlug: string; statKey: string; value: number }>): void {
+  const next = new Map<string, CardStats>()
+  for (const override of overrides) {
+    const current = next.get(override.cardSlug) ?? {}
+    current[override.statKey] = override.value
+    next.set(override.cardSlug, current)
+  }
+  statOverridesBySlug = next
+}
+
+function withStatOverrides(card: CardKnowledge): CardKnowledge {
+  const overrides = statOverridesBySlug.get(card.slug)
+  if (!overrides) return card
+  const stats = { ...card.stats, ...overrides }
+  return { ...card, stats, traits: { ...card.traits, eligibleSlots: eligibleSlotsOf({ stats, clans: card.clans, avatars: card.avatars }) } }
+}
+
 function withLegacyNameFallback(card: CardKnowledge, requestedSlug: string): CardKnowledge {
   const normalizedRequested = requestedSlug.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/&/g, 'et').replace(/[^a-z0-9]+/g, '-')
   const normalizedCardName = card.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/&/g, 'et').replace(/[^a-z0-9]+/g, '-')
@@ -147,14 +167,15 @@ export function getCardKnowledgeBySlug(slug: string): CardKnowledge | undefined 
   const canonical = getCanonicalCard(slug)
   if (!canonical) return undefined
   const card = knowledgeBySlug.get(canonical.slug) ?? knowledgeBySlug.get(slug)
-  return card ? withLegacyNameFallback(card, slug) : undefined
+  return card ? withLegacyNameFallback(withStatOverrides(card), slug) : undefined
 }
 
 export function getCardKnowledgeById(id: number): CardKnowledge | undefined {
   const canonical = getCanonicalCardById(id)
-  return knowledgeById.get(id) ?? (canonical ? knowledgeBySlug.get(canonical.slug) : undefined)
+  const card = knowledgeById.get(id) ?? (canonical ? knowledgeBySlug.get(canonical.slug) : undefined)
+  return card ? withStatOverrides(card) : undefined
 }
 
 export function listCardKnowledge(): CardKnowledge[] {
-  return [...CARD_KNOWLEDGE]
+  return CARD_KNOWLEDGE.map((card) => withStatOverrides(card))
 }

@@ -1,7 +1,7 @@
 import teamAuctionPowerJson from '../data/team-auction-power.json' with { type: 'json' }
 import { getAllCanonicalCards } from './cardCatalog.js'
 
-type TeamAuctionPowerCard = { slug: string; name: string; generalScore: number }
+type TeamAuctionPowerCard = { slug: string; name: string; generalScore: number; baseScore?: number; overridden?: boolean }
 type TeamAuctionPowerFile = {
   schemaVersion: string
   mode: string
@@ -15,6 +15,8 @@ const powerFile = teamAuctionPowerJson as TeamAuctionPowerFile
 const canonicalCards = getAllCanonicalCards()
 const canonicalSlugs = new Set(canonicalCards.map((card) => card.slug))
 const powerBySlug = new Map<string, TeamAuctionPowerCard>()
+// Overlay mémoire des notes Team éditées en administration (table TeamAuctionScoreOverride).
+let scoreOverrides = new Map<string, number>()
 
 if (powerFile.mode !== 'TEAM_AUCTION' || powerFile.joinKey !== 'slug' || powerFile.scoreField !== 'generalScore') {
   throw new Error('Configuration team-auction-power.json invalide.')
@@ -35,12 +37,26 @@ if (powerBySlug.size !== canonicalCards.length) {
   throw new Error(`Scores Team Auction manquants (${missing.join(', ')}).`)
 }
 
+export function setTeamAuctionScoreOverrides(overrides: Array<{ cardSlug: string; score: number }>): void {
+  const next = new Map<string, number>()
+  for (const override of overrides) {
+    if (!canonicalSlugs.has(override.cardSlug)) continue
+    next.set(override.cardSlug, override.score)
+  }
+  scoreOverrides = next
+}
+
 export function getTeamAuctionPowerScore(slug: string): number {
   const entry = powerBySlug.get(slug)
   if (!entry) throw new Error(`Aucun generalScore Team Auction pour le slug canonique ${slug}.`)
-  return entry.generalScore
+  return scoreOverrides.get(slug) ?? entry.generalScore
 }
 
 export function listTeamAuctionPower(): TeamAuctionPowerCard[] {
-  return [...powerBySlug.values()]
+  return [...powerBySlug.values()].map((entry) => ({
+    ...entry,
+    baseScore: entry.generalScore,
+    generalScore: scoreOverrides.get(entry.slug) ?? entry.generalScore,
+    overridden: scoreOverrides.has(entry.slug),
+  }))
 }

@@ -1,21 +1,21 @@
 import { GameMode, GameStatus, Prisma } from '@prisma/client'
 import { prisma } from '../config/prisma.js'
 import { getCardKnowledgeById, listCardKnowledge } from '../game/cardKnowledge.js'
-import { simulateFight } from '../game/gameEngine.js'
+import { simulateFightMany } from '../game/gameEngine.js'
 
 export const GAME_CATEGORIES = ['chakra', 'invocation', 'iq', 'ninjutsu', 'genjutsu', 'taijutsu', 'avatar', 'body', 'fuinjutsu', 'senjutsu', 'kenjutsu', 'clan', 'vitesse', 'kekkei-genkai', 'kekkei-mora'] as const
 type Category = typeof GAME_CATEGORIES[number]
 type StoredPlayer = { userId: number | null; displayName: string; playerNumber: number; pile: number[]; pendingCardId: number | null; slots: Record<Category, number | null> }
-type AutoGameResult = ReturnType<typeof simulateFight> & { resultMode: 'AUTO'; winnerNumber: 1 | 2 | null; isDraw: boolean }
-type ManualGameResult = { resultMode: 'MANUAL'; winnerNumber: 1 | 2 | null; isDraw: boolean }
-type StoredState = { players: StoredPlayer[]; result?: AutoGameResult | ManualGameResult | ReturnType<typeof simulateFight>; stateVersion?: number }
+type AutoGameResult = ReturnType<typeof simulateFightMany> & { resultMode: 'AUTO'; winnerNumber: number | null; isDraw: boolean }
+type ManualGameResult = { resultMode: 'MANUAL'; winnerNumber: number | null; isDraw: boolean }
+type StoredState = { players: StoredPlayer[]; result?: AutoGameResult | ManualGameResult; stateVersion?: number }
 
 function invalid(message: string, statusCode = 400) { return Object.assign(new Error(message), { statusCode }) }
 function emptySlots() { return Object.fromEntries(GAME_CATEGORIES.map((category) => [category, null])) as Record<Category, number | null> }
 function normalizeCategory(category: unknown): Category | null { return typeof category === 'string' && (GAME_CATEGORIES as readonly string[]).includes(category) ? category as Category : null }
 function stateOf(value: Prisma.JsonValue): StoredState { return value as unknown as StoredState }
 function playerFor(state: StoredState, userId: number) { return state.players.find((player) => player.userId === userId) }
-function playersAreComplete(state: StoredState) { return state.players.length === 2 && state.players.every((player) => GAME_CATEGORIES.every((category) => player.slots[category] !== null)) }
+function playersAreComplete(state: StoredState) { return state.players.length >= 2 && state.players.every((player) => GAME_CATEGORIES.every((category) => player.slots[category] !== null)) }
 function isTransientDbError(error: unknown): boolean {
   if (error instanceof Prisma.PrismaClientKnownRequestError) return ['P2034', 'P2024', 'P2028', 'P1001'].includes(error.code)
   if (error instanceof Error) {
@@ -38,7 +38,7 @@ const lobbyInclude = { creator: { select: { id: true, displayName: true } }, inv
 function gameInclude() { return { lobby: { include: lobbyInclude } } }
 
 // Les IDs stockés dans l'état de partie (pile, pendingCardId, slots) sont les IDs du catalogue canonique
-// (shinobi-cards.json), jamais les IDs autoincrement de la table Prisma Card. Toute jointure avec Prisma
+// (shinobi-cards-data.json), jamais les IDs autoincrement de la table Prisma Card. Toute jointure avec Prisma
 // (imageUrl notamment) doit donc se faire par slug canonique, pas par id.
 async function cardView(id: number, imageBySlug: Map<string, string | null>) {
   const card = getCardKnowledgeById(id)
@@ -91,7 +91,7 @@ export async function publicGameState(game: Awaited<ReturnType<typeof findGame>>
   return {
     id: game.id,
     lobbyId: game.lobbyId,
-    mode: game.mode === GameMode.ONE_V_ONE ? '1v1' : '1v1v1',
+    mode: game.mode === GameMode.ONE_V_ONE ? '1v1' : game.mode === GameMode.ONE_V_ONE_V_THREE ? '1v1v1' : '1v1v1v1',
     status: game.status,
     currentPlayerNumber: game.currentPlayerNumber,
     turnNumber: game.turnNumber,
@@ -189,7 +189,7 @@ export function placeCard(userId: number, gameId: string, rawCategory: unknown) 
   })
 }
 
-async function finalizeGame(userId: number, gameId: string, mode: 'AUTO' | 'MANUAL', winnerNumber?: 1 | 2 | null, isDraw?: boolean) {
+async function finalizeGame(userId: number, gameId: string, mode: 'AUTO' | 'MANUAL', winnerNumber?: number | null, isDraw?: boolean) {
   try {
     const game = await retryTransientMutation(async () => prisma.$transaction(async (transaction) => {
       const current = await transaction.game.findUnique({ where: { id: gameId }, include: gameInclude() })
@@ -201,8 +201,8 @@ async function finalizeGame(userId: number, gameId: string, mode: 'AUTO' | 'MANU
       if (mode === 'MANUAL' && current.lobby.creatorId !== userId) throw invalid('Seul l’hôte peut choisir le vainqueur.', 403)
       const result: AutoGameResult | ManualGameResult = mode === 'AUTO'
         ? (() => {
-            const fight = simulateFight(buildFor(state.players[0]!), buildFor(state.players[1]!))
-            const resolvedWinner = fight.winner === 'player1' ? 1 : fight.winner === 'player2' ? 2 : null
+            const fight = simulateFightMany(state.players.map(buildFor))
+            const resolvedWinner = fight.winnerIndex === null ? null : fight.winnerIndex + 1
             return { ...fight, resultMode: 'AUTO', winnerNumber: resolvedWinner, isDraw: resolvedWinner === null }
           })()
         : { resultMode: 'MANUAL', winnerNumber: isDraw ? null : winnerNumber ?? null, isDraw: Boolean(isDraw) }
@@ -221,7 +221,7 @@ async function finalizeGame(userId: number, gameId: string, mode: 'AUTO' | 'MANU
 
 export function calculateGameResult(userId: number, gameId: string) { return finalizeGame(userId, gameId, 'AUTO') }
 export function chooseGameResult(userId: number, gameId: string, winnerNumber: unknown, isDraw: unknown) {
-  const validWinner = winnerNumber === 1 || winnerNumber === 2 ? winnerNumber : null
+  const validWinner = typeof winnerNumber === 'number' && Number.isInteger(winnerNumber) && winnerNumber >= 1 ? winnerNumber : null
   if (isDraw !== true && validWinner === null) throw invalid('Choisis le joueur 1, le joueur 2 ou une égalité.')
   return finalizeGame(userId, gameId, 'MANUAL', validWinner, isDraw === true)
 }

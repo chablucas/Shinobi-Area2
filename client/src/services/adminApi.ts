@@ -1,9 +1,21 @@
 import { API_BASE_URL } from './cardApi'
 
 export type AdminOverview = {
-  totalCards: number
   totalUsers: number
-  rarityBreakdown: Array<{ rarity: string; count: number }>
+  totalAdmins: number
+  totalBlocked: number
+}
+
+export type AdminUser = {
+  id: number
+  email: string
+  displayName: string
+  role: 'USER' | 'ADMIN'
+  blocked: boolean
+  blockedAt: string | null
+  wins: number
+  losses: number
+  createdAt: string
 }
 
 export type AdminCardSummary = {
@@ -37,4 +49,18 @@ export function fetchAdminCards(token: string, search = '', rarity = '') {
   if (search.trim()) params.set('search', search.trim())
   if (rarity.trim()) params.set('rarity', rarity.trim())
   return request<AdminCardSummary[]>(`/admin/cards${params.toString() ? `?${params.toString()}` : ''}`, {}, token)
+}
+
+export function fetchAdminUsers(token: string, search = '') {
+  const params = new URLSearchParams()
+  if (search.trim()) params.set('search', search.trim())
+  return request<AdminUser[]>(`/admin/users${params.toString() ? `?${params.toString()}` : ''}`, {}, token)
+}
+
+export function updateAdminUserRole(token: string, userId: number, role: 'USER' | 'ADMIN') {
+  return request<AdminUser>(`/admin/users/${userId}/role`, { method: 'PATCH', body: JSON.stringify({ role }) }, token)
+}
+
+export function updateAdminUserBlocked(token: string, userId: number, blocked: boolean) {
+  return request<AdminUser>(`/admin/users/${userId}/blocked`, { method: 'PATCH', body: JSON.stringify({ blocked }) }, token)
 }

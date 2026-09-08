@@ -5,7 +5,7 @@ export type Friend = { id: number; displayName: string; avatarUrl: string | null
 export type FriendRequest = { id: number; status: 'PENDING'; createdAt: string; sender: Friend; receiver: Friend }
 export type SearchCard = { id: number; name: string; slug: string; imageUrl: string | null }
 export type SearchResult = { players: PublicUser[]; shinobis: SearchCard[] }
-export type ChallengeMode = '1v1' | '1v1v1' | 'team-1v1' | 'team-1v1v1'
+export type ChallengeMode = '1v1' | '1v1v1' | '1v1v1v1' | 'team-1v1' | 'team-1v1v1'
 export type GameInvite = { id: string; lobbyId: string; mode: ChallengeMode; status: 'PENDING'; createdAt: string; creator: Friend }
 export type LobbyPlayer = Partial<PublicUser> & { id: number | null; displayName: string; avatarUrl: string | null; status: 'ACCEPTED' | 'PENDING' | 'REJECTED' | 'CANCELLED'; inviteId: string | null; isAi: boolean }
 export type GameLobbyState = { id: string; mode: ChallengeMode; hostUserId: number; expectedPlayers: number; playerCount: number; canStart: boolean; status: 'WAITING' | 'READY' | 'PLAYING' }
@@ -41,11 +41,12 @@ export function getGameLobby(token: string, lobbyId: string) { return request<Ga
 export function getLobbyGame(token: string, lobbyId: string) { return request<RealtimeGameState>(token, `/game/lobbies/${lobbyId}/game`) }
 export function startGameLobby(token: string, lobbyId: string) { return request<StartGameResult>(token, `/game/lobbies/${lobbyId}/start`, { method: 'POST' }) }
 export function calculateRealtimeGameResult(token: string, gameId: string) { return request<RealtimeGameState>(token, `/game/games/${gameId}/result/auto`, { method: 'POST' }) }
-export function chooseRealtimeGameResult(token: string, gameId: string, winnerNumber: 1 | 2 | null, isDraw: boolean) { return request<RealtimeGameState>(token, `/game/games/${gameId}/result/manual`, { method: 'POST', body: JSON.stringify({ winnerNumber, isDraw }) }) }
+export function chooseRealtimeGameResult(token: string, gameId: string, winnerNumber: number | null, isDraw: boolean) { return request<RealtimeGameState>(token, `/game/games/${gameId}/result/manual`, { method: 'POST', body: JSON.stringify({ winnerNumber, isDraw }) }) }
 
 export type RealtimeCard = { id: number; slug: string; name: string; clans: string[]; stats: Record<string, number>; imageUrl: string | null; eligibleSlots: string[] }
 export type RealtimePlayer = { userId: number | null; displayName: string; playerNumber: number; cardsRemaining: number; pendingCard: RealtimeCard | null; slots: Record<string, RealtimeCard | null> }
-export type AutoRealtimeResult = { resultMode: 'AUTO'; winner: 'player1' | 'player2' | 'draw'; winnerNumber: 1 | 2 | null; isDraw: boolean; player1Total: number; player2Total: number; player1: { baseStats: Record<string, number>; finalStats: Record<string, number>; appliedRules: Array<{ ruleId: string; label: string; target: string; before: number; after: number; operation: string; value: number }>; validationErrors: Array<{ ruleId: string; message: string }>; total: number }; player2: { baseStats: Record<string, number>; finalStats: Record<string, number>; appliedRules: Array<{ ruleId: string; label: string; target: string; before: number; after: number; operation: string; value: number }>; validationErrors: Array<{ ruleId: string; message: string }>; total: number } }
-export type ManualRealtimeResult = { resultMode: 'MANUAL'; winnerNumber: 1 | 2 | null; isDraw: boolean }
+export type AutoRealtimePlayerResult = { baseStats: Record<string, number>; finalStats: Record<string, number>; appliedRules: Array<{ ruleId: string; label: string; target: string; before: number; after: number; operation: string; value: number }>; validationErrors: Array<{ ruleId: string; message: string }>; total: number }
+export type AutoRealtimeResult = { resultMode: 'AUTO'; winnerIndex: number | null; winnerNumber: number | null; isDraw: boolean; totals: number[]; scores: number[]; rankings: Array<{ playerIndex: number; total: number; score: number; rank: number }>; players: AutoRealtimePlayerResult[]; categories: Array<{ category: string; values: Array<{ card: string; value: number }>; winnerIndex: number | null }> }
+export type ManualRealtimeResult = { resultMode: 'MANUAL'; winnerNumber: number | null; isDraw: boolean }
 export type RealtimeGameResult = AutoRealtimeResult | ManualRealtimeResult | { winner: 'player1' | 'player2' | 'draw'; player1Total: number; player2Total: number }
 export type RealtimeGameState = { id: string; lobbyId: string; mode: ChallengeMode; status: 'PLAYING' | 'AWAITING_RESULT' | 'FINISHED'; currentPlayerNumber: number; turnNumber: number; stateVersion?: number; players: RealtimePlayer[]; result: RealtimeGameResult | null }

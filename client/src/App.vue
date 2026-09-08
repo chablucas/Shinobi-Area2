@@ -43,12 +43,14 @@ async function openInviteDialog(mode: ChallengeMode) {
 
 function requiredFriendCount() {
   if (inviteMode.value === '1v1' || inviteMode.value === 'team-1v1') return 1
+  if (inviteMode.value === '1v1v1v1') return 3
   return completeWithAi.value ? 1 : 2
 }
 
 const inviteTitle = computed(() => {
   if (inviteMode.value === 'team-1v1') return 'Invite un ami en Team Auction'
   if (inviteMode.value === 'team-1v1v1') return 'Invite 2 amis en Team Auction'
+  if (inviteMode.value === '1v1v1v1') return 'Invite 3 amis'
   if (inviteMode.value === '1v1') return 'Invite un ami'
   return 'Envie d’un plaisir à 3 ?'
 })
@@ -204,6 +206,24 @@ async function goTeamAuction(mode: TeamAuctionMode) {
               >
                 Inviter 2 amis
               </button>
+            </div>
+          </div>
+
+          <div class="cta-card cta-quadruple">
+            <div class="cta-card-header">
+              <span class="cta-badge">MODE 04</span>
+              <span class="cta-arrow" aria-hidden="true">✧</span>
+            </div>
+            <div class="cta-card-body">
+              <span class="cta-icon">✧</span>
+              <div class="cta-text">
+                <h2>Combat 1v1v1v1</h2>
+                <p>Quatre shinobis, une pioche partagée et une arène où chaque catégorie compte.</p>
+              </div>
+            </div>
+            <div class="cta-actions-dual">
+              <button type="button" class="cta-sub-btn primary" @click="router.push('/4-joueurs')">Combat 1v1v1v1 local</button>
+              <button type="button" class="cta-sub-btn secondary" @click="openInviteDialog('1v1v1v1')">Inviter 3 amis</button>
             </div>
           </div>
         </div>
@@ -502,6 +522,21 @@ footer {
 .cta-triple:hover {
   border-color: var(--accent-green);
   box-shadow: 0 8px 24px rgba(138, 217, 184, 0.2);
+}
+
+.cta-quadruple {
+  background: linear-gradient(135deg, rgba(42, 27, 42, 0.95), rgba(26, 28, 32, 0.9));
+  border-color: rgba(220, 155, 255, 0.4);
+}
+
+.cta-quadruple:hover {
+  border-color: #dc9bff;
+  box-shadow: 0 8px 24px rgba(220, 155, 255, 0.2);
+}
+
+.cta-quadruple .cta-icon,
+.cta-quadruple .cta-arrow {
+  color: #dc9bff;
 }
 
 .cta-card-header {

@@ -2,19 +2,21 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import SocialHeader from '../components/SocialHeader.vue'
+import AdminNav from '../components/AdminNav.vue'
 import { useAuthStore } from '../stores/auth'
-import { fetchAdminCards, fetchAdminOverview, type AdminCardSummary } from '../services/adminApi'
+import { fetchAdminOverview, fetchAdminUsers, updateAdminUserBlocked, updateAdminUserRole, type AdminOverview, type AdminUser } from '../services/adminApi'
 
 const auth = useAuthStore()
 const router = useRouter()
-const overview = ref<{ totalCards: number; totalUsers: number; rarityBreakdown: Array<{ rarity: string; count: number }> } | null>(null)
-const cards = ref<AdminCardSummary[]>([])
+const overview = ref<AdminOverview | null>(null)
+const users = ref<AdminUser[]>([])
 const query = ref('')
-const rarity = ref('')
 const loading = ref(true)
 const error = ref('')
+const status = ref('')
+const pendingUserId = ref<number | null>(null)
 
-const uniqueRarities = computed(() => [...new Set(cards.value.map((card) => card.rarity))].sort())
+const sortedUsers = computed(() => [...users.value].sort((left, right) => left.displayName.localeCompare(right.displayName)))
 
 onMounted(async () => {
   await auth.loadCurrentUser()
@@ -24,12 +26,12 @@ onMounted(async () => {
   }
 
   try {
-    const [nextOverview, nextCards] = await Promise.all([
+    const [nextOverview, nextUsers] = await Promise.all([
       fetchAdminOverview(auth.token),
-      fetchAdminCards(auth.token, query.value, rarity.value),
+      fetchAdminUsers(auth.token, query.value),
     ])
     overview.value = nextOverview
-    cards.value = nextCards
+    users.value = nextUsers
   } catch (exception) {
     error.value = exception instanceof Error ? exception.message : 'Impossible de charger le tableau de bord.'
   } finally {
@@ -37,17 +39,51 @@ onMounted(async () => {
   }
 })
 
-async function refreshCards() {
+async function refreshUsers() {
   if (!auth.token) return
   try {
-    cards.value = await fetchAdminCards(auth.token, query.value, rarity.value)
+    users.value = await fetchAdminUsers(auth.token, query.value)
   } catch (exception) {
     error.value = exception instanceof Error ? exception.message : 'Recherche administrateur impossible.'
   }
 }
 
-function openCard(card: AdminCardSummary) {
-  void router.push(`/admin/cards/${encodeURIComponent(card.slug)}`)
+async function applyAction(userId: number, action: () => Promise<AdminUser>, message: string) {
+  pendingUserId.value = userId
+  status.value = ''
+  error.value = ''
+  try {
+    const updated = await action()
+    users.value = users.value.map((user) => (user.id === updated.id ? updated : user))
+    if (auth.token) overview.value = await fetchAdminOverview(auth.token)
+    status.value = message
+  } catch (exception) {
+    error.value = exception instanceof Error ? exception.message : 'Action impossible.'
+  } finally {
+    pendingUserId.value = null
+  }
+}
+
+function toggleRole(user: AdminUser) {
+  if (!auth.token) return
+  const token = auth.token
+  const nextRole = user.role === 'ADMIN' ? 'USER' : 'ADMIN'
+  void applyAction(
+    user.id,
+    () => updateAdminUserRole(token, user.id, nextRole),
+    nextRole === 'ADMIN' ? `${user.displayName} est désormais administrateur.` : `Rôle administrateur retiré à ${user.displayName}.`,
+  )
+}
+
+function toggleBlocked(user: AdminUser) {
+  if (!auth.token) return
+  const token = auth.token
+  const nextBlocked = !user.blocked
+  void applyAction(
+    user.id,
+    () => updateAdminUserBlocked(token, user.id, nextBlocked),
+    nextBlocked ? `${user.displayName} n’a plus accès au site.` : `${user.displayName} peut de nouveau accéder au site.`,
+  )
 }
 </script>
 
@@ -59,56 +95,54 @@ function openCard(card: AdminCardSummary) {
         <div>
           <p class="eyebrow">Administration</p>
           <h1>Dashboard</h1>
+          <p class="subtitle">Gestion des utilisateurs du site.</p>
         </div>
       </header>
 
+      <AdminNav />
+
       <div v-if="loading" class="state-message">Chargement du dashboard...</div>
-      <div v-else-if="error" class="state-message error">{{ error }}</div>
       <template v-else>
+        <div v-if="error" class="state-message error">{{ error }}</div>
+        <div v-if="status" class="state-message">{{ status }}</div>
+
         <section class="stats-grid">
           <article class="stat-card">
-            <span>Total cartes</span>
-            <strong>{{ overview?.totalCards ?? 0 }}</strong>
-          </article>
-          <article class="stat-card">
-            <span>Total utilisateurs</span>
+            <span>Utilisateurs</span>
             <strong>{{ overview?.totalUsers ?? 0 }}</strong>
           </article>
-          <article class="stat-card wide">
-            <span>Cartes par rareté</span>
-            <ul>
-              <li v-for="item in overview?.rarityBreakdown ?? []" :key="item.rarity">
-                <span>{{ item.rarity }}</span><strong>{{ item.count }}</strong>
-              </li>
-            </ul>
+          <article class="stat-card">
+            <span>Administrateurs</span>
+            <strong>{{ overview?.totalAdmins ?? 0 }}</strong>
+          </article>
+          <article class="stat-card">
+            <span>Comptes bloqués</span>
+            <strong>{{ overview?.totalBlocked ?? 0 }}</strong>
           </article>
         </section>
 
         <section class="panel admin-tools">
-          <div class="dashboard-actions">
-            <button type="button" @click="router.push('/admin')">Gestion des cartes</button>
-            <button type="button" @click="router.push('/simulation')">Simulation</button>
-          </div>
-          <h2>Gestion des cartes</h2>
-          <div class="toolbar">
-            <input v-model="query" class="auth-input" type="search" placeholder="Rechercher par nom" @input="refreshCards" />
-            <select v-model="rarity" class="auth-input" @change="refreshCards">
-              <option value="">Toutes les raretés</option>
-              <option v-for="entry in uniqueRarities" :key="entry" :value="entry">{{ entry }}</option>
-            </select>
-          </div>
+          <h2>Utilisateurs</h2>
+          <input v-model="query" class="auth-input" type="search" placeholder="Rechercher par pseudo ou email" @input="refreshUsers" />
 
-          <div class="card-list">
-            <article v-for="card in cards" :key="card.slug" class="admin-card-row">
-              <div class="mini-card">
-                <img v-if="card.imageUrl" :src="card.imageUrl" :alt="card.name" />
-                <span v-else>{{ card.name.slice(0, 1) }}</span>
-              </div>
+          <div class="user-list">
+            <article v-for="user in sortedUsers" :key="user.id" class="user-row" :class="{ blocked: user.blocked }">
               <div class="meta">
-                <strong>{{ card.name }}</strong>
-                <small>{{ card.rarity }}</small>
+                <strong>{{ user.displayName }}</strong>
+                <small>{{ user.email }}</small>
               </div>
-              <button type="button" @click="openCard(card)">MODIFIER</button>
+              <div class="badges">
+                <span class="badge" :class="user.role === 'ADMIN' ? 'admin' : 'user'">{{ user.role }}</span>
+                <span class="badge" :class="user.blocked ? 'danger' : 'ok'">{{ user.blocked ? 'BLOQUÉ' : 'ACTIF' }}</span>
+              </div>
+              <div class="actions">
+                <button type="button" :disabled="pendingUserId === user.id" @click="toggleRole(user)">
+                  {{ user.role === 'ADMIN' ? 'RETIRER ADMIN' : 'RENDRE ADMIN' }}
+                </button>
+                <button type="button" class="secondary" :disabled="pendingUserId === user.id" @click="toggleBlocked(user)">
+                  {{ user.blocked ? 'DÉBLOQUER' : 'BLOQUER' }}
+                </button>
+              </div>
             </article>
           </div>
         </section>
@@ -166,19 +200,6 @@ function openCard(card: AdminCardSummary) {
   font-size: clamp(2rem, 4vw, 3rem);
   color: var(--accent-gold);
 }
-.stat-card.wide ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 8px;
-}
-.stat-card.wide li {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  color: var(--text-main);
-}
 .panel {
   background: var(--bg-panel);
   border: 1px solid var(--border-strong);
@@ -188,44 +209,9 @@ function openCard(card: AdminCardSummary) {
   margin-top: 0;
   color: var(--accent-orange);
 }
-.toolbar {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-  gap: 12px;
-  margin-bottom: 16px;
-}
 .auth-input {
   min-height: 42px;
   width: 100%;
-}
-.card-list {
-  display: grid;
-  gap: 12px;
-}
-.admin-card-row {
-  display: grid;
-  grid-template-columns: 64px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 14px;
-  padding: 10px 12px;
-  border: 1px solid var(--border-light);
-  background: rgba(255, 255, 255, 0.02);
-}
-.mini-card {
-  width: 64px;
-  height: 64px;
-  border-radius: 8px;
-  overflow: hidden;
-  background: var(--bg-panel-strong);
-  display: grid;
-  place-items: center;
-  color: var(--accent-orange);
-  font-weight: 700;
-}
-.mini-card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 .meta {
   display: grid;
@@ -249,19 +235,66 @@ button {
 }
 .state-message {
   color: var(--accent-gold);
+  margin-bottom: 12px;
 }
 .state-message.error {
   color: #ffb7b7;
 }
-@media (max-width: 700px) {
-  .toolbar {
+.subtitle {
+  margin: 6px 0 0;
+  color: var(--text-muted);
+}
+.user-list {
+  display: grid;
+  gap: 12px;
+}
+.user-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  border: 1px solid var(--border-light);
+  background: rgba(255, 255, 255, 0.02);
+}
+.user-row.blocked {
+  border-color: #ff8383;
+}
+.badges {
+  display: flex;
+  gap: 8px;
+}
+.badge {
+  padding: 4px 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border: 1px solid var(--border-strong);
+}
+.badge.admin {
+  color: var(--accent-gold);
+}
+.badge.danger {
+  color: #ffb7b7;
+}
+.badge.ok {
+  color: #9be59b;
+}
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+button.secondary {
+  background: transparent;
+  color: var(--text-main);
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+@media (max-width: 780px) {
+  .user-row {
     grid-template-columns: 1fr;
-  }
-  .admin-card-row {
-    grid-template-columns: 54px minmax(0, 1fr);
-  }
-  .admin-card-row button {
-    grid-column: 1 / -1;
   }
 }
 </style>

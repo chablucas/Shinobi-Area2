@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client'
 import { prisma } from '../config/prisma.js'
 import cardsDataJson from '../data/shinobi-cards-data.json' with { type: 'json' }
-import { rules as combatRules } from './gameDataService.js'
+import { getCombatRules } from '../game/rules/combatRuleStore.js'
 import { getCardKnowledgeBySlug, rarityOrder } from '../game/cardKnowledge.js'
 import { resolveCanonicalSlug } from '../game/cardCatalog.js'
 
@@ -85,7 +85,7 @@ export function serializeCard(card: CardWithStats | null): CardDto | null {
     throw new Error(`Carte canonique absente pour le slug Prisma ${card.slug}.`)
   }
 
-  const matchingRules = combatRules.filter((rule) => {
+  const matchingRules = getCombatRules().filter((rule) => {
     const groups = [rule.activation?.all ?? [], rule.activation?.any ?? [], rule.activation?.none ?? [], rule.activation?.anyFailure ?? []]
     return groups.some((group) => group.some((condition) => {
       const field = condition.field

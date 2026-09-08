@@ -219,3 +219,34 @@ test('les deux invités Team Auction 1v1v1 rejoignent exactement le même salon'
     await prisma.user.deleteMany({ where: { id: { in: users.map((user) => user.id) } } })
   }
 })
+
+test('le lobby Créer ton perso 1v1v1v1 accepte quatre joueurs et refuse un cinquième', async () => {
+  const suffix = `${Date.now()}-${Math.random().toString(36).slice(2)}`
+  const users = await prisma.user.createManyAndReturn({
+    data: [1, 2, 3, 4, 5].map((index) => ({ email: `lobby-four-${index}-${suffix}@example.test`, passwordHash: 'test', displayName: `Lobby Four ${index} ${suffix}` })),
+    select: { id: true },
+  })
+  const [creator, guestB, guestC, guestD, fifth] = users
+
+  try {
+    const lobby = await createGameLobby(creator!.id, '1v1v1v1', [guestB!.id, guestC!.id, guestD!.id])
+    assert.equal(lobby!.mode, '1v1v1v1')
+    assert.equal(lobby!.expectedPlayers, 4)
+    assert.equal(lobby!.playerCount, 1)
+    await assert.rejects(() => createGameLobby(creator!.id, '1v1v1v1', [guestB!.id, guestC!.id, guestD!.id, fifth!.id]), /nombre d’adversaires/)
+
+    for (const guest of [guestB, guestC, guestD]) {
+      const invitation = (await listGameInvites(guest!.id))[0]!
+      await acceptGameInvite(guest!.id, invitation.id)
+    }
+    const ready = await getGameLobby(creator!.id, lobby!.id)
+    assert.equal(ready!.playerCount, 4)
+    assert.equal(ready!.expectedPlayers, 4)
+    assert.equal(ready!.canStart, true)
+    const started = await startGameLobby(creator!.id, lobby!.id)
+    assert.equal(started!.lobby.mode, '1v1v1v1')
+    assert.equal(started!.lobby.status, 'PLAYING')
+  } finally {
+    await prisma.user.deleteMany({ where: { id: { in: users.map((user) => user.id) } } })
+  }
+})

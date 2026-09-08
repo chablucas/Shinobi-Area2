@@ -28,13 +28,13 @@ import SocialHeader from '../components/SocialHeader.vue'
 import CombatDrawArea from '../components/CombatDrawArea.vue'
 
 type Phase = 'construction' | 'combat' | 'result'
-type GameMode = 'solo' | 'local2' | 'local3'
+type GameMode = 'solo' | 'local2' | 'local3' | 'local4'
 
 const props = withDefaults(defineProps<{ mode?: GameMode; lobbyId?: string }>(), { mode: 'local2' })
 const auth = useAuthStore()
 
 const cards = ref<Card[]>([])
-const builds = ref<PlayerBuild[]>(createPlayerBuildsForCount(props.mode === 'local3' ? 3 : 2))
+const builds = ref<PlayerBuild[]>(createPlayerBuildsForCount(props.mode === 'local4' ? 4 : props.mode === 'local3' ? 3 : 2))
 const usedCardIds = ref(new Set<number>())
 const pendingCard = ref<Card | null>(null)
 const lastPlacement = ref<LastPlacement | null>(null)
@@ -62,7 +62,7 @@ const activeBuild = computed(() => builds.value[activePlayerId.value - 1]!)
 const availableCardCount = computed(() => cards.value.length - usedCardIds.value.size)
 const allBuildsComplete = computed(() => builds.value.every(isBuildComplete))
 const winnerName = computed(() => winnerId.value ? `Joueur ${winnerId.value}` : '')
-const playerCount = computed<2 | 3>(() => props.mode === 'local3' ? 3 : 2)
+const playerCount = computed<2 | 3 | 4>(() => props.mode === 'local4' ? 4 : props.mode === 'local3' ? 3 : 2)
 const isComputerTurn = computed(() => props.mode === 'solo' && activePlayerId.value === 2)
 const combatBlocked = computed(() => Boolean(combatResult.value && (combatResult.value.player1.validationErrors.length || combatResult.value.player2.validationErrors.length)))
 const gameStatKeys: Record<string, keyof CombatResult['player1']['finalStats'] | null> = { chakra: 'chakra', invocation: 'invocation', iq: 'iq', ninjutsu: 'ninjutsuAttack', genjutsu: 'genjutsu', taijutsu: 'taijutsu', avatar: 'avatar', body: 'body', fuinjutsu: 'fuinjutsu', senjutsu: 'senjutsu', kenjutsu: 'kenjutsu', clan: null, vitesse: 'speed', 'kekkei-genkai': 'kekkeiGenkai', 'kekkei-mora': 'kekkeiMora' }
@@ -124,12 +124,12 @@ const autoRealtimeResult = computed(() => {
 })
 const realtimeWinnerName = computed(() => {
   const result = realtimeState.value?.result
-  const winnerNumber = result && 'winnerNumber' in result ? result.winnerNumber : result?.winner === 'player1' ? 1 : result?.winner === 'player2' ? 2 : null
+  const winnerNumber = result && 'winnerNumber' in result ? result.winnerNumber : result && 'winner' in result ? result.winner === 'player1' ? 1 : result.winner === 'player2' ? 2 : null : null
   return winnerNumber ? realtimeState.value?.players.find((player) => player.playerNumber === winnerNumber)?.displayName ?? `Joueur ${winnerNumber}` : ''
 })
 const realtimeResultIsDraw = computed(() => {
   const result = realtimeState.value?.result
-  return result && 'isDraw' in result ? result.isDraw : result?.winner === 'draw'
+  return result && 'isDraw' in result ? result.isDraw : result && 'winner' in result ? result.winner === 'draw' : false
 })
 const canDraw = computed(() => Boolean(
   socketConnected.value
@@ -156,7 +156,7 @@ async function calculateRealtimeWinner() {
   errorMessage.value = ''
   try { realtimeState.value = await calculateRealtimeGameResult(auth.token, realtimeState.value.id) } catch (error) { errorMessage.value = error instanceof Error ? error.message : 'Calcul du résultat impossible.' } finally { resultLoading.value = false }
 }
-async function submitManualRealtimeWinner(winnerNumber: 1 | 2 | null, isDraw = false) {
+async function submitManualRealtimeWinner(winnerNumber: number | null, isDraw = false) {
   if (!auth.token || !realtimeState.value || resultLoading.value) return
   resultLoading.value = true
   errorMessage.value = ''
@@ -374,9 +374,9 @@ function drawBonusesFor(card: DrawCardLike | null) {
               <span>{{ player.cardsRemaining }} cartes</span>
             </header>
 
-            <!-- Pioche si Joueur 1 (au-dessus) -->
+            <!-- Chaque joueur voit la pioche uniquement sur son propre plateau. -->
             <div
-              v-if="player.playerNumber === 1 && player.playerNumber === realtimePlayerNumber"
+              v-if="player.playerNumber === realtimePlayerNumber"
               class="realtime-draw-zone player-one-draw"
             >
               <CombatDrawArea
@@ -430,24 +430,6 @@ function drawBonusesFor(card: DrawCardLike | null) {
               </button>
             </div>
 
-            <!-- Pioche si Joueur 2 (en-dessous) -->
-            <div
-              v-if="player.playerNumber === 2 && player.playerNumber === realtimePlayerNumber"
-              class="realtime-draw-zone player-two-draw"
-            >
-              <CombatDrawArea
-                :card="player.pendingCard"
-                title="Carte piochée"
-                :show-button="true"
-                :button-disabled="!canDraw"
-                :stats="drawStatsFor(player.pendingCard)"
-                :bonuses="drawBonusesFor(player.pendingCard)"
-                button-label="PIOCHER"
-                empty-text="Aucune carte"
-                :waiting-text="realtimeMyTurn ? 'PIOCHER' : 'EN ATTENTE'"
-                @draw="realtimeDraw"
-              />
-            </div>
           </article>
         </div>
 
@@ -467,17 +449,11 @@ function drawBonusesFor(card: DrawCardLike | null) {
         <section v-if="realtimeState.status === 'FINISHED' && realtimeState.result" class="realtime-result">
           <p class="eyebrow">Résultat du combat</p>
           <template v-if="autoRealtimeResult">
-            <div class="combat-score">
-              <article>
-                <h3>Joueur 1</h3>
-                <strong>{{ autoRealtimeResult.player1Total }}</strong>
-                <span>pts</span>
-              </article>
-              <b>VS</b>
-              <article>
-                <h3>Joueur 2</h3>
-                <strong>{{ autoRealtimeResult.player2Total }}</strong>
-                <span>pts</span>
+            <div class="combat-score realtime-ranking">
+              <article v-for="ranking in autoRealtimeResult.rankings" :key="ranking.playerIndex">
+                <h3>{{ ranking.rank }}{{ ranking.rank === 1 ? 'er' : 'e' }} · {{ realtimeState.players[ranking.playerIndex]?.displayName }}</h3>
+                <strong>{{ ranking.total }}</strong>
+                <span>{{ ranking.score }} catégorie(s)</span>
               </article>
             </div>
             <h2>{{ autoRealtimeResult.isDraw ? 'ÉGALITÉ' : `VAINQUEUR : ${realtimeWinnerName}` }}</h2>
@@ -485,7 +461,7 @@ function drawBonusesFor(card: DrawCardLike | null) {
             <details>
               <summary>RÈGLES APPLIQUÉES</summary>
               <p
-                v-for="rule in [...autoRealtimeResult.player1.appliedRules, ...autoRealtimeResult.player2.appliedRules]"
+                v-for="rule in autoRealtimeResult.players.flatMap((player) => player.appliedRules)"
                 :key="rule.ruleId + rule.target + rule.after"
                 class="rule-row"
               >
@@ -502,11 +478,8 @@ function drawBonusesFor(card: DrawCardLike | null) {
         <div v-if="manualResultOpen" class="manual-result-modal" role="dialog" aria-modal="true">
           <section>
             <p class="eyebrow">Qui a gagné ?</p>
-            <button type="button" :disabled="resultLoading" @click="submitManualRealtimeWinner(1)">
-              JOUEUR 1 — {{ realtimeState.players[0]?.displayName }}
-            </button>
-            <button type="button" :disabled="resultLoading" @click="submitManualRealtimeWinner(2)">
-              JOUEUR 2 — {{ realtimeState.players[1]?.displayName }}
+            <button v-for="player in realtimeState.players" :key="player.playerNumber" type="button" :disabled="resultLoading" @click="submitManualRealtimeWinner(player.playerNumber)">
+              JOUEUR {{ player.playerNumber }} — {{ player.displayName }}
             </button>
             <button type="button" :disabled="resultLoading" @click="submitManualRealtimeWinner(null, true)">
               ÉGALITÉ
@@ -707,6 +680,56 @@ function drawBonusesFor(card: DrawCardLike | null) {
                 <template v-else>
                   <span class="slot-empty">Libre</span>
                   <span class="slot-state">{{ activePlayerId === 3 && pendingCard ? 'Placer ici' : 'En attente' }}</span>
+                </template>
+              </button>
+            </div>
+          </article>
+
+          <article
+            v-if="props.mode === 'local4' && builds[3]"
+            class="build-panel player-four"
+            :class="{ 'is-active': activePlayerId === 4 }"
+          >
+            <header class="build-header">
+              <div>
+                <p class="eyebrow">Composition 04</p>
+                <h2>Joueur 4</h2>
+              </div>
+              <span class="build-count">{{ filledSlotCount(builds[3]!) }} <small>/ 15</small></span>
+            </header>
+
+            <div class="category-grid">
+              <button
+                v-for="[label, slug] in CATEGORY_DEFINITIONS"
+                :key="slug"
+                class="category-slot"
+                :class="{
+                  filled: slotCard(builds[3]!, slug),
+                  selectable: activePlayerId === 4 && !!pendingCard && !slotCard(builds[3]!, slug),
+                }"
+                type="button"
+                :disabled="activePlayerId !== 4 || !pendingCard || !!slotCard(builds[3]!, slug)"
+                @click="placePendingCard(slug)"
+              >
+                <span class="slot-label">{{ label }}</span>
+                <template v-if="slotCard(builds[3]!, slug)">
+                  <span class="slot-card-preview">
+                    <img
+                      v-if="slotCard(builds[3]!, slug)?.imageUrl"
+                      :src="slotCard(builds[3]!, slug)?.imageUrl ?? undefined"
+                      :alt="`Miniature de ${slotCard(builds[3]!, slug)?.name}`"
+                      loading="lazy"
+                    />
+                    <span v-else class="slot-card-fallback">{{ slotCard(builds[3]!, slug)?.name.slice(0, 1) }}</span>
+                  </span>
+                  <span class="slot-card-details">
+                    <span class="slot-card-name">{{ slotCard(builds[3]!, slug)?.name }}</span>
+                    <span class="slot-state">Posée</span>
+                  </span>
+                </template>
+                <template v-else>
+                  <span class="slot-empty">Libre</span>
+                  <span class="slot-state">{{ activePlayerId === 4 && pendingCard ? 'Placer ici' : 'En attente' }}</span>
                 </template>
               </button>
             </div>

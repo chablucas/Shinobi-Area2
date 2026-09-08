@@ -29,6 +29,7 @@ model User {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   role        UserRole    @default(USER)
+  blockedAt   DateTime?
   savedBuilds SavedBuild[]
   gameResults GameResult[]
   friendshipsAsA Friendship[] @relation("FriendshipUserA")
@@ -82,6 +83,7 @@ enum FriendshipStatus {
 enum GameMode {
   ONE_V_ONE
   ONE_V_ONE_V_THREE
+  ONE_V_ONE_V_ONE_V_FOUR
 }
 
 enum GameInviteStatus {
@@ -235,6 +237,25 @@ model CardRarityOverride {
   rarity    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model TeamAuctionScoreOverride {
+  id        Int      @id @default(autoincrement())
+  cardSlug  String   @unique
+  score     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CombatRuleOverride {
+  id         Int      @id @default(autoincrement())
+  ruleId     String   @unique
+  definition Json?
+  enabled    Boolean?
+  deleted    Boolean  @default(false)
+  custom     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model CardModifier {

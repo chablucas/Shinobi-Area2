@@ -1,27 +1,18 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import SocialHeader from '../components/SocialHeader.vue'
 import { fetchAllCards } from '../services/cardApi'
-import {
-  createCardModifier,
-  deleteCardModifier,
-  fetchAdminCard,
-  resetRarityOverride,
-  resetStatOverride,
-  saveRarityOverride,
-  saveStatOverride,
-  updateCardModifier,
-} from '../services/cardAdminApi'
 import type { Card, CardModifier } from '../types/card'
 import { useAuthStore } from '../stores/auth'
 
 const auth = useAuthStore()
+const router = useRouter()
 const cards = ref<Card[]>([])
 const query = ref('')
 const rarity = ref('')
 const sort = ref<'name' | 'rarity-asc' | 'rarity-desc'>('rarity-asc')
 const flipped = ref(new Set<string>())
-const selected = ref<Card | null>(null)
 const error = ref('')
 const loading = ref(true)
 const rarityOrder = computed(() =>
@@ -66,23 +57,6 @@ const statLabels: Record<string, string> = {
   avatar: 'Avatar', body: 'Body', fuinjutsu: 'Fûinjutsu', senjutsu: 'Senjutsu', kenjutsu: 'Kenjutsu',
   speed: 'Vitesse', kekkeiGenkai: 'Kekkei Genkai',
 }
-const editValues = ref<Record<string, number>>({})
-const selectedRarity = ref('')
-const modifierForm = ref({
-  name: '',
-  description: '',
-  target: 'chakra',
-  categories: [] as string[],
-  direction: 'BONUS' as CardModifier['direction'],
-  operation: 'PERCENT' as CardModifier['operation'],
-  value: 10,
-  condition: '',
-  conditionType: 'always',
-  conditionValue: '',
-  active: true,
-})
-const editingModifier = ref<number | null>(null)
-
 onMounted(async () => {
   try {
     cards.value = await fetchAllCards()
@@ -98,9 +72,6 @@ function toggle(slug: string) {
   next.has(slug) ? next.delete(slug) : next.add(slug)
   flipped.value = next
 }
-function closeAdmin() {
-  selected.value = null
-}
 function traitList(value?: string[]) {
   return value?.length ? value.join(', ') : 'Aucun'
 }
@@ -114,94 +85,7 @@ function compactStats(card: Card) {
 }
 async function openAdmin(card: Card) {
   if (!auth.token || auth.user?.role !== 'ADMIN') return
-  try {
-    selected.value = await fetchAdminCard(auth.token, card.slug)
-    selectedRarity.value = selected.value.effectiveRarity
-    editValues.value = Object.fromEntries(
-      statKeys.map((key) => [key, selected.value?.effectiveStats[key] ?? 0]),
-    )
-  } catch (exception) {
-    error.value = exception instanceof Error ? exception.message : 'Données admin indisponibles.'
-  }
-}
-async function saveStat(key: string) {
-  if (!auth.token || !selected.value) return
-  await saveStatOverride(auth.token, selected.value.slug, key, editValues.value[key] ?? 0)
-  selected.value = await fetchAdminCard(auth.token, selected.value.slug)
-  syncCard()
-}
-async function resetStat(key: string) {
-  if (!auth.token || !selected.value) return
-  await resetStatOverride(auth.token, selected.value.slug, key)
-  selected.value = await fetchAdminCard(auth.token, selected.value.slug)
-  syncCard()
-}
-async function saveRarity() {
-  if (!auth.token || !selected.value) return
-  await saveRarityOverride(auth.token, selected.value.slug, selectedRarity.value)
-  selected.value = await fetchAdminCard(auth.token, selected.value.slug)
-  selectedRarity.value = selected.value.effectiveRarity
-  syncCard()
-}
-async function resetRarity() {
-  if (!auth.token || !selected.value) return
-  await resetRarityOverride(auth.token, selected.value.slug)
-  selected.value = await fetchAdminCard(auth.token, selected.value.slug)
-  selectedRarity.value = selected.value.effectiveRarity
-  syncCard()
-}
-async function addModifier() {
-  if (
-    !auth.token ||
-    !selected.value ||
-    !modifierForm.value.name.trim() ||
-    !modifierForm.value.description.trim()
-  )
-    return
-  const payload = {
-    ...modifierForm.value,
-    categories: modifierForm.value.categories,
-    condition: modifierForm.value.condition || null,
-    conditionType: modifierForm.value.conditionType || null,
-    conditionValue: modifierForm.value.conditionValue || null,
-  }
-  if (editingModifier.value) await updateCardModifier(auth.token, editingModifier.value, payload)
-  else await createCardModifier(auth.token, selected.value.slug, payload)
-  selected.value = await fetchAdminCard(auth.token, selected.value.slug)
-  editingModifier.value = null
-  modifierForm.value.name = ''
-  modifierForm.value.description = ''
-}
-function editModifier(modifier: CardModifier) {
-  editingModifier.value = modifier.id
-  modifierForm.value = {
-    name: modifier.name,
-    description: modifier.description,
-    target: modifier.target,
-    categories: modifier.categories ?? [],
-    direction: modifier.direction,
-    operation: modifier.operation,
-    value: modifier.value,
-    condition: modifier.condition ?? '',
-    conditionType: modifier.conditionType ?? 'always',
-    conditionValue: modifier.conditionValue ?? '',
-    active: modifier.active,
-  }
-}
-async function toggleModifier(modifier: CardModifier) {
-  if (!auth.token || !selected.value) return
-  await updateCardModifier(auth.token, modifier.id, { ...modifier, active: !modifier.active })
-  selected.value = await fetchAdminCard(auth.token, selected.value.slug)
-}
-async function removeModifier(modifier: CardModifier) {
-  if (!auth.token || !selected.value) return
-  await deleteCardModifier(auth.token, modifier.id)
-  selected.value = await fetchAdminCard(auth.token, selected.value.slug)
-}
-function syncCard() {
-  if (!selected.value) return
-  const index = cards.value.findIndex((card) => card.slug === selected.value?.slug)
-  if (index >= 0) cards.value[index] = selected.value
+  await router.push(`/admin/cards/${encodeURIComponent(card.slug)}`)
 }
 function modifierText(modifier: CardModifier) {
   return `${modifier.direction === 'BONUS' ? '+' : '-'}${modifier.value}${modifier.operation === 'PERCENT' ? ' %' : ' points'} ${modifier.target}`
@@ -291,79 +175,6 @@ function modifierText(modifier: CardModifier) {
       </div>
       <p v-else class="state-message">Aucun shinobi ne correspond à ces critères.</p>
     </section>
-    <div v-if="selected" class="admin-overlay" @click.self="closeAdmin">
-      <section class="admin-panel" role="dialog" aria-modal="true">
-        <button class="close-button" type="button" aria-label="Fermer" @click="closeAdmin">
-          ×
-        </button>
-        <p class="eyebrow">Administration</p>
-        <h2>{{ selected.name }}</h2>
-        <h3>STATISTIQUES</h3>
-        <div class="admin-stats">
-          <label v-for="key in statKeys" :key="key"
-            >{{ key
-            }}<span
-              >Canonique : {{ selected.baseStats[key] ?? 0 }} · Actuelle :
-              {{ selected.effectiveStats[key] ?? 0 }}</span
-            ><input v-model.number="editValues[key]" type="number" min="0" max="100" /><button
-              type="button"
-              @click="saveStat(key)"
-            >
-              ENREGISTRER</button
-            ><button type="button" @click="resetStat(key)">RESET</button></label
-          >
-        </div>
-        <h3>RARETÉ</h3>
-        <p>
-          Rareté de base :
-          <b>{{ rarityOrder.find((item) => item.id === selected?.baseRarity)?.label }}</b>
-        </p>
-        <select v-model="selectedRarity" class="auth-input">
-          <option v-for="item in rarityOrder" :key="item.id" :value="item.id">
-            {{ item.label }}
-          </option></select
-        ><button type="button" @click="saveRarity">ENREGISTRER</button
-        ><button type="button" @click="resetRarity">RÉINITIALISER</button>
-        <h3>MODIFICATEURS</h3>
-        <ul class="modifier-list">
-          <li v-for="modifier in selected.modifiers" :key="modifier.id">
-            <span
-              >{{ modifier.name }} · {{ modifierText(modifier) }} ·
-              {{ modifier.active ? 'Actif' : 'Inactif' }}</span
-            ><button type="button" @click="editModifier(modifier)">MODIFIER</button
-            ><button type="button" @click="toggleModifier(modifier)">{{ modifier.active ? 'DÉSACTIVER' : 'ACTIVER' }}</button
-            ><button type="button" @click="removeModifier(modifier)">SUPPRIMER</button>
-          </li>
-        </ul>
-        <div class="modifier-form">
-          <input v-model="modifierForm.name" class="auth-input" placeholder="Nom" /><input
-            v-model="modifierForm.description"
-            class="auth-input"
-            placeholder="Description"
-          /><select v-model="modifierForm.target" class="auth-input">
-            <option v-for="target in statKeys.concat(['kekkeiMora'])" :key="target" :value="target">
-              {{ target }}
-            </option></select
-          ><select v-model="modifierForm.direction" class="auth-input">
-            <option value="BONUS">Bonus</option>
-            <option value="MALUS">Malus</option></select
-          ><select v-model="modifierForm.operation" class="auth-input">
-            <option value="PERCENT">Pourcentage</option>
-            <option value="POINTS">Points</option></select
-          ><input
-            v-model.number="modifierForm.value"
-            class="auth-input"
-            type="number"
-            min="0"
-            max="100"
-          /><input
-            v-model="modifierForm.condition"
-            class="auth-input"
-            placeholder="Condition (facultative)"
-          /><button type="button" @click="addModifier">AJOUTER</button>
-        </div>
-      </section>
-    </div>
   </main>
 </template>
 

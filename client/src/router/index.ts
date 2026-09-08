@@ -11,7 +11,9 @@ import Lobby from '../views/Lobby.vue'
 import Personnages from '../views/Personnages.vue'
 import Regles from '../views/Regles.vue'
 import AdminDashboard from '../views/AdminDashboard.vue'
+import AdminCards from '../views/AdminCards.vue'
 import AdminCardEdit from '../views/AdminCardEdit.vue'
+import AdminRules from '../views/AdminRules.vue'
 import Simulation from '../views/Simulation.vue'
 import TeamAuction from '../views/TeamAuction.vue'
 import { useAuthStore } from '../stores/auth'
@@ -21,7 +23,8 @@ const router = createRouter({
   routes: [
     { path: '/', component: App },
     { path: '/partie', component: Partie, props: { mode: 'local2' } },
-    { name: 'partie-lobby', path: '/partie/:lobbyId', component: Partie, props: (route) => ({ lobbyId: String(route.params.lobbyId), mode: route.query.mode === '1v1v1' ? 'local3' : 'local2' }) },
+    { name: 'partie-lobby', path: '/partie/:lobbyId', component: Partie, props: (route) => ({ lobbyId: String(route.params.lobbyId), mode: route.query.mode === '1v1v1v1' ? 'local4' : route.query.mode === '1v1v1' ? 'local3' : 'local2' }) },
+    { path: '/4-joueurs', component: Partie, props: { mode: 'local4' } },
     { path: '/solo', component: Partie, props: { mode: 'solo' } },
     { path: '/2-joueurs', redirect: '/partie' },
     { path: '/3-joueurs', component: Partie, props: { mode: 'local3' } },
@@ -42,8 +45,18 @@ const router = createRouter({
       meta: { requiresAdmin: true },
     },
     {
+      path: '/admin/cards',
+      component: AdminCards,
+      meta: { requiresAdmin: true },
+    },
+    {
       path: '/admin/cards/:slug',
       component: AdminCardEdit,
+      meta: { requiresAdmin: true },
+    },
+    {
+      path: '/admin/rules',
+      component: AdminRules,
       meta: { requiresAdmin: true },
     },
   ],
