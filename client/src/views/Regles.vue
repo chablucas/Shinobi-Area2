@@ -228,6 +228,7 @@ async function removeRule(rule: ClassicRule) {
                   <p class="rule-sentence advanced">
                     <strong>Règle avancée</strong> — {{ rule.name }}
                   </p>
+                  <p v-if="rule.notes?.length" class="rule-sentence-human">{{ rule.notes[0] }}</p>
                   <ul class="raw-list">
                     <li v-for="line in describeConditionsRaw(rule)" :key="line">{{ line }}</li>
                     <li v-for="line in describeEffectsRaw(rule)" :key="line">{{ line }}</li>
@@ -503,6 +504,12 @@ async function removeRule(rule: ClassicRule) {
 }
 .rule-sentence.advanced strong {
   color: var(--accent-gold);
+}
+.rule-sentence-human {
+  margin: 0 0 6px;
+  color: var(--text-main);
+  line-height: 1.5;
+  font-style: italic;
 }
 .raw-list {
   margin: 0 0 6px;

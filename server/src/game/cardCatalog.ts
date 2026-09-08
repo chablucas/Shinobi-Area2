@@ -18,6 +18,7 @@ export type CanonicalCard = {
   physicalTraitIds?: string[]
   transformations?: string[]
   transformationIds?: string[]
+  healthStatus?: { status: string; implicit: boolean }
 }
 
 export type RarityOrderEntry = {
@@ -70,6 +71,7 @@ export const CARD_CATALOG: CanonicalCard[] = rawCards.map((card) => {
     physicalTraitIds: card.physicalTraitIds,
     transformations: card.transformations,
     transformationIds: card.transformationIds,
+    healthStatus: card.healthStatus,
   }
 })
 

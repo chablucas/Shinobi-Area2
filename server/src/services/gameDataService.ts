@@ -139,8 +139,8 @@ export function validateGameData(): ValidationStats {
     throw new Error(`Nombre de cartes invalide : ${cards.length} chargées, 163 attendues.`)
   }
 
-  if (rules.length !== 50) {
-    throw new Error(`Nombre de règles invalide : ${rules.length} chargées, 50 attendues.`)
+  if (rules.length !== 63) {
+    throw new Error(`Nombre de règles invalide : ${rules.length} chargées, 63 attendues.`)
   }
 
   const cardSlugs = new Set(cards.map((c) => c.slug))

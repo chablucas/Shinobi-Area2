@@ -62,8 +62,9 @@ function prepare(build: ShinobiBuild): { baseStats: CombatStats; cards: Partial<
   return { baseStats, cards: selected, errors }
 }
 function defaultPermissions(): CombatPermissions { return { sharingan: false, rinnegan: false, byakugan: false, tenseigan: false, otsutsuki: false, uzumaki: false } }
-function contextFor(build: ShinobiBuild): RuleContext { const prepared = prepare(build); return { build, cards: prepared.cards, baseStats: prepared.baseStats, finalStats: { ...prepared.baseStats }, permissions: defaultPermissions(), appliedRules: [], validationErrors: prepared.errors } }
-function resultOf(context: RuleContext): CombatResult { return { baseStats: { ...context.baseStats }, finalStats: { ...context.finalStats, clan: 0 }, appliedRules: context.appliedRules, permissions: context.permissions, validationErrors: context.validationErrors, total: calculateTotal(context.finalStats) } }
+function contextFor(build: ShinobiBuild): RuleContext { const prepared = prepare(build); return { build, cards: prepared.cards, baseStats: prepared.baseStats, finalStats: { ...prepared.baseStats }, permissions: defaultPermissions(), appliedRules: [], validationErrors: prepared.errors, totalMultiplier: 1 } }
+// totalMultiplier (ex: -10% sans Avatar) s'applique au TOTAL déjà calculé, jamais stat par stat.
+function resultOf(context: RuleContext): CombatResult { return { baseStats: { ...context.baseStats }, finalStats: { ...context.finalStats, clan: 0 }, appliedRules: context.appliedRules, permissions: context.permissions, validationErrors: context.validationErrors, total: calculateTotal(context.finalStats) * context.totalMultiplier } }
 
 export function calculateCombat(build: ShinobiBuild, opponent?: RuleContext): CombatResult { const context = contextFor(build); applyRules(context, opponent); return resultOf(context) }
 export function calculateFinalStats(build: ShinobiBuild): CombatStats { return calculateCombat(build).finalStats }

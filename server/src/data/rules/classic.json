@@ -56,15 +56,18 @@
       "POINT_ADD",
       "PERCENT_ADD",
       "SET_FINAL",
-      "DISABLE_POWER"
+      "DISABLE_POWER",
+      "PERCENT_TOTAL"
     ],
     "percentageFormula": "scoreAfterPoints * (1 + sum(activePercentModifiers) / 100)",
+    "totalMultiplierFormula": "PERCENT_TOTAL agit uniquement sur le TOTAL déjà sommé (finalTotal * (1 + value/100)), jamais sur une statistique individuelle.",
     "evaluationOrder": [
       "LOAD_BASE_STATS",
       "VALIDATION_PENALTY",
       "POINT_ADD",
       "PERCENT_ADD",
       "SET_FINAL",
+      "FINAL_ADJUSTMENT_PERCENT_TOTAL",
       "RESULT"
     ],
     "symmetry": "Toutes les règles SELF/OPPONENT sont évaluées une fois pour chaque joueur en inversant les côtés.",
@@ -1214,6 +1217,28 @@
             "operator": "CONTAINS",
             "value": "OTSUTSUKI"
           }
+        ],
+        "none": [
+          {
+            "side": "SELF",
+            "slot": "ninjutsu",
+            "field": "card.slug",
+            "operator": "IN",
+            "value": [
+              "naruto-sj",
+              "konohamaru-sj"
+            ]
+          },
+          {
+            "side": "SELF",
+            "slot": "body",
+            "field": "card.slug",
+            "operator": "IN",
+            "value": [
+              "naruto-sj",
+              "konohamaru-sj"
+            ]
+          }
         ]
       },
       "effects": [
@@ -1245,7 +1270,10 @@
       },
       "ai": {
         "considerDuringPlacement": true
-      }
+      },
+      "notes": [
+        "Naruto SJ ou Konohamaru SJ placé en Ninjutsu ou en Body annule ce bonus de Clan Ōtsutsuki (contre-règle ajoutée en 2026-09-08), sans affecter les autres règles Ōtsutsuki."
+      ]
     },
     {
       "id": "SENJU_CLAN_CHAKRA",
@@ -2369,6 +2397,550 @@
       "ai": {
         "considerDuringPlacement": true
       }
+    },
+    {
+      "id": "JUBI_AVATAR_KEKKEI_MORA_POINTS",
+      "name": "Jūbi en Avatar",
+      "enabled": true,
+      "phase": "MODIFIER",
+      "priority": 300,
+      "activation": {
+        "all": [
+          {
+            "side": "SELF",
+            "slot": "avatar",
+            "field": "selectedAvatar.id",
+            "operator": "EQUALS",
+            "value": "JUBI"
+          }
+        ]
+      },
+      "effects": [
+        {
+          "side": "SELF",
+          "slot": "kekkeiMora",
+          "stat": "kekkeiMora",
+          "operation": "POINT_ADD",
+          "value": 75
+        }
+      ],
+      "stacking": {
+        "mode": "STACK_WITH_DIFFERENT_RULES",
+        "group": "JUBI_AVATAR_KEKKEI_MORA_POINTS"
+      },
+      "ai": {
+        "considerDuringPlacement": true
+      },
+      "notes": [
+        "Jūbi en Avatar — Boost de 75 points en Kekkei Mōra."
+      ]
+    },
+    {
+      "id": "NO_AVATAR_FINAL_PENALTY",
+      "name": "Sans Avatar",
+      "enabled": true,
+      "phase": "FINAL_ADJUSTMENT",
+      "priority": 100,
+      "activation": {
+        "all": [
+          {
+            "side": "SELF",
+            "slot": "avatar",
+            "field": "card",
+            "operator": "EXISTS",
+            "value": false
+          }
+        ]
+      },
+      "effects": [
+        {
+          "side": "SELF",
+          "slot": "TOTAL",
+          "stat": "total",
+          "operation": "PERCENT_TOTAL",
+          "value": -10
+        }
+      ],
+      "stacking": {
+        "mode": "STACK_WITH_DIFFERENT_RULES",
+        "group": "NO_AVATAR_FINAL_PENALTY"
+      },
+      "ai": {
+        "considerDuringPlacement": true,
+        "treatAsMajorRisk": true
+      },
+      "notes": [
+        "Sans Avatar — Nerf de 10 % sur le total des points du personnage final si aucun Avatar n’est présent.",
+        "S’applique au TOTAL final déjà calculé (total × 0,90), jamais stat par stat."
+      ]
+    },
+    {
+      "id": "SICK_CARD_BODY_SPEED_ZERO",
+      "name": "Personnage malade en Body",
+      "enabled": true,
+      "phase": "MODIFIER",
+      "priority": 1,
+      "activation": {
+        "all": [
+          {
+            "side": "SELF",
+            "slot": "body",
+            "field": "card.healthStatus.status",
+            "operator": "EQUALS",
+            "value": "SICK"
+          },
+          {
+            "side": "SELF",
+            "slot": "body",
+            "field": "card.healthStatus.implicit",
+            "operator": "EQUALS",
+            "value": false
+          }
+        ]
+      },
+      "effects": [
+        {
+          "side": "SELF",
+          "slot": "speed",
+          "stat": "speed",
+          "operation": "SET_FINAL",
+          "value": 0
+        }
+      ],
+      "stacking": {
+        "mode": "STACK_WITH_DIFFERENT_RULES",
+        "group": "SICK_CARD_BODY_SPEED_ZERO"
+      },
+      "ai": {
+        "considerDuringPlacement": true,
+        "treatAsMajorRisk": true
+      },
+      "notes": [
+        "Personnage malade en Body — Vitesse forcée à 0.",
+        "Priorité la plus basse du phase MODIFIER : s’applique après tous les boosts pour garantir que la Vitesse reste à 0."
+      ]
+    },
+    {
+      "id": "MADARA_VIEUX_BODY_SPEED_ZERO",
+      "name": "Madara vieux en Body",
+      "enabled": true,
+      "phase": "MODIFIER",
+      "priority": 1,
+      "activation": {
+        "all": [
+          {
+            "side": "SELF",
+            "slot": "body",
+            "field": "card.slug",
+            "operator": "EQUALS",
+            "value": "madara-vieux"
+          }
+        ]
+      },
+      "effects": [
+        {
+          "side": "SELF",
+          "slot": "speed",
+          "stat": "speed",
+          "operation": "SET_FINAL",
+          "value": 0
+        }
+      ],
+      "stacking": {
+        "mode": "STACK_WITH_DIFFERENT_RULES",
+        "group": "MADARA_VIEUX_BODY_SPEED_ZERO"
+      },
+      "ai": {
+        "considerDuringPlacement": true,
+        "treatAsMajorRisk": true
+      },
+      "notes": [
+        "Madara vieux en Body — Vitesse forcée à 0."
+      ]
+    },
+    {
+      "id": "OROCHIMARU_MALADE_NINJUTSU_ZERO",
+      "name": "Orochimaru malade",
+      "enabled": true,
+      "phase": "MODIFIER",
+      "priority": 1,
+      "activation": {
+        "all": [
+          {
+            "side": "SELF",
+            "slot": "ninjutsu",
+            "field": "card.slug",
+            "operator": "EQUALS",
+            "value": "orochimaru-malade"
+          }
+        ]
+      },
+      "effects": [
+        {
+          "side": "SELF",
+          "slot": "ninjutsu",
+          "stat": "ninjutsu",
+          "operation": "SET_FINAL",
+          "value": 0
+        }
+      ],
+      "stacking": {
+        "mode": "STACK_WITH_DIFFERENT_RULES",
+        "group": "OROCHIMARU_MALADE_NINJUTSU_ZERO"
+      },
+      "ai": {
+        "considerDuringPlacement": true,
+        "treatAsMajorRisk": true
+      },
+      "notes": [
+        "Orochimaru malade en Ninjutsu — Ninjutsu (attaque et défense) forcé à 0."
+      ]
+    },
+    {
+      "id": "OTSUTSUKI_BODY_BOOST",
+      "name": "Ōtsutsuki en Body",
+      "enabled": true,
+      "phase": "MODIFIER",
+      "priority": 340,
+      "activation": {
+        "all": [
+          {
+            "side": "SELF",
+            "slot": "body",
+            "field": "card.clans",
+            "operator": "CONTAINS",
+            "value": "OTSUTSUKI"
+          }
+        ]
+      },
+      "effects": [
+        {
+          "side": "SELF",
+          "slot": "chakra",
+          "stat": "chakra",
+          "operation": "PERCENT_ADD",
+          "value": 30
+        },
+        {
+          "side": "SELF",
+          "slot": "speed",
+          "stat": "speed",
+          "operation": "PERCENT_ADD",
+          "value": 30
+        }
+      ],
+      "stacking": {
+        "mode": "STACK_WITH_DIFFERENT_RULES",
+        "group": "OTSUTSUKI_BODY_BOOST"
+      },
+      "ai": {
+        "considerDuringPlacement": true
+      },
+      "notes": [
+        "Ōtsutsuki en Body — Boost de 30 % en Chakra et Vitesse.",
+        "Se cumule avec OTSUTSUKI_BODY_WITHOUT_CLAN (+15 % Chakra/Vitesse déjà existant quand aucun Clan Ōtsutsuki n’est utilisé)."
+      ]
+    },
+    {
+      "id": "JUUBIDARA_BODY_BOOST",
+      "name": "Jūbidara en Body",
+      "enabled": true,
+      "phase": "MODIFIER",
+      "priority": 340,
+      "activation": {
+        "all": [
+          {
+            "side": "SELF",
+            "slot": "body",
+            "field": "card.slug",
+            "operator": "EQUALS",
+            "value": "juubidara"
+          }
+        ]
+      },
+      "effects": [
+        {
+          "side": "SELF",
+          "slot": "chakra",
+          "stat": "chakra",
+          "operation": "PERCENT_ADD",
+          "value": 30
+        },
+        {
+          "side": "SELF",
+          "slot": "speed",
+          "stat": "speed",
+          "operation": "PERCENT_ADD",
+          "value": 30
+        }
+      ],
+      "stacking": {
+        "mode": "STACK_WITH_DIFFERENT_RULES",
+        "group": "JUUBIDARA_BODY_BOOST"
+      },
+      "ai": {
+        "considerDuringPlacement": true
+      },
+      "notes": [
+        "Jūbidara en Body — Boost de 30 % en Chakra et Vitesse."
+      ]
+    },
+    {
+      "id": "JUUBITO_BODY_BOOST",
+      "name": "Jūbito en Body",
+      "enabled": true,
+      "phase": "MODIFIER",
+      "priority": 340,
+      "activation": {
+        "all": [
+          {
+            "side": "SELF",
+            "slot": "body",
+            "field": "card.slug",
+            "operator": "EQUALS",
+            "value": "juubito"
+          }
+        ]
+      },
+      "effects": [
+        {
+          "side": "SELF",
+          "slot": "chakra",
+          "stat": "chakra",
+          "operation": "PERCENT_ADD",
+          "value": 30
+        },
+        {
+          "side": "SELF",
+          "slot": "speed",
+          "stat": "speed",
+          "operation": "PERCENT_ADD",
+          "value": 30
+        }
+      ],
+      "stacking": {
+        "mode": "STACK_WITH_DIFFERENT_RULES",
+        "group": "JUUBITO_BODY_BOOST"
+      },
+      "ai": {
+        "considerDuringPlacement": true
+      },
+      "notes": [
+        "Jūbito en Body — Boost de 30 % en Chakra et Vitesse."
+      ]
+    },
+    {
+      "id": "ITACHI_AVATAR_KENJUTSU_POINTS",
+      "name": "Itachi / Itachi Prime en Avatar",
+      "enabled": true,
+      "phase": "MODIFIER",
+      "priority": 300,
+      "activation": {
+        "all": [
+          {
+            "side": "SELF",
+            "slot": "avatar",
+            "field": "card.slug",
+            "operator": "IN",
+            "value": [
+              "itachi",
+              "itachi-prime"
+            ]
+          }
+        ]
+      },
+      "effects": [
+        {
+          "side": "SELF",
+          "slot": "kenjutsu",
+          "stat": "kenjutsu",
+          "operation": "POINT_ADD",
+          "value": 50
+        }
+      ],
+      "stacking": {
+        "mode": "STACK_WITH_DIFFERENT_RULES",
+        "group": "ITACHI_AVATAR_KENJUTSU_POINTS"
+      },
+      "ai": {
+        "considerDuringPlacement": true
+      },
+      "notes": [
+        "Itachi / Itachi Prime en Avatar — Boost de 50 points en Kenjutsu."
+      ]
+    },
+    {
+      "id": "MINATO_KENJUTSU_TOBIRAMA_NINJUTSU_BOOST",
+      "name": "Minato en Kenjutsu + Tobirama en Ninjutsu",
+      "enabled": true,
+      "phase": "MODIFIER",
+      "priority": 300,
+      "activation": {
+        "all": [
+          {
+            "side": "SELF",
+            "slot": "kenjutsu",
+            "field": "card.slug",
+            "operator": "EQUALS",
+            "value": "minato"
+          },
+          {
+            "side": "SELF",
+            "slot": "ninjutsu",
+            "field": "card.slug",
+            "operator": "EQUALS",
+            "value": "tobirama"
+          }
+        ]
+      },
+      "effects": [
+        {
+          "side": "SELF",
+          "slot": "ninjutsu",
+          "stat": "ninjutsu",
+          "operation": "PERCENT_ADD",
+          "value": 10
+        }
+      ],
+      "stacking": {
+        "mode": "STACK_WITH_DIFFERENT_RULES",
+        "group": "MINATO_KENJUTSU_TOBIRAMA_NINJUTSU_BOOST"
+      },
+      "ai": {
+        "considerDuringPlacement": true
+      },
+      "notes": [
+        "Minato en Kenjutsu + Tobirama en Ninjutsu — Boost de 10 % au Ninjutsu de Tobirama.",
+        "Non symétrique : Minato en Ninjutsu + Tobirama en Kenjutsu ne déclenche aucun bonus."
+      ]
+    },
+    {
+      "id": "KAKASHI_DMS_AVATAR_OBITO_NINJUTSU_BOOST",
+      "name": "Kakashi DMS en Avatar + Obito en Ninjutsu",
+      "enabled": true,
+      "phase": "MODIFIER",
+      "priority": 300,
+      "activation": {
+        "all": [
+          {
+            "side": "SELF",
+            "slot": "avatar",
+            "field": "card.slug",
+            "operator": "EQUALS",
+            "value": "kakashi-dms"
+          },
+          {
+            "side": "SELF",
+            "slot": "ninjutsu",
+            "field": "card.slug",
+            "operator": "IN",
+            "value": [
+              "obito",
+              "obito-orange",
+              "obito-blanc"
+            ]
+          }
+        ]
+      },
+      "effects": [
+        {
+          "side": "SELF",
+          "slot": "avatar",
+          "stat": "avatar",
+          "operation": "PERCENT_ADD",
+          "value": 10
+        }
+      ],
+      "stacking": {
+        "mode": "STACK_WITH_DIFFERENT_RULES",
+        "group": "KAKASHI_DMS_AVATAR_OBITO_NINJUTSU_BOOST"
+      },
+      "ai": {
+        "considerDuringPlacement": true
+      },
+      "notes": [
+        "Kakashi DMS en Avatar + Obito en Ninjutsu — Boost de 10 % sur l’Avatar de Kakashi DMS.",
+        "Seule la version Kakashi DMS déclenche ce bonus (pas Kakashi ni Kakashi MS) ; toutes les versions canoniques d’Obito sont reconnues côté Ninjutsu."
+      ]
+    },
+    {
+      "id": "EIGHT_GATES_USERS_TAIJUTSU_IQ_BOOST",
+      "name": "Utilisateurs des Portes en Taijutsu",
+      "enabled": true,
+      "phase": "MODIFIER",
+      "priority": 300,
+      "activation": {
+        "all": [
+          {
+            "side": "SELF",
+            "slot": "taijutsu",
+            "field": "card.slug",
+            "operator": "IN",
+            "value": [
+              "rock-lee",
+              "guy",
+              "guy-8-portes"
+            ]
+          }
+        ]
+      },
+      "effects": [
+        {
+          "side": "SELF",
+          "slot": "iq",
+          "stat": "iq",
+          "operation": "PERCENT_ADD",
+          "value": 5
+        }
+      ],
+      "stacking": {
+        "mode": "STACK_WITH_DIFFERENT_RULES",
+        "group": "EIGHT_GATES_USERS_TAIJUTSU_IQ_BOOST"
+      },
+      "ai": {
+        "considerDuringPlacement": true
+      },
+      "notes": [
+        "Rock Lee, Guy (7 Portes) ou Guy 8 Portes en Taijutsu — Boost de 5 % en IQ.",
+        "Guy 7 Portes et Guy 8 Portes restent deux cartes distinctes, chacune avec son propre slug."
+      ]
+    },
+    {
+      "id": "JUGO_BODY_SENJUTSU_BOOST",
+      "name": "Jūgo en Body",
+      "enabled": true,
+      "phase": "MODIFIER",
+      "priority": 300,
+      "activation": {
+        "all": [
+          {
+            "side": "SELF",
+            "slot": "body",
+            "field": "card.slug",
+            "operator": "EQUALS",
+            "value": "jugo"
+          }
+        ]
+      },
+      "effects": [
+        {
+          "side": "SELF",
+          "slot": "senjutsu",
+          "stat": "senjutsu",
+          "operation": "PERCENT_ADD",
+          "value": 5
+        }
+      ],
+      "stacking": {
+        "mode": "STACK_WITH_DIFFERENT_RULES",
+        "group": "JUGO_BODY_SENJUTSU_BOOST"
+      },
+      "ai": {
+        "considerDuringPlacement": true
+      },
+      "notes": [
+        "Jūgo en Body — Boost de 5 % en Senjutsu."
+      ]
     }
   ],
   "unresolvedBalance": [

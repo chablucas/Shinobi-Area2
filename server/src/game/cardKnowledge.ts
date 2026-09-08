@@ -42,6 +42,7 @@ export type CardKnowledge = {
   physicalTraitIds: string[]
   transformationIds: string[]
   avatars: Array<{ id: string; type: string; name: string }>
+  healthStatus?: { status: string; implicit: boolean }
 }
 
 type ClanRule = { bonuses: Array<{ target: string; percent: number }>; permissions: string[] }
@@ -124,6 +125,7 @@ export const CARD_KNOWLEDGE: CardKnowledge[] = getAllCanonicalCards().map((card)
     physicalTraitIds: card.physicalTraitIds ?? [],
     transformationIds: card.transformationIds ?? [],
     avatars: card.avatars ?? [],
+    healthStatus: card.healthStatus,
   }
 })
 

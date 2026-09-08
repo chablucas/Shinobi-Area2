@@ -67,6 +67,8 @@ function extractFieldValue(ctx: RuleContext, slotName: string, field: string): u
   if (field === 'selectedAvatar.type') {
     return card.avatars?.map((a) => a.type) ?? []
   }
+  if (field === 'card.healthStatus.status') return card.healthStatus?.status
+  if (field === 'card.healthStatus.implicit') return card.healthStatus?.implicit ?? false
   if (field === 'baseScore') {
     const statKey = normSlot as StatKey
     if (statKey in ctx.baseStats) return ctx.baseStats[statKey]
@@ -226,6 +228,23 @@ function applyEffect(
   if (effect.value === null) return
 
   for (const ctx of targetCtxs) {
+    // Effet global sur le TOTAL final déjà calculé (ex: -10% sans Avatar), jamais réparti stat par stat.
+    if (effect.operation === 'PERCENT_TOTAL') {
+      const percent = effect.value / 100
+      const before = ctx.totalMultiplier
+      ctx.totalMultiplier = Math.max(0, ctx.totalMultiplier * (1 + percent))
+      ctx.appliedRules.push({
+        ruleId: rule.id,
+        label: rule.name,
+        target: 'total',
+        operation: 'percentage',
+        value: percent,
+        before,
+        after: ctx.totalMultiplier,
+      })
+      continue
+    }
+
     const targets: StatKey[] = []
     if (effect.stat === 'allStats' || effect.slot === 'ALL') {
       targets.push(...activeStats)
@@ -311,7 +330,7 @@ export function applyRules(context: RuleContext, opponents?: RuleContext | RuleC
   // Step 2: Evaluate rules from classic.json
   const enabledRules = getCombatRules().filter((r) => r.enabled !== false)
 
-  const phases = ['VALIDATION_PENALTY', 'MODIFIER']
+  const phases = ['VALIDATION_PENALTY', 'MODIFIER', 'FINAL_ADJUSTMENT']
 
   for (const phase of phases) {
     const phaseRules = enabledRules.filter((r) => r.phase === phase).sort((a, b) => b.priority - a.priority)

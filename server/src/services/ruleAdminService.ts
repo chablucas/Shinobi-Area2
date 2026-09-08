@@ -9,8 +9,8 @@ function httpError(message: string, statusCode: number) {
   return Object.assign(new Error(message), { statusCode })
 }
 
-const PHASES = ['VALIDATION_PENALTY', 'MODIFIER']
-const OPERATIONS = ['POINT_ADD', 'PERCENT_ADD', 'SET_FINAL', 'DISABLE_POWER']
+const PHASES = ['VALIDATION_PENALTY', 'MODIFIER', 'FINAL_ADJUSTMENT']
+const OPERATIONS = ['POINT_ADD', 'PERCENT_ADD', 'SET_FINAL', 'DISABLE_POWER', 'PERCENT_TOTAL']
 const SIDES = ['SELF', 'OPPONENT']
 
 function normalizeConditions(raw: unknown, group: string): CombatRule['activation']['all'] {
