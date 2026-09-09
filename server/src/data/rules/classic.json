@@ -1246,13 +1246,6 @@
       "effects": [
         {
           "side": "SELF",
-          "slot": "chakra",
-          "stat": "chakra",
-          "operation": "PERCENT_ADD",
-          "value": 30
-        },
-        {
-          "side": "SELF",
           "slot": "body",
           "stat": "body",
           "operation": "PERCENT_ADD",
@@ -1274,7 +1267,74 @@
         "considerDuringPlacement": true
       },
       "notes": [
-        "Naruto SJ ou Konohamaru SJ placé en Ninjutsu ou en Body annule ce bonus de Clan Ōtsutsuki (contre-règle ajoutée en 2026-09-08), sans affecter les autres règles Ōtsutsuki."
+        "Naruto SJ ou Konohamaru SJ placé en Ninjutsu ou en Body annule ce bonus de Clan Ōtsutsuki (contre-règle ajoutée en 2026-09-08), sans affecter les autres règles Ōtsutsuki.",
+        "Le volet Chakra a été extrait dans OTSUTSUKI_CLAN_CHAKRA_BOOST (2026-09-09) pour pouvoir le bloquer spécifiquement quand Ōtsutsuki occupe déjà le slot Chakra, sans toucher Body/Vitesse."
+      ]
+    },
+    {
+      "id": "OTSUTSUKI_CLAN_CHAKRA_BOOST",
+      "name": "Bonus Chakra du clan Ōtsutsuki",
+      "enabled": true,
+      "phase": "MODIFIER",
+      "priority": 350,
+      "activation": {
+        "all": [
+          {
+            "side": "SELF",
+            "slot": "clan",
+            "field": "card.clans",
+            "operator": "CONTAINS",
+            "value": "OTSUTSUKI"
+          }
+        ],
+        "none": [
+          {
+            "side": "SELF",
+            "slot": "ninjutsu",
+            "field": "card.slug",
+            "operator": "IN",
+            "value": [
+              "naruto-sj",
+              "konohamaru-sj"
+            ]
+          },
+          {
+            "side": "SELF",
+            "slot": "body",
+            "field": "card.slug",
+            "operator": "IN",
+            "value": [
+              "naruto-sj",
+              "konohamaru-sj"
+            ]
+          },
+          {
+            "side": "SELF",
+            "slot": "chakra",
+            "field": "card.clans",
+            "operator": "CONTAINS",
+            "value": "OTSUTSUKI"
+          }
+        ]
+      },
+      "effects": [
+        {
+          "side": "SELF",
+          "slot": "chakra",
+          "stat": "chakra",
+          "operation": "PERCENT_ADD",
+          "value": 30
+        }
+      ],
+      "stacking": {
+        "mode": "STACK_WITH_DIFFERENT_RULES",
+        "group": "OTSUTSUKI_CLAN_CHAKRA_BOOST"
+      },
+      "ai": {
+        "considerDuringPlacement": true
+      },
+      "notes": [
+        "Si une carte Ōtsutsuki occupe déjà le slot Chakra, aucun boost Chakra du clan Ōtsutsuki n’est appliqué (évite le double bénéfice)."
       ]
     },
     {
@@ -1291,6 +1351,15 @@
             "field": "card.clans",
             "operator": "CONTAINS",
             "value": "SENJU"
+          }
+        ],
+        "none": [
+          {
+            "side": "SELF",
+            "slot": "chakra",
+            "field": "card.clans",
+            "operator": "CONTAINS",
+            "value": "OTSUTSUKI"
           }
         ]
       },
@@ -1325,6 +1394,22 @@
             "field": "card.clans",
             "operator": "CONTAINS",
             "value": "UZUMAKI"
+          }
+        ],
+        "none": [
+          {
+            "side": "SELF",
+            "slot": "chakra",
+            "field": "card.clans",
+            "operator": "CONTAINS",
+            "value": "UZUMAKI"
+          },
+          {
+            "side": "SELF",
+            "slot": "chakra",
+            "field": "card.clans",
+            "operator": "CONTAINS",
+            "value": "OTSUTSUKI"
           }
         ]
       },
@@ -2452,6 +2537,39 @@
             "field": "selectedAvatar.id",
             "operator": "EQUALS",
             "value": "JUBI"
+          },
+          {
+            "side": "SELF",
+            "slot": "chakra",
+            "field": "baseScore",
+            "operator": "GREATER_OR_EQUAL",
+            "value": 70
+          },
+          {
+            "side": "SELF",
+            "slot": "body",
+            "field": "baseScore",
+            "operator": "GREATER_OR_EQUAL",
+            "value": 50
+          },
+          {
+            "side": "SELF",
+            "slot": "avatar",
+            "field": "card.slug",
+            "operator": "IN",
+            "value": [
+              "juubidara",
+              "juubito"
+            ]
+          }
+        ],
+        "none": [
+          {
+            "side": "SELF",
+            "slot": "kekkeiMora",
+            "field": "card",
+            "operator": "EXISTS",
+            "value": true
           }
         ]
       },
@@ -2472,7 +2590,7 @@
         "considerDuringPlacement": true
       },
       "notes": [
-        "Jūbi en Avatar — Boost de 75 points en Kekkei Mōra."
+        "Jūbi en Avatar — Boost de 75 points en Kekkei Mōra, uniquement si le Jūbi est valide (mêmes conditions que JUBI_VALIDATED_BOOST) ET si le slot Kekkei Mōra est vide (jamais additionné à une carte déjà présente)."
       ]
     },
     {

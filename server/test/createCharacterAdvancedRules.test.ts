@@ -23,6 +23,7 @@ const NEW_RULE_IDS = [
   'JUGO_BODY_SENJUTSU_BOOST',
   'JUBI_AVATAR_KEKKEI_MORA_POINTS',
   'ZETSU_BLANC_BODY_SWAP',
+  'OTSUTSUKI_CLAN_CHAKRA_BOOST',
 ]
 
 // 1-2. Sans Avatar = -10% sur le TOTAL final (jamais stat par stat)
@@ -174,9 +175,21 @@ test('29. les nouvelles règles n’existent pas dans les données Team Auction'
   for (const id of NEW_RULE_IDS) assert.ok(!serialized.includes(id), `La règle ${id} ne doit pas apparaître dans team-auction.json`)
 })
 
-test('Jūbi en Avatar donne +75 points en Kekkei Mōra', () => {
-  const stats = calculateFinalStats(build({ avatar: 'juubidara', 'kekkei-mora': card('Mora', { kekkeiMora: 10 }) }))
-  assert.equal(stats.kekkeiMora, 85)
+// Jūbi valide = chakra >= 70 et body >= 50 (mêmes conditions que JUBI_VALIDATED_BOOST)
+// JUBI_VALIDATED_BOOST (règle existante, non modifiée) ajoute déjà +40 points quand le Jūbi est valide ; s'additionne au +75 ici testé.
+test('Jūbi valide en Avatar + slot Kekkei Mōra vide donne +75 points', () => {
+  const stats = calculateFinalStats(build({ avatar: 'juubidara', chakra: card('C', { chakra: 80 }), body: card('B', { body: 60 }) }))
+  assert.equal(stats.kekkeiMora, 115)
+})
+
+test('Jūbi valide en Avatar + Kekkei Mōra déjà sélectionné ne donne aucun +75', () => {
+  const stats = calculateFinalStats(build({ avatar: 'juubidara', chakra: card('C', { chakra: 80 }), body: card('B', { body: 60 }), 'kekkei-mora': card('Mora', { kekkeiMora: 10 }) }))
+  assert.equal(stats.kekkeiMora, 50)
+})
+
+test('Jūbi invalide en Avatar ne donne aucun +75 même si le slot Kekkei Mōra est vide', () => {
+  const stats = calculateFinalStats(build({ avatar: 'juubidara', chakra: card('C', { chakra: 40 }), body: card('B', { body: 60 }) }))
+  assert.equal(stats.kekkeiMora, 0)
 })
 
 test('Jūbi absent du slot Avatar ne donne aucun bonus de 75 points', () => {
@@ -185,8 +198,8 @@ test('Jūbi absent du slot Avatar ne donne aucun bonus de 75 points', () => {
 })
 
 test('le bonus Jūbi en Avatar est un bonus fixe de 75 points, pas un pourcentage', () => {
-  const stats = calculateFinalStats(build({ avatar: 'juubito', 'kekkei-mora': card('Mora', { kekkeiMora: 200 }) }))
-  assert.equal(stats.kekkeiMora, 275)
+  const stats = calculateFinalStats(build({ avatar: 'juubito', chakra: card('C', { chakra: 80 }), body: card('B', { body: 60 }) }))
+  assert.equal(stats.kekkeiMora, 115)
 })
 
 test('la règle Jūbi en Avatar est chargée depuis classic.json', () => {
@@ -245,4 +258,41 @@ test('deux joueurs sans Avatar reçoivent chacun exactement un malus de 10 %', (
   assert.equal(result.player2.total, 180)
   assert.equal(result.player1.appliedRules.filter((rule) => rule.ruleId === 'NO_AVATAR_FINAL_PENALTY').length, 1)
   assert.equal(result.player2.appliedRules.filter((rule) => rule.ruleId === 'NO_AVATAR_FINAL_PENALTY').length, 1)
+})
+
+// Uzumaki en Chakra + clan Uzumaki => pas de double boost Chakra
+test('Uzumaki en Chakra + clan Uzumaki ne donne aucun boost Chakra supplémentaire', () => {
+  const result = calculateCombat(build({ chakra: card('C', { chakra: 80 }, ['UZUMAKI']), clan: card('Clan', {}, ['UZUMAKI']) }))
+  assert.equal(result.finalStats.chakra, 80)
+  assert.ok(!result.appliedRules.some((rule) => rule.ruleId === 'UZUMAKI_CLAN_CHAKRA'))
+})
+
+// Ōtsutsuki en Chakra + clan Ōtsutsuki => aucun boost Chakra venant du clan
+test('Ōtsutsuki en Chakra + clan Ōtsutsuki ne donne aucun boost Chakra venant du clan', () => {
+  const result = calculateCombat(build({ chakra: card('C', { chakra: 80 }, ['OTSUTSUKI']), clan: card('Clan', {}, ['OTSUTSUKI']) }))
+  assert.equal(result.finalStats.chakra, 80)
+  assert.ok(!result.appliedRules.some((rule) => rule.ruleId === 'OTSUTSUKI_CLAN_CHAKRA_BOOST'))
+})
+
+// Ōtsutsuki en Chakra + un autre clan donnant du Chakra => toujours aucun boost Chakra venant du clan
+test('Ōtsutsuki en Chakra + clan Uzumaki ne donne aucun boost Chakra venant du clan', () => {
+  const result = calculateCombat(build({ chakra: card('C', { chakra: 80 }, ['OTSUTSUKI']), clan: card('Clan', {}, ['UZUMAKI']) }))
+  assert.equal(result.finalStats.chakra, 80)
+  assert.ok(!result.appliedRules.some((rule) => rule.ruleId === 'UZUMAKI_CLAN_CHAKRA'))
+})
+
+test('sans Ōtsutsuki/Uzumaki en Chakra, le bonus Chakra du clan Uzumaki fonctionne toujours', () => {
+  const result = calculateCombat(build({ chakra: card('C', { chakra: 80 }), clan: card('Clan', {}, ['UZUMAKI']) }))
+  assert.equal(result.finalStats.chakra, 100)
+  assert.ok(result.appliedRules.some((rule) => rule.ruleId === 'UZUMAKI_CLAN_CHAKRA'))
+})
+
+// Capacité invalide (Sharingan en Genjutsu sans clan compatible) => aucun boost/nerf associé, effet forcé à 0
+test('capacité Sharingan en Genjutsu sans clan compatible est invalide et son effet est neutralisé', () => {
+  const stats = calculateFinalStats(build({ genjutsu: 'sasuke', clan: card('Clan', {}, ['SENJU']) }))
+  assert.equal(stats.genjutsu, 0)
+})
+test('capacité Sharingan en Genjutsu avec clan Uchiwa reste valide et fonctionne normalement', () => {
+  const stats = calculateFinalStats(build({ genjutsu: 'sasuke', clan: card('Clan', {}, ['UCHIWA']) }))
+  assert.equal(stats.genjutsu, 61)
 })
