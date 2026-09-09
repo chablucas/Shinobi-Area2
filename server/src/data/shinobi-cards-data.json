@@ -8304,9 +8304,7 @@
       "slug": "shin",
       "name": "Shin",
       "rarity": "MYTHIC",
-      "clans": [
-        "UCHIWA"
-      ],
+      "clans": [],
       "stats": {
         "chakra": 66,
         "invocation": 0,
