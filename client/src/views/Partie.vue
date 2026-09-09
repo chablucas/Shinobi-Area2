@@ -1662,6 +1662,14 @@ function drawBonusesFor(card: DrawCardLike | null) {
 .manual-result-modal button { min-height: 44px; padding: 10px; border: 1px solid var(--border-light); background: var(--bg-panel-strong); color: var(--text-main); font-size: 0.68rem; font-weight: 700; cursor: pointer; }
 
 /* Responsive Media Queries */
+@media (min-width: 768px) {
+  .realtime-draw-zone {
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
 @media (min-width: 1024px) {
   .global-draw-container {
     width: 100%;
