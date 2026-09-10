@@ -1580,7 +1580,6 @@
             "field": "card.slug",
             "operator": "IN",
             "value": [
-              "toneri",
               "toneri-km"
             ]
           }
