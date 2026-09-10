@@ -17,8 +17,10 @@ test('les traces Zetsu sont formulées séparément pour le propriétaire et son
 
 test('la trace Aucun Avatar valide affiche explicitement le malus final de 15 %', () => {
   const rule = { ruleId: 'NO_AVATAR_FINAL_PENALTY', label: 'Aucun Avatar valide', target: 'total', operation: 'percentage', value: -0.15, before: 738.95, after: 628.1075 }
-  assert.equal(appliedRuleSentence(rule), 'Aucun Avatar valide — note finale : 738.95 → 628.11 (-15 %)')
+  assert.equal(appliedRuleSentence(rule), 'Aucun Avatar valide — Score final : 738.95 → -15% → 628.11')
   assert.equal(appliedRuleTone(rule), 'malus')
+  const round = { ruleId: 'NO_AVATAR_FINAL_PENALTY', label: 'Aucun Avatar valide', target: 'total', operation: 'percentage', value: -0.15, before: 1000, after: 850 }
+  assert.equal(appliedRuleSentence(round), 'Aucun Avatar valide — Score final : 1000 → -15% → 850')
 })
 
 test('Simulation affiche les bonus et malus sous chaque joueur sans liste globale mélangée', () => {

@@ -19,7 +19,12 @@ export function appliedRuleSentence(rule: DisplayableAppliedRule): string {
     return `${rule.label} — Échange Body : ${rule.before} → ${rule.after}`
   }
   if (rule.ruleId === 'NO_AVATAR_FINAL_PENALTY') {
-    return `Aucun Avatar valide — note finale : ${rule.before.toFixed(2)} → ${rule.after.toFixed(2)} (-15 %)`
+    return `Aucun Avatar valide — Score final : ${formatCleanScore(rule.before)} → -15% → ${formatCleanScore(rule.after)}`
   }
   return `${rule.label} — ${rule.target} : ${rule.before} → ${rule.after}`
+}
+
+// Round to 2 decimals and drop trailing zeros (1000 stays "1000", 628.1075 becomes "628.11")
+function formatCleanScore(value: number): string {
+  return Number(value.toFixed(2)).toString()
 }
