@@ -19,7 +19,7 @@ export function appliedRuleSentence(rule: DisplayableAppliedRule): string {
     return `${rule.label} — Échange Body : ${rule.before} → ${rule.after}`
   }
   if (rule.ruleId === 'NO_AVATAR_FINAL_PENALTY') {
-    return `Aucun Avatar valide : -15 % sur la note finale`
+    return `Aucun Avatar valide — note finale : ${rule.before.toFixed(2)} → ${rule.after.toFixed(2)} (-15 %)`
   }
   return `${rule.label} — ${rule.target} : ${rule.before} → ${rule.after}`
 }

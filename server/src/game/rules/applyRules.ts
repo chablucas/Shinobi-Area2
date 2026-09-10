@@ -20,6 +20,10 @@ const activeStats: StatKey[] = [
   'kekkeiGenkai',
 ]
 
+function finalTotal(finalStats: Record<string, number>): number {
+  return Object.entries(finalStats).reduce((total, [key, value]) => key === 'clan' ? total : total + Math.max(0, value), 0)
+}
+
 function getSlotCard(ctx: RuleContext, slotName: string) {
   const normSlot = slotName.toLowerCase().replace(/-/g, '')
   for (const [key, card] of Object.entries(ctx.cards)) {
@@ -252,14 +256,16 @@ function applyEffect(
       const percent = effect.value / 100
       const before = ctx.totalMultiplier
       ctx.totalMultiplier = Math.max(0, ctx.totalMultiplier * (1 + percent))
+      const scoreBefore = finalTotal(ctx.finalStats) * before
+      const scoreAfter = finalTotal(ctx.finalStats) * ctx.totalMultiplier
       ctx.appliedRules.push({
         ruleId: rule.id,
         label: rule.name,
         target: 'total',
         operation: 'percentage',
         value: percent,
-        before,
-        after: ctx.totalMultiplier,
+        before: scoreBefore,
+        after: scoreAfter,
       })
       continue
     }

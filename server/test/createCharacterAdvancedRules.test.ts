@@ -38,6 +38,15 @@ test('2. avec un Avatar présent, aucun malus sur le total', () => {
 test('2b. un Avatar sélectionné mais dont la note finale validée est 0 subit aussi le malus de 15%', () => {
   const result = calculateCombat(build({ chakra: card('C', { chakra: 100 }), avatar: card('A', { avatar: 0 }) }))
   assert.equal(result.total, 85)
+  assert.deepEqual(result.appliedRules.find((rule) => rule.ruleId === 'NO_AVATAR_FINAL_PENALTY'), {
+    ruleId: 'NO_AVATAR_FINAL_PENALTY',
+    label: 'Aucun Avatar valide',
+    target: 'total',
+    operation: 'percentage',
+    value: -0.15,
+    before: 100,
+    after: 85,
+  })
 })
 
 // 3-4. Personnage malade en Body => Vitesse forcée à 0

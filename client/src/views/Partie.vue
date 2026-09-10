@@ -226,7 +226,11 @@ function manualResult(): CombatResult {
     const finalStats = Object.fromEntries(Object.keys(gameStatKeys).filter((key) => gameStatKeys[key]).map((key) => [gameStatKeys[key], build.slots[key as CategorySlug]?.stats[gameStatKeys[key]!] ?? 0])) as CombatResult['player1']['finalStats']
     finalStats.clan = 0
     finalStats.kekkeiMora = build.slots['kekkei-mora']?.stats.kekkeiMora ?? 0
-    return { baseStats: { ...finalStats }, finalStats, total: Object.entries(finalStats).filter(([key]) => key !== 'clan').reduce((total, [, value]) => total + value, 0), appliedRules: [], permissions: { sharingan: false, rinnegan: false, byakugan: false, tenseigan: false, otsutsuki: false, uzumaki: false }, validationErrors: [] }
+    const totalBeforeAvatarPenalty = Object.entries(finalStats).filter(([key]) => key !== 'clan').reduce((total, [, value]) => total + Math.max(0, value), 0)
+    const hasValidAvatar = finalStats.avatar > 0
+    const total = hasValidAvatar ? totalBeforeAvatarPenalty : totalBeforeAvatarPenalty * 0.85
+    const appliedRules = hasValidAvatar ? [] : [{ ruleId: 'NO_AVATAR_FINAL_PENALTY', label: 'Aucun Avatar valide', target: 'total', operation: 'percentage' as const, value: -0.15, before: totalBeforeAvatarPenalty, after: total }]
+    return { baseStats: { ...finalStats }, finalStats, total, appliedRules, permissions: { sharingan: false, rinnegan: false, byakugan: false, tenseigan: false, otsutsuki: false, uzumaki: false }, validationErrors: [] }
   })
   return { resolutionMode: 'manual', winner: 'draw', player1: results[0]!, player2: results[1]!, player1Total: results[0]!.total, player2Total: results[1]!.total, scores: { player1: 0, player2: 0 }, categories: [] }
 }
