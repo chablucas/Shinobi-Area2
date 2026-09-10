@@ -247,7 +247,7 @@ function applyEffect(
   }
 
   for (const ctx of targetCtxs) {
-    // Effet global sur le TOTAL final déjà calculé (ex: -10% sans Avatar), jamais réparti stat par stat.
+    // Effet global sur le TOTAL final déjà calculé (ex: -15% sans Avatar valide), jamais réparti stat par stat.
     if (effect.operation === 'PERCENT_TOTAL') {
       const percent = effect.value / 100
       const before = ctx.totalMultiplier

@@ -26,14 +26,18 @@ const NEW_RULE_IDS = [
   'OTSUTSUKI_CLAN_CHAKRA_BOOST',
 ]
 
-// 1-2. Sans Avatar = -10% sur le TOTAL final (jamais stat par stat)
-test('1. sans Avatar, le total final subit un nerf de 10%', () => {
+// 1-2. Aucun Avatar valide = -15% sur le TOTAL final (jamais stat par stat)
+test('1. sans Avatar, le total final subit un nerf de 15%', () => {
   const result = calculateCombat(build({ chakra: card('C', { chakra: 100 }) }))
-  assert.equal(result.total, 90)
+  assert.equal(result.total, 85)
 })
 test('2. avec un Avatar présent, aucun malus sur le total', () => {
   const result = calculateCombat(build({ chakra: card('C', { chakra: 100 }), avatar: card('A', { avatar: 50 }) }))
   assert.equal(result.total, 150)
+})
+test('2b. un Avatar sélectionné mais dont la note finale validée est 0 subit aussi le malus de 15%', () => {
+  const result = calculateCombat(build({ chakra: card('C', { chakra: 100 }), avatar: card('A', { avatar: 0 }) }))
+  assert.equal(result.total, 85)
 })
 
 // 3-4. Personnage malade en Body => Vitesse forcée à 0
@@ -243,19 +247,19 @@ test('le malus sans Avatar ne touche que le joueur concerné et ne s’applique 
     build({ chakra: card('Chakra J1', { chakra: 100 }) }),
     build({ chakra: card('Chakra J2', { chakra: 100 }), avatar: card('Avatar J2', { avatar: 50 }) }),
   )
-  assert.equal(result.player1.total, 90)
+  assert.equal(result.player1.total, 85)
   assert.equal(result.player2.total, 150)
   assert.equal(result.player1.appliedRules.filter((rule) => rule.ruleId === 'NO_AVATAR_FINAL_PENALTY').length, 1)
   assert.equal(result.player2.appliedRules.filter((rule) => rule.ruleId === 'NO_AVATAR_FINAL_PENALTY').length, 0)
 })
 
-test('deux joueurs sans Avatar reçoivent chacun exactement un malus de 10 %', () => {
+test('deux joueurs sans Avatar reçoivent chacun exactement un malus de 15 %', () => {
   const result = simulateFight(
     build({ chakra: card('Chakra J1', { chakra: 100 }) }),
     build({ chakra: card('Chakra J2', { chakra: 200 }) }),
   )
-  assert.equal(result.player1.total, 90)
-  assert.equal(result.player2.total, 180)
+  assert.equal(result.player1.total, 85)
+  assert.equal(result.player2.total, 170)
   assert.equal(result.player1.appliedRules.filter((rule) => rule.ruleId === 'NO_AVATAR_FINAL_PENALTY').length, 1)
   assert.equal(result.player2.appliedRules.filter((rule) => rule.ruleId === 'NO_AVATAR_FINAL_PENALTY').length, 1)
 })

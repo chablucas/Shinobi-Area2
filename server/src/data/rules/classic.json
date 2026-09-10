@@ -2594,7 +2594,7 @@
     },
     {
       "id": "NO_AVATAR_FINAL_PENALTY",
-      "name": "Aucun Avatar",
+      "name": "Aucun Avatar valide",
       "enabled": true,
       "phase": "FINAL_ADJUSTMENT",
       "priority": 100,
@@ -2603,9 +2603,9 @@
           {
             "side": "SELF",
             "slot": "avatar",
-            "field": "card",
-            "operator": "EXISTS",
-            "value": false
+            "field": "finalScore",
+            "operator": "LESS_OR_EQUAL",
+            "value": 0
           }
         ]
       },
@@ -2615,7 +2615,7 @@
           "slot": "TOTAL",
           "stat": "total",
           "operation": "PERCENT_TOTAL",
-          "value": -10
+          "value": -15
         }
       ],
       "stacking": {
@@ -2627,8 +2627,8 @@
         "treatAsMajorRisk": true
       },
       "notes": [
-        "Aucun Avatar — Le personnage final subit un malus de 10 %.",
-        "S’applique au TOTAL final déjà calculé (total × 0,90), jamais stat par stat."
+        "Aucun Avatar valide : -15 % sur la note finale — s’applique dès que l’Avatar final validé vaut 0 (absent, invalide, ou nul après règles).",
+        "S’applique au TOTAL final déjà calculé (total × 0,85), jamais stat par stat."
       ]
     },
     {
