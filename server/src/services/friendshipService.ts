@@ -1,7 +1,24 @@
 import { FriendshipStatus } from '@prisma/client'
 import { prisma } from '../config/prisma.js'
+import { sendPushToUser } from './pushService.js'
 
 const publicUserSelect = { id: true, displayName: true } as const
+
+async function notifyFriend(
+  recipientId: number,
+  title: string,
+  body: string,
+) {
+  try {
+    await sendPushToUser(recipientId, {
+      title,
+      body,
+      url: '/profil',
+    })
+  } catch (error) {
+    console.error('Erreur notification ami :', error)
+  }
+}
 
 function pair(userId: number, otherUserId: number) {
   return userId < otherUserId ? { userAId: userId, userBId: otherUserId } : { userAId: otherUserId, userBId: userId }
@@ -50,17 +67,68 @@ export async function listFriendRequests(userId: number, direction: 'received' |
   return relations.map((relation) => ({ id: relation.id, status: relation.status, createdAt: relation.createdAt, sender: publicUser(relation.sender), receiver: publicUser(relation.receiver) }))
 }
 
+
 export async function sendFriendRequest(userId: number, otherUserId: number) {
   assertOtherUser(userId, otherUserId)
-  const otherUser = await prisma.user.findUnique({ where: { id: otherUserId }, select: publicUserSelect })
-  if (!otherUser) throw Object.assign(new Error('Utilisateur introuvable.'), { statusCode: 404 })
+
+  const otherUser = await prisma.user.findUnique({
+    where: { id: otherUserId },
+    select: publicUserSelect,
+  })
+
+  if (!otherUser) {
+    throw Object.assign(new Error('Utilisateur introuvable.'), {
+      statusCode: 404,
+    })
+  }
+
   const relation = await findRelation(userId, otherUserId)
-  if (relation?.status === FriendshipStatus.ACCEPTED) throw Object.assign(new Error('Vous êtes déjà amis.'), { statusCode: 409 })
-  if (relation?.status === FriendshipStatus.PENDING) throw Object.assign(new Error('Une demande est déjà en attente.'), { statusCode: 409 })
-  const data = { ...pair(userId, otherUserId), senderId: userId, receiverId: otherUserId, status: FriendshipStatus.PENDING }
-  const saved = relation ? await prisma.friendship.update({ where: { id: relation.id }, data: { ...data, createdAt: new Date() } }) : await prisma.friendship.create({ data })
-  return { id: saved.id, status: saved.status, receiver: publicUser(otherUser) }
+
+  if (relation?.status === FriendshipStatus.ACCEPTED) {
+    throw Object.assign(new Error('Vous êtes déjà amis.'), {
+      statusCode: 409,
+    })
+  }
+
+  if (relation?.status === FriendshipStatus.PENDING) {
+    throw Object.assign(new Error('Une demande est déjà en attente.'), {
+      statusCode: 409,
+    })
+  }
+
+  const data = {
+    ...pair(userId, otherUserId),
+    senderId: userId,
+    receiverId: otherUserId,
+    status: FriendshipStatus.PENDING,
+  }
+
+  const saved = relation
+    ? await prisma.friendship.update({
+        where: { id: relation.id },
+        data: { ...data, createdAt: new Date() },
+      })
+    : await prisma.friendship.create({ data })
+
+  // La demande est enregistrée avant l'envoi de la notification.
+  const sender = await prisma.user.findUnique({
+    where: { id: userId },
+    select: publicUserSelect,
+  }).catch(() => null)
+
+  await notifyFriend(
+    otherUserId,
+    '🤝 Nouvelle demande d’ami',
+    `${sender?.displayName ?? 'Un joueur'} t’a envoyé une demande d’ami !`,
+  )
+
+  return {
+    id: saved.id,
+    status: saved.status,
+    receiver: publicUser(otherUser),
+  }
 }
+
 
 async function pendingRequest(userId: number, requestId: number) {
   const relation = await prisma.friendship.findUnique({ where: { id: requestId } })
@@ -68,10 +136,29 @@ async function pendingRequest(userId: number, requestId: number) {
   return relation
 }
 
+
 export async function acceptFriendRequest(userId: number, requestId: number) {
   const relation = await pendingRequest(userId, requestId)
-  return prisma.friendship.update({ where: { id: relation.id }, data: { status: FriendshipStatus.ACCEPTED } })
+
+  const saved = await prisma.friendship.update({
+    where: { id: relation.id },
+    data: { status: FriendshipStatus.ACCEPTED },
+  })
+
+  const receiver = await prisma.user.findUnique({
+    where: { id: userId },
+    select: publicUserSelect,
+  }).catch(() => null)
+
+  await notifyFriend(
+    relation.senderId,
+    '✅ Demande d’ami acceptée',
+    `${receiver?.displayName ?? 'Un joueur'} a accepté ta demande d’ami !`,
+  )
+
+  return saved
 }
+
 
 export async function rejectFriendRequest(userId: number, requestId: number) {
   const relation = await pendingRequest(userId, requestId)
