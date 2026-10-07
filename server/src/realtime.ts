@@ -330,6 +330,41 @@ export function attachRealtime(io: Server) {
       if (typeof gameId !== 'string') return
       try { socket.emit('game:state', await getGameForUser(userId, gameId)) } catch (error) { socket.emit('game:error', { message: error instanceof Error ? error.message : 'État indisponible.' }) }
     })
+    socket.on(
+    'game:emote',
+      async (payload: { gameId?: unknown; emoteId?: unknown }) => {
+        const gameId = payload?.gameId
+        const emoteId = payload?.emoteId
+
+      if (
+        typeof gameId !== 'string' ||
+        socket.data.gameId !== gameId
+      ) {
+        return
+      }
+
+      const allowedEmotes = [
+        'naruto',
+        'kiba',
+        'sakura',
+        'shikamaru',
+        'kakashi',
+        'rock-lee',
+      ]
+
+        if  (
+          typeof emoteId !== 'string' ||
+          !allowedEmotes.includes(emoteId)
+        ) {
+          return
+        }
+
+      socket.to(`game:${gameId}`).emit('game:emote', {
+        userId,
+        emoteId,
+      })
+      }
+      )
     socket.on('game:draw', async (gameId: unknown) => {
       if (typeof gameId !== 'string' || socket.data.gameId !== gameId) return socket.emit('game:error', { message: 'Rejoins la partie avant de jouer.' })
       try {

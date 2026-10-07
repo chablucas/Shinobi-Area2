@@ -79,6 +79,22 @@ const playerCount = computed<2 | 3 | 4>(() => props.mode === 'local4' ? 4 : prop
 const isComputerTurn = computed(() => props.mode === 'solo' && activePlayerId.value === 2)
 const combatBlocked = computed(() => Boolean(combatResult.value && (combatResult.value.player1.validationErrors.length || combatResult.value.player2.validationErrors.length)))
 const gameStatKeys: Record<string, keyof CombatResult['player1']['finalStats'] | null> = { chakra: 'chakra', invocation: 'invocation', iq: 'iq', ninjutsu: 'ninjutsuAttack', genjutsu: 'genjutsu', taijutsu: 'taijutsu', avatar: 'avatar', body: 'body', fuinjutsu: 'fuinjutsu', senjutsu: 'senjutsu', kenjutsu: 'kenjutsu', clan: null, vitesse: 'speed', 'kekkei-genkai': 'kekkeiGenkai', 'kekkei-mora': 'kekkeiMora' }
+const opponentEmoteSystem = ref<InstanceType<typeof EmoteSystem> | null>(null)
+const thirdPlayerEmoteSystem = ref<InstanceType<typeof EmoteSystem> | null>(null)
+const fourthPlayerEmoteSystem = ref<InstanceType<typeof EmoteSystem> | null>(null)
+function sendRealtimeEmote(emoteId: string) {
+  const socket = realtimeSocket.value
+  const game = realtimeState.value
+
+  if (!socket || !game || !socketConnected.value) {
+    return
+  }
+
+  socket.emit('game:emote', {
+    gameId: game.id,
+    emoteId,
+  })
+}
 
 onMounted(async () => {
   await auth.loadCurrentUser()
@@ -107,6 +123,49 @@ onMounted(async () => {
         errorMessage.value = ''
       })
       socket.on('game:error', (socketError) => { errorMessage.value = socketError.message; drawLoading.value = false })
+      const validEmoteIds = [
+        'naruto',
+        'kiba',
+        'sakura',
+        'shikamaru',
+        'kakashi',
+        'rock-lee',
+      ] as const
+      socket.on('game:emote', (data) => {
+  if (data.userId === auth.user?.id) {
+    return
+  }
+
+  if (
+    !validEmoteIds.includes(
+      data.emoteId as typeof validEmoteIds[number]
+    )
+  ) {
+    return
+  }
+
+  const emoteId = data.emoteId as typeof validEmoteIds[number]
+
+const otherPlayers =
+  realtimeState.value?.players
+    .filter((player) => player.userId !== auth.user?.id)
+    .sort((a, b) => a.playerNumber - b.playerNumber) ?? []
+
+const senderIndex = otherPlayers.findIndex(
+  (player) => player.userId === data.userId
+)
+
+if (senderIndex === 0) {
+  // Premier adversaire : bas gauche
+  opponentEmoteSystem.value?.showEmote(emoteId)
+} else if (senderIndex === 1) {
+  // Deuxième adversaire : haut droite
+  thirdPlayerEmoteSystem.value?.showEmote(emoteId)
+} else if (senderIndex === 2) {
+  // Troisième adversaire : haut gauche
+  fourthPlayerEmoteSystem.value?.showEmote(emoteId)
+}
+})       
     } catch (error) {
   console.error('[PARTIE] Erreur accès combat :', error)
 
@@ -992,8 +1051,27 @@ function placedCardValue(
       </section>
     </template>
   </main>
-  <EmoteSystem />
+<!-- MES EMOTES : BAS DROITE -->
+<EmoteSystem
+  class="emote-self"
+  @send-emote="sendRealtimeEmote"
+/>
 
+<!-- EMOTES ADVERSAIRE : BAS GAUCHE -->
+<EmoteSystem
+  v-if="props.lobbyId"
+  ref="opponentEmoteSystem"
+  class="emote-opponent"
+  :display-only="true"
+/>
+
+<!-- EMOTES J3 : HAUT DROITE -->
+<EmoteSystem
+  v-if="props.lobbyId"
+  ref="thirdPlayerEmoteSystem"
+  class="emote-third"
+  :display-only="true"
+/>
 </template>
 
 <style scoped src="./Partie.css"></style>

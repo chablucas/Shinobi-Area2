@@ -13,6 +13,52 @@
   pointer-events: none;
 }
 
+/* =========================
+   POSITIONS MULTIJOUEUR
+========================= */
+
+/* Moi : bas droite */
+.emote-self {
+  right: 18px;
+  left: auto;
+  bottom: 120px;
+}
+
+/* Adversaire principal : bas gauche */
+.emote-opponent {
+  left: 18px;
+  right: auto;
+  bottom: 120px;
+
+  align-items: flex-start;
+}
+
+/* L'emote adverse apparaît vers l'intérieur de l'écran */
+.emote-opponent .emote-display {
+  left: 5px;
+  right: auto;
+}
+
+/* J3 : haut droite */
+.emote-third {
+  position: fixed;
+  top: 220px;
+  right: 18px;
+  bottom: auto;
+  left: auto;
+  align-items: flex-end;
+}
+
+/* L'emote J3 apparaît vers l'intérieur de l'écran */
+.emote-third .emote-display {
+  right: 5px;
+  left: auto;
+}
+
+/* Aucun bouton pour J3 */
+.emote-third .emote-button {
+  display: none !important;
+}
 
 /* =========================
    BOUTON PRINCIPAL
@@ -272,6 +318,27 @@
     bottom: 115px;
   }
 
+  .emote-opponent .emote-button {
+  display: none !important;
+}
+
+.emote-third {
+  top: 180px;
+  right: 12px;
+  bottom: auto;
+  left: auto;
+}
+
+  .emote-self {
+  right: 12px;
+  left: auto;
+}
+
+.emote-opponent {
+  left: 12px;
+  right: auto;
+}
+
   .emote-button {
     width: 50px;
     height: 50px;
@@ -302,3 +369,4 @@
   }
 
 }
+

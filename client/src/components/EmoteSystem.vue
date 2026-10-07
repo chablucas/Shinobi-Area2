@@ -22,6 +22,15 @@ interface Emote {
   image: string
 }
 
+withDefaults(
+  defineProps<{
+    displayOnly?: boolean
+  }>(),
+  {
+    displayOnly: false,
+  }
+)
+
 const emit = defineEmits<{
   (e: 'send-emote', emoteId: EmoteId): void
 }>()
@@ -132,7 +141,7 @@ onBeforeUnmount(() => {
     <!-- MENU DES EMOTES -->
     <Transition name="emote-menu">
       <div
-        v-if="menuOpen"
+        v-if="menuOpen && !displayOnly"
         class="emote-panel"
       >
         <button
@@ -153,14 +162,15 @@ onBeforeUnmount(() => {
 
     <!-- BOUTON PRINCIPAL -->
     <button
-      type="button"
-      class="emote-button"
-      :class="{ 'emote-button--active': menuOpen }"
-      aria-label="Ouvrir les emotes"
-      @click="toggleMenu"
-    >
-      <span class="emote-button-face">😄</span>
-    </button>
+  v-if="!displayOnly"
+  type="button"
+  class="emote-button"
+  :class="{ 'emote-button--active': menuOpen }"
+  aria-label="Ouvrir les emotes"
+  @click="toggleMenu"
+>
+  <span class="emote-button-face">😄</span>
+</button>
 
   </div>
 </template>
