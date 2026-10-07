@@ -84,31 +84,3 @@ pushRoutes.post('/unsubscribe', async (request, response) => {
 
 const lastTestByUser = new Map<number, number>()
 
-pushRoutes.post('/test', async (request, response) => {
-  const userId = (request as AuthenticatedRequest).userId
-  const now = Date.now()
-  const lastTest = lastTestByUser.get(userId) ?? 0
-
-  if (now - lastTest < 5_000) {
-    response.status(429).json({
-      error: 'Attends 5 secondes avant un autre test.',
-    })
-    return
-  }
-
-  lastTestByUser.set(userId, now)
-
-  try {
-    const result = await sendPushToUser(userId, {
-      title: 'Shinobi Area 🍥',
-      body: 'Les notifications fonctionnent !',
-      url: '/profil',
-    })
-
-    response.json(result)
-  } catch {
-    response.status(503).json({
-      error: 'Impossible d’envoyer la notification.',
-    })
-  }
-})
