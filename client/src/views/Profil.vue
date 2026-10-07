@@ -345,7 +345,13 @@ function categoryLabel(slug: string) {
     🔔 Notifications activées sur cet appareil !
   </p>
 
-  
+  <p v-else-if="notificationStatus === 'denied'">
+    Notifications refusées. Modifie l'autorisation dans les réglages de ton appareil.
+  </p>
+
+  <p v-else>
+    Notifications non disponibles sur cet appareil ou navigateur.
+  </p>
 </article>
 
         
