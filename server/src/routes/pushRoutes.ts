@@ -89,9 +89,9 @@ pushRoutes.post('/test', async (request, response) => {
   const now = Date.now()
   const lastTest = lastTestByUser.get(userId) ?? 0
 
-  if (now - lastTest < 60_000) {
+  if (now - lastTest < 5_000) {
     response.status(429).json({
-      error: 'Attends une minute avant un autre test.',
+      error: 'Attends 5 secondes avant un autre test.',
     })
     return
   }

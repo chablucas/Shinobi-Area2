@@ -2,8 +2,27 @@ import { randomUUID } from 'node:crypto'
 import { GameInviteStatus, GameLobbyStatus, GameMode } from '@prisma/client'
 import { prisma } from '../config/prisma.js'
 import { createOrGetGame } from './realtimeGameService.js'
+import { sendPushToUser } from './pushService.js'
 
 const userSelect = { id: true, displayName: true } as const
+
+async function notifyGamePlayer(
+  recipientId: number,
+  title: string,
+  body: string,
+  url = '/profil',
+) {
+  try {
+    await sendPushToUser(recipientId, {
+      title,
+      body,
+      url,
+    })
+  } catch (error) {
+    console.error('Erreur notification combat :', error)
+  }
+}
+
 let gameLobbyChangeHandler: ((lobbyId: string) => Promise<void>) | null = null
 
 export function setGameLobbyChangeHandler(handler: ((lobbyId: string) => Promise<void>) | null) {
@@ -87,6 +106,30 @@ export async function createGameLobby(creatorId: number, mode: unknown, opponent
   if (duplicate) throw invalid('Une invitation est déjà en attente pour cet adversaire.', 409)
   const customId = isTeam ? `ta_${randomUUID()}` : undefined
   const lobby = await prisma.gameLobby.create({ data: { ...(customId ? { id: customId } : {}), creatorId, mode: gameMode, includesAi: wantsAi, invites: { create: ids.map((inviteeId) => ({ inviteeId })) } }, include: lobbyInclude() })
+  
+  // Notifier les joueurs invités après la création du salon.
+  const creator = await prisma.user.findUnique({
+    where: { id: creatorId },
+    select: userSelect,
+  }).catch(() => null)
+
+  const creatorName = creator?.displayName ?? 'Un joueur'
+
+  const gameLabel = isTeam
+    ? 'Créer ta Team'
+    : 'Créer ton personnage'
+
+  await Promise.all(
+    ids.map((inviteeId) =>
+      notifyGamePlayer(
+        inviteeId,
+        '⚔️ Invitation Shinobi Area',
+        `${creatorName} t'invite à une partie ${gameLabel} !`,
+        '/profil',
+      ),
+    ),
+  )
+
   return formatLobby(lobby)
 }
 
@@ -123,9 +166,28 @@ async function updateInvite(userId: number, inviteId: string, status: GameInvite
       if (remaining === 0) await transaction.gameLobby.update({ where: { id: invite.lobbyId }, data: { status: GameLobbyStatus.READY } })
     }
   })
+  
   const updatedLobby = await findLobby(invite.lobbyId)
+
   await gameLobbyChangeHandler?.(invite.lobbyId)
+
+  if (status === GameInviteStatus.ACCEPTED && updatedLobby) {
+    const acceptedUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: userSelect,
+    }).catch(() => null)
+
+    const playerName = acceptedUser?.displayName ?? 'Un joueur'
+
+    await notifyGamePlayer(
+      updatedLobby.creatorId,
+      '✅ Invitation acceptée',
+      `${playerName} a rejoint ta partie !`,
+    )
+  }
+
   return formatLobby(updatedLobby)
+
 }
 
 export function acceptGameInvite(userId: number, inviteId: string) { return updateInvite(userId, inviteId, GameInviteStatus.ACCEPTED) }
