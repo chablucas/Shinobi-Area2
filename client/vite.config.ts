@@ -41,9 +41,10 @@ export default defineConfig({
       },
 
       workbox: {
-        navigateFallback: '/index.html',
-        runtimeCaching: [],
-      },
+  navigateFallback: '/index.html',
+  runtimeCaching: [],
+  importScripts: ['/push-sw.js'],
+},
     }),
   ],
 

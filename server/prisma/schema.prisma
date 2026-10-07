@@ -41,6 +41,7 @@ model User {
   receivedFriendships Friendship[] @relation("FriendshipReceiver")
   createdGameLobbies GameLobby[] @relation("GameLobbyCreator")
   gameInvites       GameInvite[] @relation("GameInviteInvitee")
+  pushSubscriptions PushSubscription[]
 }
 
 enum UserRole {
@@ -285,4 +286,18 @@ model CardModifier {
   createdAt     DateTime                @default(now())
   updatedAt     DateTime                @updatedAt
   @@index([cardSlug])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    Int
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

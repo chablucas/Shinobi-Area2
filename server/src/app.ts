@@ -13,11 +13,21 @@ import { cardAdminRoutes } from './routes/cardAdminRoutes.js'
 import { ruleAdminRoutes } from './routes/ruleAdminRoutes.js'
 import { adminRoutes } from './routes/adminRoutes.js'
 import { errorHandler, notFound } from './utils/errors.js'
+import { pushRoutes } from './routes/pushRoutes.js'
+
 
 export const app = express()
-app.use(cors({ origin: (origin, callback) => callback(null, isAllowedOrigin(origin)) }))
+
+app.use(cors({
+  origin: (origin, callback) => callback(null, isAllowedOrigin(origin)),
+}))
+
 app.use(express.json())
-app.get('/api/health', (_request, response) => response.json({ status: 'ok' }))
+
+app.get('/api/health', (_request, response) => {
+  response.json({ status: 'ok' })
+})
+
 app.use('/api/categories', categoryRoutes)
 app.use('/api/cards', cardRoutes)
 app.use('/api/admin/cards', cardAdminRoutes)
@@ -29,5 +39,7 @@ app.use('/api/builds', buildRoutes)
 app.use('/api/game', gameRoutes)
 app.use('/api/friends', friendshipRoutes)
 app.use('/api/search', searchRoutes)
+app.use('/api/push', pushRoutes)
+
 app.use(notFound)
 app.use(errorHandler)

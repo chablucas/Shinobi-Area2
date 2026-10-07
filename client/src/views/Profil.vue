@@ -5,6 +5,7 @@ import { CATEGORY_DEFINITIONS } from '../game/gameEngine'
 import { deleteBuild, fetchBuilds, type SavedBuild } from '../services/buildApi'
 import { useAuthStore } from '../stores/auth'
 import { listFriends, type Friend } from '../services/socialApi'
+import { API_BASE_URL } from '../services/cardApi'
 const friendsOpen = ref(true)
 
 const auth = useAuthStore()
@@ -14,6 +15,132 @@ const selectedBuild = ref<SavedBuild | null>(null)
 const editing = ref(false)
 const displayName = ref('')
 const error = ref('')
+
+const notificationStatus = ref(
+  typeof window !== 'undefined' && 'Notification' in window
+    ? Notification.permission
+    : 'unsupported'
+)
+
+
+function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
+  const base64 = (base64String + padding)
+    .replace(/-/g, '+')
+    .replace(/_/g, '/')
+
+  const rawData = atob(base64)
+  const output = new Uint8Array(new ArrayBuffer(rawData.length))
+
+  for (let i = 0; i < rawData.length; i++) {
+    output[i] = rawData.charCodeAt(i)
+  }
+
+  return output
+}
+
+async function enableNotifications() {
+  error.value = ''
+
+  if (
+    !('Notification' in window) ||
+    !('serviceWorker' in navigator) ||
+    !('PushManager' in window)
+  ) {
+    notificationStatus.value = 'unsupported'
+    return
+  }
+
+  if (!auth.token) {
+    error.value = 'Tu dois être connecté pour activer les notifications.'
+    return
+  }
+
+  try {
+    // Sur iPhone, demander la permission directement après le clic.
+    const permission = await Notification.requestPermission()
+    notificationStatus.value = permission
+
+    if (permission !== 'granted') return
+
+    const registration = await navigator.serviceWorker.ready
+
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${auth.token}`,
+    }
+
+    const keyResponse = await fetch(`${API_BASE_URL}/push/public-key`, {
+      headers,
+    })
+
+    if (!keyResponse.ok) {
+      throw new Error('Impossible de récupérer la clé des notifications.')
+    }
+
+    const { publicKey } = await keyResponse.json()
+
+    let subscription = await registration.pushManager.getSubscription()
+
+    if (!subscription) {
+      subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(publicKey),
+      })
+    }
+
+    const response = await fetch(`${API_BASE_URL}/push/subscribe`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(subscription.toJSON()),
+    })
+
+    if (!response.ok) {
+      throw new Error("Impossible d'enregistrer les notifications.")
+    }
+
+    notificationStatus.value = 'subscribed'
+  } catch (exception) {
+    error.value =
+      exception instanceof Error
+        ? exception.message
+        : "Impossible d'activer les notifications."
+  }
+}
+
+async function testNotification() {
+  if (!auth.token) return
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/push/test`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${auth.token}`,
+      },
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Échec du test.')
+    }
+
+    if (result.total === 0) {
+      error.value = "Aucun appareil abonné aux notifications."
+      return
+    }
+
+    error.value = ''
+    alert('Notification de test envoyée ! 🔔')
+  } catch (exception) {
+    error.value =
+      exception instanceof Error
+        ? exception.message
+        : 'Impossible de tester les notifications.'
+  }
+}
+
+
 const total = computed(() => (auth.user?.wins ?? 0) + (auth.user?.losses ?? 0))
 const winRate = computed(() => total.value ? Math.round(((auth.user?.wins ?? 0) / total.value) * 100) : 0)
 const friends = ref<Friend[]>([])
@@ -194,6 +321,48 @@ function categoryLabel(slug: string) {
         </article>
 
         <!-- 2. Statistiques du joueur -->
+        
+<article class="profile-card profile-notifications">
+  <div class="card-header-row">
+    <div>
+      <p class="eyebrow">Préférences</p>
+      <h2>Notifications</h2>
+    </div>
+  </div>
+
+  <p>Reçois les invitations et demandes d'amis sur ton téléphone.</p>
+
+  <button
+    v-if="notificationStatus === 'default' || notificationStatus === 'granted'"
+    class="profile-action"
+    type="button"
+    @click="enableNotifications"
+  >
+    Activer les notifications
+  </button>
+
+  <p v-else-if="notificationStatus === 'subscribed'">
+    🔔 Notifications activées sur cet appareil !
+  </p>
+
+  <button
+  v-if="notificationStatus === 'subscribed'"
+  type="button"
+  @click="testNotification"
+>
+  🔔 Tester les notifications
+</button>
+
+  <p v-else-if="notificationStatus === 'denied'">
+    Notifications refusées. Modifie l'autorisation dans les réglages de ton appareil.
+  </p>
+
+  <p v-else>
+    Notifications non disponibles sur cet appareil ou navigateur.
+  </p>
+</article>
+
+        
         <article class="profile-card profile-statistics">
           <div class="card-header-row">
             <div>
