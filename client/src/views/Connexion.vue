@@ -17,7 +17,7 @@ async function submit() {
 
   try {
     await auth.login(email.value, password.value)
-    await router.push('/profil')
+    await router.push('/')
   } catch (exception) {
     error.value =
       exception instanceof Error

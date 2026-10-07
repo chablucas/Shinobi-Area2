@@ -23,7 +23,7 @@ async function submit() {
       displayName.value,
     )
 
-    await router.push('/profil')
+    await router.push('/')
   } catch (exception) {
     error.value =
       exception instanceof Error
