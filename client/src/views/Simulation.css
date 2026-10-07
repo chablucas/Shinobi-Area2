@@ -1,0 +1,1256 @@
+/* =========================================================
+   SHINOBI AREA — SIMULATION
+   Nouvelle identité visuelle
+   ========================================================= */
+
+.simulation-page {
+  min-height: 100vh;
+
+  /*
+   * Pas de background ici :
+   * le nouveau fond image global reste visible.
+   */
+  color: #ffffff;
+}
+
+.page-shell {
+  width: min(1400px, calc(100% - 40px));
+
+  margin: 0 auto;
+  padding: 30px 0 80px;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 18px;
+
+  margin-bottom: 22px;
+  padding: 18px 20px;
+
+  background: rgba(10, 10, 13, 0.76);
+
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 14px;
+
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.28);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.page-header h1 {
+  margin: 5px 0 0;
+
+  color: #ffffff;
+
+  font-size: clamp(1.7rem, 4vw, 2.8rem);
+  font-weight: 900;
+
+  line-height: 1;
+
+  text-transform: uppercase;
+  letter-spacing: -0.03em;
+}
+
+
+/* =========================================================
+   PETITS TITRES
+   ========================================================= */
+
+.eyebrow {
+  margin: 0;
+
+  color: #f4c542;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+
+/* =========================================================
+   CHOIX 1V1 / 1V1V1
+   ========================================================= */
+
+.mode-toggle {
+  display: inline-flex;
+
+  flex-shrink: 0;
+
+  padding: 4px;
+
+  background: rgba(255, 255, 255, 0.055);
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+}
+
+.mode-toggle button {
+  min-width: 76px;
+  min-height: 39px;
+
+  padding: 0 13px;
+
+  border: 0;
+  border-radius: 7px;
+
+  background: transparent;
+
+  color: rgba(255, 255, 255, 0.55);
+
+  font-size: 11px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.mode-toggle button:hover:not(.active) {
+  color: #ffffff;
+
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.mode-toggle button.active {
+  background:
+    linear-gradient(
+      135deg,
+      #a51f28,
+      #d92f38
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    0 5px 14px rgba(0, 0, 0, 0.3);
+}
+
+
+/* =========================================================
+   GRILLE JOUEURS
+   ========================================================= */
+
+.builds-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(360px, 1fr));
+
+  align-items: start;
+
+  gap: 16px;
+}
+
+
+/* =========================================================
+   JOUEUR
+   ========================================================= */
+
+.build-panel {
+  min-width: 0;
+
+  padding: 16px;
+
+  box-sizing: border-box;
+
+  background: rgba(10, 10, 14, 0.82);
+
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 14px;
+
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.28);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+
+/* =========================================================
+   HEADER JOUEUR
+   ========================================================= */
+
+.build-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  margin-bottom: 13px;
+}
+
+.build-header h2 {
+  margin: 4px 0 0;
+
+  color: #ffffff;
+
+  font-size: 17px;
+  font-weight: 850;
+
+  text-transform: uppercase;
+}
+
+.slot-counter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 48px;
+  min-height: 29px;
+
+  padding: 0 8px;
+
+  background: rgba(244, 197, 66, 0.07);
+
+  border: 1px solid rgba(244, 197, 66, 0.2);
+  border-radius: 7px;
+
+  color: #f4c542;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   CATÉGORIES
+   ========================================================= */
+
+.category-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 8px;
+}
+
+
+/* =========================================================
+   SLOT CATÉGORIE
+   ========================================================= */
+
+.category-slot {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 0;
+  min-height: 145px;
+
+  gap: 6px;
+  padding: 10px 8px;
+
+  overflow: hidden;
+
+  box-sizing: border-box;
+
+  background: rgba(255, 255, 255, 0.035);
+
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 9px;
+
+  color: #ffffff;
+
+  text-align: center;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.category-slot:hover {
+  transform: translateY(-2px);
+
+  background: rgba(255, 255, 255, 0.065);
+
+  border-color: rgba(244, 197, 66, 0.35);
+
+  box-shadow:
+    0 8px 18px rgba(0, 0, 0, 0.2);
+}
+
+
+/* =========================================================
+   SLOT REMPLI
+   ========================================================= */
+
+.category-slot.filled {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(126, 22, 29, 0.15),
+      rgba(255, 255, 255, 0.035)
+    );
+
+  border-color: rgba(244, 197, 66, 0.4);
+}
+
+.category-slot.filled::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 2px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #d92f38,
+      #f4c542
+    );
+}
+
+
+/* =========================================================
+   IMAGE PERSONNAGE
+   ========================================================= */
+
+.category-slot img,
+.slot-fallback {
+  width: 54px;
+  height: 54px;
+
+  flex-shrink: 0;
+
+  border-radius: 8px;
+}
+
+.category-slot img {
+  display: block;
+
+  object-fit: cover;
+
+  border: 1px solid rgba(255, 255, 255, 0.13);
+}
+
+.slot-fallback {
+  display: grid;
+  place-items: center;
+
+  background: rgba(255, 255, 255, 0.08);
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  color: #f4c542;
+
+  font-size: 20px;
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   NOM CATÉGORIE
+   ========================================================= */
+
+.slot-label {
+  color: #f4c542;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  line-height: 1.2;
+
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+
+/* =========================================================
+   NOM PERSONNAGE
+   ========================================================= */
+
+.category-slot strong {
+  display: block;
+
+  width: 100%;
+
+  overflow: hidden;
+
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  line-height: 1.25;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   SLOT VIDE
+   ========================================================= */
+
+.slot-empty {
+  color: rgba(255, 255, 255, 0.38);
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   ACTIONS SLOT
+   ========================================================= */
+
+.slot-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-wrap: wrap;
+
+  gap: 7px;
+
+  color: rgba(255, 255, 255, 0.48);
+
+  font-size: 8px;
+  font-weight: 700;
+
+  text-transform: uppercase;
+}
+
+.slot-actions span {
+  cursor: pointer;
+}
+
+.slot-actions span:hover {
+  color: #ffffff;
+}
+
+.slot-actions span:last-child {
+  color: #ff858b;
+}
+
+.slot-actions span:last-child:hover {
+  color: #ffb0b4;
+}
+
+
+/* =========================================================
+   ACTIONS SIMULATION
+   ========================================================= */
+
+.simulator-actions {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 9px;
+
+  margin-top: 18px;
+}
+
+
+/* =========================================================
+   BOUTONS
+   ========================================================= */
+
+.primary-button,
+.secondary-button,
+.close-button {
+  min-height: 42px;
+
+  padding: 0 16px;
+
+  border-radius: 8px;
+
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 900;
+
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.18s ease,
+    filter 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.primary-button {
+  background:
+    linear-gradient(
+      135deg,
+      #a51f28,
+      #d92f38
+    );
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+
+  color: #ffffff;
+
+  box-shadow:
+    0 7px 18px rgba(0, 0, 0, 0.28);
+}
+
+.secondary-button,
+.close-button {
+  background: rgba(255, 255, 255, 0.045);
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.primary-button:hover:not(:disabled),
+.secondary-button:hover,
+.close-button:hover {
+  transform: translateY(-2px);
+
+  filter: brightness(1.08);
+}
+
+.secondary-button:hover,
+.close-button:hover {
+  border-color: rgba(244, 197, 66, 0.4);
+
+  color: #ffffff;
+}
+
+.primary-button:disabled {
+  opacity: 0.35;
+
+  cursor: not-allowed;
+
+  transform: none;
+  box-shadow: none;
+}
+
+
+/* =========================================================
+   MESSAGES
+   ========================================================= */
+
+.state-message,
+.error-message {
+  padding: 14px 16px;
+
+  background: rgba(10, 10, 14, 0.82);
+
+  border-radius: 10px;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.state-message {
+  color: #f4c542;
+
+  border: 1px solid rgba(244, 197, 66, 0.18);
+}
+
+.error-message {
+  color: #ff969b;
+
+  border: 1px solid rgba(217, 47, 56, 0.25);
+}
+
+
+/* =========================================================
+   RÉSULTAT
+   ========================================================= */
+
+.result-panel {
+  position: relative;
+
+  margin-top: 24px;
+  padding: 20px;
+
+  overflow: hidden;
+
+  background: rgba(10, 10, 14, 0.88);
+
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 14px;
+
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.32);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.result-panel::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 3px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #d92f38,
+      #f4c542,
+      transparent
+    );
+}
+
+.result-panel > h2 {
+  margin: 5px 0 0;
+
+  color: #ffffff;
+
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 900;
+
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   SCOREBOARD
+   ========================================================= */
+
+.scoreboard {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(220px, 1fr));
+
+  align-items: stretch;
+
+  gap: 10px;
+
+  margin-top: 16px;
+}
+
+.scoreboard article {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+
+  gap: 5px;
+  padding: 15px;
+
+  background: rgba(255, 255, 255, 0.035);
+
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 9px;
+}
+
+.scoreboard h3 {
+  margin: 0;
+
+  color: rgba(255, 255, 255, 0.72);
+
+  font-size: 11px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+}
+
+.scoreboard > article > strong {
+  color: #ffffff;
+
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 900;
+
+  line-height: 1;
+}
+
+.scoreboard > article > span {
+  color: rgba(255, 255, 255, 0.42);
+
+  font-size: 9px;
+}
+
+
+/* =========================================================
+   VS
+   ========================================================= */
+
+.versus {
+  display: none;
+}
+
+
+/* =========================================================
+   BONUS / MALUS JOUEUR
+   ========================================================= */
+
+.player-rules {
+  margin-top: 9px;
+  padding-top: 9px;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.player-rules h4 {
+  margin: 0 0 6px;
+
+  color: #f4c542;
+
+  font-size: 9px;
+  font-weight: 900;
+
+  letter-spacing: 0.07em;
+}
+
+.player-rules p {
+  margin: 4px 0;
+
+  color: rgba(255, 255, 255, 0.55);
+
+  font-size: 10px;
+
+  line-height: 1.4;
+}
+
+.player-rules .bonus {
+  color: #83daa6;
+}
+
+.player-rules .malus {
+  color: #ff9196;
+}
+
+
+/* =========================================================
+   RÉSULTATS PAR CATÉGORIE
+   ========================================================= */
+
+.category-results {
+  margin-top: 18px;
+}
+
+.category-results > h3 {
+  margin: 0 0 10px;
+
+  color: #ffffff;
+
+  font-size: 13px;
+  font-weight: 850;
+
+  text-transform: uppercase;
+}
+
+.category-results article {
+  display: grid;
+
+  grid-template-columns:
+    minmax(120px, 1.1fr)
+    repeat(3, minmax(100px, 1fr))
+    minmax(120px, 1fr);
+
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 9px 10px;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+
+  font-size: 10px;
+}
+
+.category-results article strong {
+  color: #f4c542;
+}
+
+.category-results article span {
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.category-results article b {
+  color: #ffffff;
+
+  font-size: 10px;
+}
+
+
+/* =========================================================
+   MODALE SÉLECTION CARTE
+   ========================================================= */
+
+.selection-modal {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 2000;
+
+  display: grid;
+  place-items: center;
+
+  padding: 20px;
+
+  box-sizing: border-box;
+
+  background: rgba(0, 0, 0, 0.78);
+
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+
+/* =========================================================
+   PANNEAU MODALE
+   ========================================================= */
+
+.selection-panel {
+  width: min(900px, 100%);
+  max-height: 82vh;
+
+  overflow-y: auto;
+
+  padding: 18px;
+
+  box-sizing: border-box;
+
+  background: rgba(13, 13, 17, 0.98);
+
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 14px;
+
+  box-shadow:
+    0 24px 65px rgba(0, 0, 0, 0.55);
+}
+
+.selection-panel header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  margin-bottom: 13px;
+}
+
+.selection-panel h3 {
+  margin: 4px 0 0;
+
+  color: #ffffff;
+
+  font-size: 17px;
+}
+
+
+/* =========================================================
+   RECHERCHE
+   ========================================================= */
+
+.search-input {
+  width: 100%;
+  min-height: 42px;
+
+  margin-bottom: 13px;
+  padding: 0 13px;
+
+  box-sizing: border-box;
+
+  outline: none;
+
+  background: rgba(255, 255, 255, 0.055);
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9px;
+
+  color: #ffffff;
+
+  font-size: 12px;
+
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.search-input:focus {
+  background: rgba(255, 255, 255, 0.075);
+
+  border-color: rgba(244, 197, 66, 0.55);
+
+  box-shadow:
+    0 0 0 3px rgba(244, 197, 66, 0.07);
+}
+
+
+/* =========================================================
+   CARTES DISPONIBLES
+   ========================================================= */
+
+.candidate-list {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fill, minmax(130px, 1fr));
+
+  gap: 8px;
+}
+
+
+/* =========================================================
+   CARTE CANDIDATE
+   ========================================================= */
+
+.candidate-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  min-width: 0;
+
+  gap: 6px;
+  padding: 10px 8px;
+
+  background: rgba(255, 255, 255, 0.035);
+
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 9px;
+
+  color: #ffffff;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.candidate-card:hover {
+  transform: translateY(-2px);
+
+  background: rgba(244, 197, 66, 0.06);
+
+  border-color: rgba(244, 197, 66, 0.4);
+}
+
+.candidate-card img {
+  display: block;
+
+  width: 58px;
+  height: 58px;
+
+  object-fit: cover;
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+}
+
+.candidate-name {
+  width: 100%;
+
+  overflow: hidden;
+
+  color: #ffffff;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  text-align: center;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.candidate-card small {
+  color: #f4c542;
+
+  font-size: 8px;
+  font-weight: 700;
+
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   TABLETTE
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .page-shell {
+    width: calc(100% - 28px);
+
+    padding-top: 20px;
+  }
+
+  .builds-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .category-grid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+
+  .category-results article {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 5px 10px;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+  .page-shell {
+    width: calc(100% - 18px);
+
+    padding:
+      12px
+      0
+      45px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+
+    gap: 13px;
+
+    margin-bottom: 11px;
+    padding: 14px;
+
+    border-radius: 11px;
+  }
+
+  .page-header h1 {
+    font-size: 20px;
+  }
+
+  .mode-toggle {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    width: 100%;
+  }
+
+  .mode-toggle button {
+    width: 100%;
+  }
+
+  .builds-grid {
+    gap: 9px;
+  }
+
+  .build-panel {
+    padding: 11px;
+
+    border-radius: 11px;
+  }
+
+  .build-header {
+    margin-bottom: 9px;
+  }
+
+  .build-header h2 {
+    font-size: 14px;
+  }
+
+  /*
+   * On garde plusieurs catégories visibles à l'écran
+   * au lieu d'avoir une énorme liste verticale.
+   */
+  .category-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 6px;
+  }
+
+  .category-slot {
+    min-height: 125px;
+
+    padding: 8px 6px;
+
+    border-radius: 7px;
+  }
+
+  .category-slot img,
+  .slot-fallback {
+    width: 46px;
+    height: 46px;
+  }
+
+  .slot-label {
+    font-size: 8px;
+  }
+
+  .category-slot strong {
+    font-size: 9px;
+  }
+
+  .slot-actions {
+    gap: 5px;
+
+    font-size: 7px;
+  }
+
+  .simulator-actions {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    margin-top: 11px;
+  }
+
+  .primary-button,
+  .secondary-button {
+    width: 100%;
+
+    padding-inline: 8px;
+
+    font-size: 9px;
+  }
+
+  .result-panel {
+    margin-top: 16px;
+    padding: 13px;
+
+    border-radius: 11px;
+  }
+
+  .scoreboard {
+    grid-template-columns: 1fr;
+
+    gap: 7px;
+  }
+
+  .scoreboard article {
+    padding: 12px;
+  }
+
+  .scoreboard > article > strong {
+    font-size: 2rem;
+  }
+
+  .category-results article {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    gap: 4px;
+
+    padding:
+      8px
+      3px;
+  }
+
+  .selection-modal {
+    padding: 8px;
+  }
+
+  .selection-panel {
+    max-height: 90vh;
+
+    padding: 13px;
+
+    border-radius: 11px;
+  }
+
+  .selection-panel header {
+    align-items: flex-start;
+  }
+
+  .selection-panel h3 {
+    font-size: 14px;
+  }
+
+  .close-button {
+    min-height: 36px;
+
+    padding-inline: 10px;
+
+    font-size: 8px;
+  }
+
+  .candidate-list {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+
+    gap: 6px;
+  }
+
+  .candidate-card {
+    padding: 8px 5px;
+  }
+
+  .candidate-card img {
+    width: 50px;
+    height: 50px;
+  }
+
+  .candidate-name {
+    font-size: 8px;
+  }
+}
+
+
+/* =========================================================
+   PETITS MOBILES
+   ========================================================= */
+
+@media (max-width: 390px) {
+  .page-shell {
+    width: calc(100% - 12px);
+  }
+
+  .build-panel {
+    padding: 9px;
+  }
+
+  .category-slot {
+    min-height: 115px;
+  }
+
+  .category-slot img,
+  .slot-fallback {
+    width: 42px;
+    height: 42px;
+  }
+
+  .candidate-list {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}

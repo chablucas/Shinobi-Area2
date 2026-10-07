@@ -1,0 +1,1538 @@
+/* =========================================================
+   SHINOBI AREA — PARTIE / CRÉER TON PERSO
+   ========================================================= */
+
+.game-shell {
+  min-height: 100vh;
+  overflow-x: hidden;
+  color: #fff;
+
+  /* Aucun background :
+     l'image globale du nouveau site reste visible */
+}
+
+.game-shell > *:not(.social-header) {
+  width: min(1360px, calc(100% - 32px));
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   TITRE
+   ========================================================= */
+
+.page-heading {
+  display: block;
+
+  padding: 30px 0 18px;
+
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0;
+
+  color: #f4c542;
+
+  font-size: 9px;
+  font-weight: 850;
+
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+.page-heading h1 {
+  margin: 7px 0 0;
+
+  color: #fff;
+
+  font-size: clamp(2rem, 5vw, 3.8rem);
+  font-weight: 900;
+
+  line-height: 0.96;
+
+  text-transform: uppercase;
+  letter-spacing: -0.05em;
+}
+
+
+/* =========================================================
+   TOUR ACTUEL
+   ========================================================= */
+
+.turn-status {
+  max-width: 430px;
+
+  margin: 17px auto 0;
+  padding: 11px 15px;
+
+  box-sizing: border-box;
+
+  background: rgba(12, 12, 16, 0.84);
+
+  border: 1px solid rgba(244, 197, 66, 0.28);
+  border-radius: 9px;
+
+  text-align: left;
+
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+
+  backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px);
+}
+
+.turn-status.active {
+  border-color: rgba(217, 47, 56, 0.55);
+
+  box-shadow:
+    0 0 20px rgba(217, 47, 56, 0.1),
+    0 10px 24px rgba(0, 0, 0, 0.25);
+}
+
+.turn-status strong,
+.turn-status small {
+  display: block;
+}
+
+.turn-status strong {
+  color: #fff;
+
+  font-size: 10px;
+  font-weight: 850;
+
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.turn-status small {
+  margin-top: 5px;
+
+  color: rgba(255, 255, 255, 0.43);
+
+  font-size: 8px;
+}
+
+.status-dot {
+  display: inline-block;
+
+  width: 7px;
+  height: 7px;
+
+  margin-right: 6px;
+
+  background: #d92f38;
+
+  border-radius: 50%;
+
+  box-shadow: 0 0 8px rgba(217, 47, 56, 0.7);
+}
+
+
+/* =========================================================
+   ERREURS / ÉTATS
+   ========================================================= */
+
+.error-message,
+.validation-errors {
+  margin: 12px auto;
+  padding: 11px 13px;
+
+  background: rgba(217, 47, 56, 0.09);
+
+  border: 1px solid rgba(217, 47, 56, 0.28);
+  border-radius: 8px;
+
+  color: #ff969b;
+
+  font-size: 10px;
+  line-height: 1.5;
+
+  backdrop-filter: blur(8px);
+}
+
+.validation-errors p {
+  margin: 4px 0;
+}
+
+
+/* =========================================================
+   ACTIONS CONSTRUCTION
+   ========================================================= */
+
+.construction-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  margin: 13px auto 18px;
+}
+
+.primary-button,
+.secondary-button,
+.undo-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 40px;
+
+  gap: 6px;
+  padding: 0 14px;
+
+  box-sizing: border-box;
+
+  border-radius: 8px;
+
+  font-family: inherit;
+  font-size: 8px;
+  font-weight: 850;
+
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.18s ease,
+    filter 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.primary-button {
+  background:
+    linear-gradient(
+      135deg,
+      #a51f28,
+      #d92f38
+    );
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+
+  color: #fff;
+
+  box-shadow: 0 7px 18px rgba(0, 0, 0, 0.28);
+}
+
+.secondary-button,
+.undo-button {
+  background: rgba(10, 10, 14, 0.75);
+
+  border: 1px solid rgba(255, 255, 255, 0.13);
+
+  color: rgba(255, 255, 255, 0.68);
+
+  backdrop-filter: blur(8px);
+}
+
+.primary-button:hover:not(:disabled),
+.secondary-button:hover,
+.undo-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+
+  filter: brightness(1.08);
+}
+
+.secondary-button:hover,
+.undo-button:hover:not(:disabled) {
+  border-color: rgba(244, 197, 66, 0.35);
+
+  color: #f4c542;
+}
+
+.primary-button:disabled,
+.undo-button:disabled {
+  opacity: 0.35;
+
+  cursor: not-allowed;
+
+  transform: none;
+}
+
+
+/* =========================================================
+   LAYOUT DE COMBAT
+   ========================================================= */
+
+.vertical-battle-layout {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    150px
+    minmax(0, 1fr);
+
+  align-items: start;
+
+  gap: 13px;
+
+  padding-bottom: 60px;
+}
+
+
+/* 3e et 4e joueurs */
+
+.player-three,
+.player-four {
+  grid-column: span 1;
+}
+
+
+/* =========================================================
+   PANEL JOUEUR
+   ========================================================= */
+
+.build-panel {
+  position: relative;
+
+  min-width: 0;
+
+  padding: 13px;
+
+  overflow: hidden;
+
+  background: rgba(10, 10, 14, 0.83);
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+
+  box-shadow:
+    0 13px 30px rgba(0, 0, 0, 0.27);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.build-panel.is-active {
+  border-color: rgba(244, 197, 66, 0.55);
+
+  box-shadow:
+    0 0 22px rgba(244, 197, 66, 0.08),
+    0 13px 30px rgba(0, 0, 0, 0.3);
+}
+
+.build-panel.is-active::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 3px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #d92f38,
+      #f4c542
+    );
+}
+
+
+/* =========================================================
+   HEADER JOUEUR
+   ========================================================= */
+
+.build-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+
+  margin-bottom: 10px;
+}
+
+.build-header h2,
+.build-header h3 {
+  margin: 4px 0 0;
+
+  color: #fff;
+
+  font-size: 14px;
+  font-weight: 850;
+
+  text-transform: uppercase;
+}
+
+.build-count {
+  flex-shrink: 0;
+
+  color: #f4c542;
+
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.build-count small {
+  color: rgba(255, 255, 255, 0.32);
+
+  font-size: 8px;
+}
+
+
+/* =========================================================
+   GRILLE DES 15 CATÉGORIES
+   ========================================================= */
+
+.category-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 5px;
+}
+
+
+/* =========================================================
+   SLOT
+   ========================================================= */
+
+.category-slot {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+  min-height: 100px;
+
+  gap: 4px;
+  padding: 6px;
+
+  overflow: hidden;
+
+  box-sizing: border-box;
+
+  background: rgba(255, 255, 255, 0.03);
+
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 7px;
+
+  color: #fff;
+
+  font-family: inherit;
+
+  text-align: left;
+
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    transform 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+button.category-slot {
+  cursor: default;
+}
+
+.category-slot.selectable {
+  cursor: pointer;
+
+  border-color: rgba(244, 197, 66, 0.32);
+
+  background: rgba(244, 197, 66, 0.045);
+}
+
+.category-slot.selectable:hover {
+  transform: translateY(-2px);
+
+  background: rgba(244, 197, 66, 0.09);
+
+  border-color: rgba(244, 197, 66, 0.65);
+
+  box-shadow: 0 7px 15px rgba(0, 0, 0, 0.22);
+}
+
+.category-slot.filled {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(166, 31, 40, 0.1),
+      rgba(255, 255, 255, 0.025)
+    );
+
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.category-slot:disabled {
+  opacity: 1;
+}
+
+
+/* =========================================================
+   NOM CATÉGORIE
+   ========================================================= */
+
+.slot-label {
+  display: block;
+
+  overflow: hidden;
+
+  color: #f4c542;
+
+  font-size: 6px;
+  font-weight: 850;
+
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  letter-spacing: 0.04em;
+}
+
+
+/* =========================================================
+   MINIATURE CARTE
+   ========================================================= */
+
+.slot-card-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 150px;
+
+  overflow: hidden;
+
+  background: transparent;
+  border-radius: 5px;
+}
+
+.slot-card-preview img {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+  object-position: center;
+}
+
+.slot-card-fallback {
+  display: grid;
+  place-items: center;
+
+  width: 100%;
+  height: 100%;
+
+  color: #f4c542;
+
+  font-size: 18px;
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   INFOS CARTE
+   ========================================================= */
+
+.slot-card-details {
+  display: grid;
+
+  min-width: 0;
+
+  gap: 2px;
+}
+
+.slot-card-name {
+  overflow: hidden;
+
+  color: rgba(255, 255, 255, 0.82);
+
+  font-size: 7px;
+  font-weight: 750;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.slot-state {
+  color: rgba(255, 255, 255, 0.3);
+
+  font-size: 6px;
+
+  text-transform: uppercase;
+}
+
+.category-slot.selectable .slot-state {
+  color: #f4c542;
+}
+
+.slot-empty {
+  display: grid;
+  place-items: center;
+
+  flex: 1;
+
+  min-height: 48px;
+
+  color: rgba(255, 255, 255, 0.22);
+
+  font-size: 8px;
+  font-weight: 700;
+
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   ARÈNE CENTRALE
+   ========================================================= */
+
+.battle-center-arena {
+  position: sticky;
+
+  top: 95px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 230px;
+
+  gap: 12px;
+  padding: 14px 9px;
+
+  box-sizing: border-box;
+
+  background: rgba(10, 10, 14, 0.7);
+
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 11px;
+
+  text-align: center;
+
+  backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px);
+}
+
+.arena-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  color: #f4c542;
+}
+
+.arena-icon {
+  color: #d92f38;
+
+  font-size: 16px;
+}
+
+.arena-text {
+  font-size: 7px;
+  font-weight: 900;
+
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.arena-status {
+  margin: 0;
+
+  color: rgba(255, 255, 255, 0.43);
+
+  font-size: 8px;
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   COMBAT DRAW AREA
+   ========================================================= */
+
+.combat-draw-section {
+  margin-bottom: 16px;
+}
+
+
+/* =========================================================
+   PHASE COMBAT
+   ========================================================= */
+
+.combat-panel {
+  padding-bottom: 70px;
+}
+
+.combat-intro {
+  max-width: 600px;
+
+  margin: 0 auto 20px;
+
+  text-align: center;
+}
+
+.combat-intro h2 {
+  margin: 6px 0;
+
+  color: #fff;
+
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  font-weight: 900;
+
+  text-transform: uppercase;
+}
+
+.combat-intro > p:last-child {
+  margin: 0;
+
+  color: rgba(255, 255, 255, 0.45);
+
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+
+/* =========================================================
+   ACTION SIMULATION
+   ========================================================= */
+
+.combat-actions {
+  display: grid;
+
+  grid-template-columns:
+    minmax(220px, 1fr)
+    minmax(220px, 1fr);
+
+  gap: 9px;
+
+  max-width: 760px;
+
+  margin: 0 auto 20px;
+}
+
+.btn-simulate {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  min-height: 48px;
+
+  padding: 0 16px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #a51f28,
+      #d92f38
+    );
+
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 9px;
+
+  color: #fff;
+
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 900;
+
+  cursor: pointer;
+
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+
+  transition:
+    transform 0.18s ease,
+    filter 0.18s ease;
+}
+
+.btn-simulate:hover:not(:disabled) {
+  transform: translateY(-2px);
+
+  filter: brightness(1.08);
+}
+
+.btn-simulate:disabled {
+  opacity: 0.4;
+
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   CHOIX MANUEL
+   ========================================================= */
+
+.manual-choices {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 5px;
+}
+
+.manual-choices button {
+  min-height: 48px;
+
+  padding: 5px;
+
+  background: rgba(10, 10, 14, 0.78);
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+
+  color: rgba(255, 255, 255, 0.65);
+
+  font-family: inherit;
+  font-size: 7px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+
+  cursor: pointer;
+
+  backdrop-filter: blur(8px);
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.manual-choices button:hover:not(:disabled) {
+  background: rgba(244, 197, 66, 0.07);
+
+  border-color: rgba(244, 197, 66, 0.35);
+
+  color: #f4c542;
+}
+
+.manual-choices button:disabled {
+  opacity: 0.35;
+
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   BUILDS COMBAT
+   ========================================================= */
+
+.combat-builds,
+.result-builds {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(390px, 1fr));
+
+  gap: 12px;
+}
+
+
+/* =========================================================
+   RÉSULTAT
+   ========================================================= */
+
+.result-panel {
+  padding: 20px 0 70px;
+
+  text-align: center;
+}
+
+.result-panel > h2 {
+  margin: 7px 0 20px;
+
+  color: #fff;
+
+  font-size: clamp(2rem, 5vw, 3.8rem);
+  font-weight: 900;
+
+  text-transform: uppercase;
+  letter-spacing: -0.04em;
+}
+
+
+/* =========================================================
+   SCORE
+   ========================================================= */
+
+.combat-score {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto
+    minmax(0, 1fr);
+
+  align-items: center;
+
+  gap: 10px;
+
+  max-width: 680px;
+
+  margin: 0 auto 22px;
+}
+
+.score-card {
+  padding: 17px;
+
+  background: rgba(10, 10, 14, 0.85);
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 11px;
+
+  backdrop-filter: blur(9px);
+}
+
+.score-card h3 {
+  margin: 0 0 7px;
+
+  color: rgba(255, 255, 255, 0.6);
+
+  font-size: 9px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+}
+
+.score-card strong {
+  display: block;
+
+  color: #f4c542;
+
+  font-size: clamp(1.8rem, 5vw, 3.2rem);
+  font-weight: 900;
+
+  line-height: 1;
+}
+
+.score-card span {
+  display: block;
+
+  margin-top: 6px;
+
+  color: rgba(255, 255, 255, 0.3);
+
+  font-size: 7px;
+
+  text-transform: uppercase;
+}
+
+.score-vs {
+  color: #d92f38;
+
+  font-size: 13px;
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   STATS FINALES
+   ========================================================= */
+
+.final-stat-value,
+.final-stat-pair {
+  color: #f4c542;
+
+  font-size: 7px;
+  font-weight: 850;
+}
+
+
+/* =========================================================
+   BONUS / MALUS
+   ========================================================= */
+
+.rules-applied-section {
+  margin-top: 11px;
+  padding: 10px;
+
+  background: rgba(255, 255, 255, 0.025);
+
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 7px;
+
+  text-align: left;
+}
+
+.rules-applied-section h4 {
+  margin: 0 0 7px;
+
+  color: #f4c542;
+
+  font-size: 8px;
+  font-weight: 900;
+
+  letter-spacing: 0.07em;
+}
+
+.rule-row {
+  margin: 4px 0;
+
+  color: rgba(255, 255, 255, 0.55);
+
+  font-size: 8px;
+  line-height: 1.4;
+}
+
+.rule-row.bonus,
+.rule-row.positive {
+  color: #71d698;
+}
+
+.rule-row.malus,
+.rule-row.negative {
+  color: #ff8389;
+}
+
+
+/* =========================================================
+   ACTIONS RÉSULTAT
+   ========================================================= */
+
+.result-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  margin-top: 20px;
+}
+
+
+/* =========================================================
+   MULTIJOUEUR TEMPS RÉEL
+   ========================================================= */
+
+.realtime-game {
+  width: min(1360px, calc(100% - 32px));
+  margin: 0 auto 60px;
+  padding: 0;
+
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.realtime-turn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 16px;
+
+  max-width: 500px;
+
+  margin: 0 auto 18px;
+  padding: 12px 16px;
+
+  background: rgba(10, 10, 14, 0.88);
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9px;
+}
+
+.realtime-turn.active {
+  border-color: rgba(217, 47, 56, 0.65);
+
+  box-shadow:
+    0 0 20px rgba(217, 47, 56, 0.1),
+    0 10px 24px rgba(0, 0, 0, 0.25);
+}
+
+.realtime-turn strong {
+  color: #fff;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.realtime-turn span {
+  flex-shrink: 0;
+
+  color: #f4c542;
+
+  font-size: 8px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   PLATEAUX MULTIJOUEURS
+   ========================================================= */
+
+.realtime-battle-layout {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  align-items: start;
+
+  gap: 14px;
+}
+
+.realtime-build-panel {
+  min-width: 0;
+}
+
+.realtime-build-panel.is-me {
+  border-color: rgba(217, 47, 56, 0.35);
+}
+
+.realtime-build-panel.is-active {
+  border-color: rgba(244, 197, 66, 0.65);
+}
+
+
+/* =========================================================
+   PIOCHE DU JOUEUR LOCAL
+   ========================================================= */
+
+.realtime-global-draw {
+  width: 100%;
+  max-width: none;
+  margin: 0 0 18px;
+}
+
+
+
+/* =========================================================
+   RÉSULTAT TEMPS RÉEL
+   ========================================================= */
+
+.realtime-result {
+  margin-top: 18px;
+  padding: 16px;
+
+  background: rgba(10, 10, 14, 0.88);
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+
+  text-align: center;
+}
+
+.realtime-result h2 {
+  margin: 8px 0;
+
+  color: #fff;
+
+  font-size: 22px;
+  font-weight: 900;
+
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   TABLETTE
+   ========================================================= */
+.realtime-build-panel .category-slot {
+  min-width: 0;
+  min-height: 115px;
+}
+
+.realtime-build-panel .slot-card-preview {
+  height: 78px;
+}
+
+.realtime-build-panel .slot-card-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+   @media (max-width: 1000px) {
+  .vertical-battle-layout {
+    grid-template-columns: 1fr 110px 1fr;
+    gap: 8px;
+  }
+
+  .build-panel {
+    padding: 9px;
+  }
+
+  .category-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .battle-center-arena {
+    min-height: 190px;
+    padding: 10px 6px;
+  }
+
+  .combat-builds,
+  .result-builds {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 760px) {
+  .realtime-game {
+    width: calc(100% - 18px);
+  }
+
+  .realtime-turn {
+    margin-bottom: 10px;
+  }
+
+  .realtime-battle-layout {
+    grid-template-columns: 1fr;
+
+    gap: 10px;
+  }
+
+  .realtime-build-panel {
+    width: 100%;
+  }
+}
+
+
+/* =========================================================
+   PETIT MOBILE
+   ========================================================= */
+
+@media (max-width: 480px) {
+  .realtime-game {
+    width: calc(100% - 12px);
+  }
+
+  .realtime-turn {
+    padding: 10px 11px;
+  }
+
+  .realtime-turn strong {
+    font-size: 9px;
+  }
+}
+
+/* =========================================================
+   DESKTOP / TABLETTE — DECKS COMPACTS
+   ========================================================= */
+
+@media (min-width: 761px) {
+  .category-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .category-slot {
+    min-width: 0;
+    min-height: 115px;
+  }
+
+  .slot-card-preview {
+    width: 100%;
+    height: 78px;
+  }
+
+  .slot-card-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+  }
+
+  .realtime-global-draw {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+
+/* =========================================================
+   MOBILE / TABLETTE PORTRAIT
+   ========================================================= */
+
+@media (max-width: 760px) {
+  .game-shell > *:not(.social-header) {
+    width: calc(100% - 18px);
+  }
+
+  .page-heading {
+    padding:
+      18px
+      0
+      12px;
+  }
+
+  .page-heading h1 {
+    font-size: 2rem;
+  }
+
+  /*
+   * Sur téléphone on conserve la logique que tu voulais :
+   * la zone de pioche reste au-dessus,
+   * puis les decks sont affichés verticalement.
+   */
+  .vertical-battle-layout {
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+
+    padding-bottom: 40px;
+  }
+
+  .build-panel,
+  .battle-center-arena {
+    width: 100%;
+  }
+
+  .battle-center-arena {
+    position: static;
+
+    min-height: auto;
+
+    order: -1;
+
+    padding: 10px;
+  }
+
+  .arena-status {
+    max-width: 400px;
+  }
+
+  .category-grid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+
+    gap: 4px;
+  }
+
+  .category-slot {
+    min-height: 88px;
+  }
+
+  .slot-card-preview {
+    height: 44px;
+  }
+
+  .build-header h2,
+  .build-header h3 {
+    font-size: 12px;
+  }
+
+  .combat-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .combat-score {
+    grid-template-columns:
+      1fr
+      auto
+      1fr;
+  }
+
+  .score-card {
+    padding: 12px 7px;
+  }
+
+  .score-card strong {
+    font-size: 1.7rem;
+  }
+
+  .realtime-players {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* =========================================================
+   PETIT MOBILE
+   ========================================================= */
+
+@media (max-width: 480px) {
+  .game-shell > *:not(.social-header) {
+    width: calc(100% - 12px);
+  }
+
+  .turn-status {
+    margin-top: 12px;
+
+    padding: 9px 11px;
+  }
+
+  .construction-actions {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    width: 100%;
+  }
+
+  .construction-actions button {
+    width: 100%;
+  }
+
+  /*
+   * 15 catégories :
+   * 3 colonnes reste beaucoup plus compact.
+   */
+  .category-grid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+
+    gap: 3px;
+  }
+
+  .category-slot {
+    min-height: 82px;
+
+    padding: 4px;
+  }
+
+  .slot-label {
+    font-size: 5px;
+  }
+
+  .slot-card-preview {
+    height: 40px;
+  }
+
+  .slot-card-name {
+    font-size: 6px;
+  }
+
+  .slot-state {
+    font-size: 5px;
+  }
+
+  .combat-score {
+    gap: 5px;
+  }
+
+  .score-vs {
+    font-size: 9px;
+  }
+
+  .result-actions {
+    display: grid;
+
+    grid-template-columns: 1fr;
+
+    width: 100%;
+  }
+
+  .result-actions > * {
+    width: 100%;
+  }
+}
+
+
+/* =========================================================
+   TRÈS PETIT MOBILE
+   ========================================================= */
+
+@media (max-width: 360px) {
+  .category-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 3px;
+  }
+
+  .category-slot {
+    min-height: 155px;
+    padding: 4px;
+  }
+
+  .slot-card-preview {
+    height: 115px;
+  }
+}
+
+/* =========================================================
+   OPTIMISATION MOBILE
+   ========================================================= */
+
+@media (max-width: 760px) {
+  .turn-status,
+  .build-panel,
+  .battle-center-arena,
+  .secondary-button,
+  .undo-button,
+  .manual-choices button,
+  .score-card,
+  .realtime-game,
+  .realtime-panel,
+  .realtime-result {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .build-panel,
+  .score-card,
+  .realtime-game,
+  .realtime-panel,
+  .realtime-result {
+    box-shadow: none;
+  }
+
+  .category-slot,
+  .build-panel {
+    transition: none;
+  }
+
+  .category-slot.selectable:hover {
+    transform: none;
+  }
+}
+/* =========================================================
+   CORRECTION FINALE MOBILE — 3 CARTES PAR LIGNE
+   ========================================================= */
+
+@media (max-width: 760px) {
+  .category-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 4px;
+  }
+
+  .category-slot {
+    min-width: 0;
+    min-height: 160px;
+    padding: 4px;
+  }
+
+  .slot-card-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 120px;
+
+    overflow: hidden;
+    background: transparent;
+  }
+
+  .slot-card-preview img {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+    object-position: center;
+  }
+}

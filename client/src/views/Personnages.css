@@ -1,0 +1,1723 @@
+/* =========================================================
+   SHINOBI AREA — PERSONNAGES / CARTES
+   ========================================================= */
+
+.characters-page {
+  min-height: 100vh;
+  color: #ffffff;
+
+  /* Le fond image global reste visible */
+}
+
+.characters-content {
+  width: min(1320px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 46px 0 90px;
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   TITRE
+   ========================================================= */
+
+.eyebrow {
+  margin: 0;
+  color: #f4c542;
+  font-size: 9px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.characters-content > h1 {
+  margin: 8px 0 12px;
+
+  color: #ffffff;
+
+  font-size: clamp(2.8rem, 7vw, 5.8rem);
+  font-weight: 900;
+
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+}
+
+.characters-intro {
+  max-width: 760px;
+  margin: 0;
+
+  color: rgba(255, 255, 255, 0.52);
+
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+
+/* =========================================================
+   ONGLETS
+   ========================================================= */
+
+.tabs {
+  display: inline-flex;
+
+  gap: 4px;
+  margin: 26px 0 22px;
+  padding: 4px;
+
+  background: rgba(10, 10, 14, 0.76);
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.tabs button {
+  min-height: 39px;
+
+  padding: 0 16px;
+
+  background: transparent;
+
+  border: 0;
+  border-radius: 7px;
+
+  color: rgba(255, 255, 255, 0.55);
+
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 850;
+
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.tabs button:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+}
+
+.tabs button.active {
+  background: linear-gradient(
+    135deg,
+    #a51f28,
+    #d92f38
+  );
+
+  color: #ffffff;
+
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.3);
+}
+
+
+/* =========================================================
+   BARRE RECHERCHE / FILTRES
+   ========================================================= */
+
+.characters-toolbar {
+  display: grid;
+
+  grid-template-columns:
+    minmax(220px, 2fr)
+    minmax(150px, 1fr)
+    minmax(160px, 1fr)
+    auto;
+
+  align-items: center;
+
+  gap: 8px;
+
+  margin: 0 0 18px;
+  padding: 10px;
+
+  background: rgba(10, 10, 14, 0.78);
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 11px;
+}
+
+.characters-toolbar strong {
+  padding: 0 8px;
+
+  color: #f4c542;
+
+  font-size: 9px;
+  font-weight: 850;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   INPUTS
+   ========================================================= */
+
+.auth-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 39px;
+
+  padding: 0 10px;
+
+  box-sizing: border-box;
+
+  outline: none;
+
+  background: rgba(255, 255, 255, 0.055);
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 7px;
+
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 10px;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.auth-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.auth-input:focus {
+  background: rgba(255, 255, 255, 0.075);
+
+  border-color: rgba(244, 197, 66, 0.5);
+
+  box-shadow:
+    0 0 0 3px rgba(244, 197, 66, 0.06);
+}
+
+select.auth-input option {
+  background: #161619;
+  color: #ffffff;
+}
+
+
+/* =========================================================
+   ÉTAT
+   ========================================================= */
+
+.state-message {
+  margin: 13px 0;
+  padding: 11px 13px;
+
+  background: rgba(244, 197, 66, 0.06);
+
+  border: 1px solid rgba(244, 197, 66, 0.18);
+  border-radius: 8px;
+
+  color: #f4c542;
+
+  font-size: 10px;
+  font-weight: 700;
+
+}
+
+.state-message.error {
+  background: rgba(217, 47, 56, 0.08);
+
+  border-color: rgba(217, 47, 56, 0.25);
+
+  color: #ff8d93;
+}
+
+
+/* =========================================================
+   GRILLE DES CARTES
+   ========================================================= */
+
+.characters-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fill, minmax(175px, 1fr));
+
+  gap: 12px;
+}
+
+
+/* =========================================================
+   TILE
+   ========================================================= */
+
+.character-tile {
+  min-width: 0;
+}
+
+
+/* =========================================================
+   FLIP CARD
+   ========================================================= */
+
+.flip-card {
+  min-height: 325px;
+
+  perspective: 1100px;
+
+  cursor: pointer;
+
+  outline: none;
+}
+
+.flip-card:focus-visible {
+  border-radius: 11px;
+
+  box-shadow:
+    0 0 0 3px rgba(244, 197, 66, 0.25);
+}
+
+.flip-inner {
+  position: relative;
+
+  width: 100%;
+  height: 100%;
+  min-height: 325px;
+
+  transform-style: preserve-3d;
+
+  transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.flip-card.flipped .flip-inner {
+  transform: rotateY(180deg);
+}
+
+
+/* =========================================================
+   FACE DE CARTE
+   ========================================================= */
+
+.card-face {
+  position: absolute;
+
+  inset: 0;
+
+  padding: 10px;
+
+  box-sizing: border-box;
+
+  overflow: hidden;
+
+  backface-visibility: hidden;
+
+  background: rgba(10, 10, 14, 0.9);
+
+  border: 1px solid var(--rarity, rgba(255, 255, 255, 0.14));
+  border-radius: 11px;
+
+  box-shadow:
+    0 11px 25px rgba(0, 0, 0, 0.3);
+
+}
+
+
+/* =========================================================
+   RECTO
+   ========================================================= */
+
+.card-front {
+  display: flex;
+  flex-direction: column;
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.flip-card:hover .card-front {
+  transform: translateY(-3px);
+
+  box-shadow:
+    0 16px 32px rgba(0, 0, 0, 0.38),
+    0 0 16px color-mix(
+      in srgb,
+      var(--rarity, #f4c542) 18%,
+      transparent
+    );
+}
+
+
+/* =========================================================
+   IMAGE
+   ========================================================= */
+
+.character-image {
+  position: relative;
+
+  display: grid;
+  place-items: center;
+
+  height: 205px;
+
+  overflow: hidden;
+
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(217, 47, 56, 0.1),
+      rgba(0, 0, 0, 0.35)
+    );
+
+  border-radius: 7px;
+
+  color: #f4c542;
+
+  font-size: 2.8rem;
+  font-weight: 900;
+}
+
+.character-image::after {
+  content: "";
+
+  position: absolute;
+
+  right: 0;
+  bottom: 0;
+  left: 0;
+
+  height: 42px;
+
+  background:
+    linear-gradient(
+      transparent,
+      rgba(0, 0, 0, 0.65)
+    );
+
+  pointer-events: none;
+}
+
+.character-image img {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  transition: transform 0.25s ease;
+}
+
+.flip-card:hover .character-image img {
+  transform: scale(1.035);
+}
+
+
+/* =========================================================
+   RARETÉ
+   ========================================================= */
+
+.rarity-label {
+  display: block;
+
+  margin-top: 9px;
+
+  color: var(--rarity, #f4c542);
+
+  font-size: 7px;
+  font-weight: 850;
+
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+
+/* =========================================================
+   NOM
+   ========================================================= */
+
+.card-front h2,
+.card-back h2 {
+  margin: 6px 0 2px;
+
+  overflow: hidden;
+
+  color: #ffffff;
+
+  font-size: clamp(0.72rem, 1.5vw, 1rem);
+  font-weight: 850;
+
+  line-height: 1.15;
+
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-slug {
+  overflow: hidden;
+
+  color: rgba(255, 255, 255, 0.3);
+
+  font-size: 7px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   VERSO
+   ========================================================= */
+
+.card-back {
+  display: flex;
+  flex-direction: column;
+
+  min-height: 0;
+
+  overflow-y: auto;
+
+  transform: rotateY(180deg);
+
+  scrollbar-width: thin;
+  scrollbar-color:
+    rgba(244, 197, 66, 0.3)
+    transparent;
+}
+
+.card-back::-webkit-scrollbar {
+  width: 4px;
+}
+
+.card-back::-webkit-scrollbar-thumb {
+  background: rgba(244, 197, 66, 0.25);
+
+  border-radius: 999px;
+}
+
+
+/* =========================================================
+   HEADER VERSO
+   ========================================================= */
+
+.card-back-header {
+  display: grid;
+
+  gap: 4px;
+
+  padding-bottom: 7px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.card-back-name {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 850;
+
+  line-height: 1.2;
+
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   INFORMATIONS
+   ========================================================= */
+
+.card-facts {
+  display: grid;
+
+  min-width: 0;
+
+  gap: 7px;
+
+  margin-top: 8px;
+
+  color: rgba(255, 255, 255, 0.5);
+
+  font-size: 8px;
+  line-height: 1.4;
+
+  word-break: break-word;
+}
+
+.card-fact-row,
+.card-facts > span {
+  display: grid;
+
+  min-width: 0;
+
+  gap: 3px;
+}
+
+.card-fact-label {
+  display: block;
+
+  color: #f4c542;
+
+  font-size: 7px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+
+/* =========================================================
+   STATS
+   ========================================================= */
+
+.stats-section {
+  display: grid;
+
+  gap: 4px;
+}
+
+.stats-grid {
+  display: grid;
+
+  grid-template-columns: 1fr;
+
+  gap: 3px;
+
+  padding: 7px 0;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.stats-grid > span {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto;
+
+  align-items: center;
+
+  min-width: 0;
+
+  gap: 7px;
+
+  color: rgba(255, 255, 255, 0.48);
+
+  font-size: 8px;
+  line-height: 1.25;
+
+  white-space: nowrap;
+}
+
+.stats-grid > span > span {
+  min-width: 0;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stats-grid strong {
+  color: #ffffff;
+
+  font-size: 8px;
+  font-weight: 800;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   BOUTON MODIFIER
+   ========================================================= */
+
+.edit-button,
+.admin-panel button,
+.team-row button {
+  min-height: 34px;
+
+  padding: 0 10px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #a51f28,
+      #d92f38
+    );
+
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 7px;
+
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 7px;
+  font-weight: 850;
+
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.18s ease,
+    filter 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.edit-button {
+  width: 100%;
+
+  margin-top: 9px;
+}
+
+.edit-button:hover,
+.admin-panel button:hover:not(:disabled),
+.team-row button:hover:not(:disabled) {
+  transform: translateY(-1px);
+
+  filter: brightness(1.08);
+}
+
+.admin-panel button:disabled,
+.team-row button:disabled {
+  opacity: 0.4;
+
+  cursor: not-allowed;
+
+  transform: none;
+}
+
+
+/* =========================================================
+   PANEL TEAM COMBAT
+   ========================================================= */
+
+.panel {
+  padding: 17px;
+
+  background: rgba(10, 10, 14, 0.84);
+
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 12px;
+
+  box-shadow:
+    0 13px 30px rgba(0, 0, 0, 0.27);
+}
+
+.panel h2 {
+  margin: 5px 0 8px;
+
+  color: #ffffff;
+
+  font-size: 18px;
+  font-weight: 850;
+}
+
+.panel-hint {
+  margin-top: 0;
+
+  color: rgba(255, 255, 255, 0.42);
+
+  font-size: 9px;
+  line-height: 1.55;
+}
+
+/* =========================================================
+   CARTES TEAM
+   ========================================================= */
+
+.team-tab {
+  width: 100%;
+}
+
+.team-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin-bottom: 16px;
+}
+
+.team-header h2 {
+  margin: 5px 0 0;
+}
+
+.team-header .panel-hint {
+  max-width: 480px;
+
+  margin: 0;
+
+  text-align: right;
+}
+
+.team-search {
+  margin-bottom: 16px;
+}
+
+
+/* =========================================================
+   GRILLE TEAM — TOUJOURS 3 CARTES PAR LIGNE
+   ========================================================= */
+
+.team-cards-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 14px;
+}
+
+
+/* =========================================================
+   CARTE TEAM
+   ========================================================= */
+
+.team-card {
+  min-width: 0;
+
+  padding: 10px;
+
+  background: rgba(10, 10, 14, 0.88);
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 11px;
+
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.28);
+
+  overflow: hidden;
+
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.team-card:hover {
+  transform: translateY(-2px);
+
+  border-color: rgba(244, 197, 66, 0.25);
+}
+
+
+/* =========================================================
+   IMAGE TEAM
+   ========================================================= */
+
+.team-card-image {
+  display: grid;
+  place-items: center;
+
+  width: 100%;
+  aspect-ratio: 3 / 4;
+
+  overflow: hidden;
+
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(217, 47, 56, 0.1),
+      rgba(0, 0, 0, 0.35)
+    );
+
+  border-radius: 7px;
+
+  color: #f4c542;
+
+  font-size: 2rem;
+  font-weight: 900;
+}
+
+.team-card-image img {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+
+/* =========================================================
+   INFOS TEAM
+   ========================================================= */
+
+.team-card-info {
+  display: grid;
+
+  gap: 8px;
+
+  padding-top: 9px;
+}
+
+.team-card-name {
+  overflow: hidden;
+
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 850;
+
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   NOTE TEAM
+   ========================================================= */
+
+.team-score-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+
+  padding: 8px 10px;
+
+  background: rgba(244, 197, 66, 0.055);
+
+  border: 1px solid rgba(244, 197, 66, 0.18);
+  border-radius: 7px;
+}
+
+.team-score-display span {
+  color: rgba(255, 255, 255, 0.42);
+
+  font-size: 7px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.team-score-display strong {
+  color: #f4c542;
+
+  font-size: 20px;
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   ADMIN TEAM
+   ========================================================= */
+
+.team-admin-controls {
+  display: grid;
+
+  grid-template-columns:
+    70px
+    minmax(0, 1fr);
+
+  gap: 6px;
+}
+
+.team-score-input {
+  min-height: 34px;
+
+  text-align: center;
+
+  font-weight: 850;
+}
+
+.team-admin-controls button {
+  min-height: 34px;
+
+  padding: 0 8px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #a51f28,
+      #d92f38
+    );
+
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 7px;
+
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 7px;
+  font-weight: 850;
+
+  text-transform: uppercase;
+
+  cursor: pointer;
+}
+
+.team-admin-controls button.secondary {
+  grid-column: 1 / -1;
+
+  background: rgba(255, 255, 255, 0.045);
+
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.team-admin-controls button:disabled {
+  opacity: 0.4;
+
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   TABLETTE
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .characters-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 9px;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+  .team-header {
+    display: block;
+  }
+
+  .team-header .panel-hint {
+    margin-top: 6px;
+
+    text-align: left;
+  }
+
+  /*
+   * Comme demandé :
+   * même sur mobile, 3 cartes visibles par ligne.
+   */
+  .team-cards-grid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+
+    gap: 5px;
+  }
+
+  .team-card {
+    padding: 5px;
+
+    border-radius: 7px;
+  }
+
+  .team-card-image {
+    border-radius: 5px;
+  }
+
+  .team-card-info {
+    gap: 5px;
+
+    padding-top: 5px;
+  }
+
+  .team-card-name {
+    font-size: 7px;
+  }
+
+  .team-score-display {
+    padding: 5px;
+  }
+
+  .team-score-display span {
+    font-size: 5px;
+  }
+
+  .team-score-display strong {
+    font-size: 15px;
+  }
+
+  .team-admin-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .team-admin-controls button.secondary {
+    grid-column: auto;
+  }
+
+  .team-score-input,
+  .team-admin-controls button {
+    width: 100%;
+
+    min-height: 29px;
+
+    font-size: 6px;
+  }
+}
+/* =========================================================
+   MODALE ADMIN
+   ========================================================= */
+
+.admin-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 3000;
+
+  display: grid;
+  place-items: center;
+
+  padding: 20px;
+
+  box-sizing: border-box;
+
+  background: rgba(0, 0, 0, 0.8);
+
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+}
+
+.admin-panel {
+  position: relative;
+
+  width: min(760px, 100%);
+  max-height: 92vh;
+
+  overflow-y: auto;
+
+  padding: 24px;
+
+  box-sizing: border-box;
+
+  background: rgba(13, 13, 17, 0.98);
+
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 14px;
+
+  box-shadow:
+    0 25px 70px rgba(0, 0, 0, 0.6);
+}
+
+.admin-panel h2 {
+  margin: 6px 40px 18px 0;
+
+  color: #ffffff;
+
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.admin-panel h3 {
+  margin: 22px 0 10px;
+
+  color: #f4c542;
+
+  font-size: 11px;
+  font-weight: 850;
+
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   FERMER MODALE
+   ========================================================= */
+
+.close-button {
+  position: absolute;
+
+  top: 10px;
+  right: 10px;
+
+  display: grid;
+  place-items: center;
+
+  width: 34px;
+  min-height: 34px !important;
+
+  padding: 0 !important;
+
+  background: rgba(255, 255, 255, 0.055) !important;
+
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+
+  color: rgba(255, 255, 255, 0.65) !important;
+
+  font-size: 18px !important;
+}
+
+.close-button:hover {
+  color: #ffffff !important;
+}
+
+
+/* =========================================================
+   STATS ADMIN
+   ========================================================= */
+
+.admin-stats {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 7px;
+}
+
+.admin-stats label {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    75px;
+
+  align-items: center;
+
+  gap: 7px;
+
+  min-width: 0;
+
+  padding: 7px 9px;
+
+  background: rgba(255, 255, 255, 0.03);
+
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 7px;
+
+  color: rgba(255, 255, 255, 0.58);
+
+  font-size: 9px;
+}
+
+.admin-stats label span {
+  grid-column: 1 / -1;
+
+  color: rgba(255, 255, 255, 0.35);
+
+  font-size: 7px;
+}
+
+.admin-stats input {
+  width: 75px;
+  min-width: 0;
+  min-height: 34px;
+
+  padding: 0 7px;
+
+  box-sizing: border-box;
+
+  outline: none;
+
+  background: rgba(255, 255, 255, 0.055);
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+
+  color: #ffffff;
+
+  text-align: center;
+
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+
+.admin-stats input:focus {
+  background: rgba(255, 255, 255, 0.075);
+
+  border-color: rgba(244, 197, 66, 0.5);
+}
+
+
+/* =========================================================
+   MODIFIERS
+   ========================================================= */
+
+.modifier-list {
+  display: grid;
+
+  gap: 6px;
+
+  margin: 0;
+  padding: 0;
+
+  list-style: none;
+
+  color: rgba(255, 255, 255, 0.48);
+
+  font-size: 9px;
+}
+
+.modifier-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 8px;
+
+  padding: 7px 9px;
+
+  background: rgba(255, 255, 255, 0.03);
+
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 6px;
+}
+
+.modifier-form {
+  display: grid;
+
+  gap: 7px;
+}
+
+
+/* =========================================================
+   TABLETTE
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .characters-content {
+    width: calc(100% - 28px);
+
+    padding-top: 28px;
+  }
+
+  .characters-toolbar {
+    grid-template-columns:
+      2fr
+      1fr;
+
+    gap: 7px;
+  }
+
+  .characters-toolbar strong {
+    text-align: right;
+  }
+
+  .characters-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 9px;
+  }
+
+  .team-row {
+    grid-template-columns:
+      minmax(0, 1fr)
+      80px
+      auto;
+  }
+
+  .team-row button.secondary {
+    grid-column: 2 / -1;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+  .characters-content {
+    width: calc(100% - 18px);
+
+    padding:
+      20px
+      0
+      50px;
+  }
+
+  .characters-content > h1 {
+    margin-top: 6px;
+
+    font-size: 3rem;
+  }
+
+  .characters-intro {
+    font-size: 10px;
+  }
+
+  .tabs {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    margin:
+      18px
+      0
+      13px;
+  }
+
+  .tabs button {
+    width: 100%;
+
+    padding-inline: 7px;
+
+    font-size: 8px;
+  }
+
+
+  /* Recherche */
+
+  .characters-toolbar {
+    grid-template-columns: 1fr;
+
+    padding: 8px;
+
+    border-radius: 9px;
+  }
+
+  .characters-toolbar strong {
+    padding: 2px;
+
+    text-align: left;
+  }
+
+
+  /* Cartes */
+
+   .characters-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .flip-card,
+  .flip-inner {
+    min-height: 270px;
+  }
+
+  .card-face {
+    padding: 7px;
+
+    border-radius: 8px;
+  }
+
+  .character-image {
+    height: 160px;
+
+    border-radius: 5px;
+  }
+
+  .rarity-label {
+    margin-top: 7px;
+
+    font-size: 6px;
+  }
+
+  .card-front h2,
+  .card-back h2 {
+    font-size: 10px;
+  }
+
+  .card-slug {
+    font-size: 6px;
+  }
+
+
+  /* Verso */
+
+  .card-facts {
+    gap: 5px;
+
+    font-size: 7px;
+  }
+
+  .card-fact-label {
+    font-size: 6px;
+  }
+
+  .stats-grid > span,
+  .stats-grid strong {
+    font-size: 7px;
+  }
+
+  .edit-button {
+    min-height: 30px;
+
+    font-size: 6px;
+  }
+
+
+  /* Team */
+
+  .panel {
+    padding: 11px;
+
+    border-radius: 9px;
+  }
+
+  .team-row {
+    grid-template-columns: 1fr;
+
+    gap: 6px;
+
+    padding: 8px;
+  }
+
+  .team-row .score {
+    width: 100%;
+  }
+
+  .team-row button,
+  .team-row button.secondary {
+    grid-column: auto;
+
+    width: 100%;
+  }
+
+
+  /* Admin */
+
+  .admin-overlay {
+    padding: 7px;
+  }
+
+  .admin-panel {
+    max-height: 94vh;
+
+    padding: 15px;
+
+    border-radius: 11px;
+  }
+
+  .admin-panel h2 {
+    font-size: 17px;
+  }
+
+  .admin-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-stats label {
+    grid-template-columns:
+      minmax(0, 1fr)
+      70px;
+  }
+
+  .admin-stats input {
+    width: 70px;
+  }
+}
+
+
+/* =========================================================
+   TRÈS PETIT MOBILE
+   ========================================================= */
+
+@media (max-width: 380px) {
+  .characters-content {
+    width: calc(100% - 12px);
+  }
+
+  /*
+   * On conserve deux cartes si l'écran le permet.
+   * Sous ~340px, on passe réellement à une seule.
+   */
+  .characters-grid {
+    gap: 5px;
+  }
+
+  .flip-card,
+  .flip-inner {
+    min-height: 250px;
+  }
+
+  .character-image {
+    height: 145px;
+  }
+}
+
+@media (max-width: 340px) {
+  .characters-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .character-image {
+    height: 210px;
+  }
+
+  .flip-card,
+  .flip-inner {
+    min-height: 320px;
+  }
+}
+
+.cards-hero {
+  position: relative;
+  overflow: hidden;
+
+  width: 100%;
+  padding: 15px;
+
+  background: rgba(7, 12, 22, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+}
+
+/* Liseré comme la page Règles */
+
+
+.cards-eyebrow {
+  margin: 0 0 5px;
+
+  color: #f5c542;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1.3px;
+}
+
+.cards-hero h1 {
+  margin: 0;
+
+  color: #fff;
+  font-size: 30px;
+  font-weight: 1000;
+  line-height: 1;
+}
+
+.cards-description {
+  margin: 12px 0 0;
+
+  max-width: 900px;
+
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+/* Boutons orange comme sur l’accueil */
+.tabs {
+  gap: 12px;
+  padding: 8px;
+  background: transparent;
+  border: none;
+}
+
+.tabs button,
+.tabs button.active {
+  min-height: 44px;
+  padding: 10px 16px;
+
+  background: linear-gradient(
+    170deg,
+    #ffe178 0%,
+    #ffab19 45%,
+    #ef5909 100%
+  );
+
+  border: 2px solid #171019;
+  border-radius: 3px;
+
+  color: #171019;
+  font-family: 'Shinobi', sans-serif;
+  font-size: 14px;
+  font-weight: normal;
+  letter-spacing: 0.3px;
+
+  box-shadow:
+    3px 4px 0 #171019,
+    inset 0 2px 0 rgba(255, 255, 255, 0.6);
+
+  transform: skewX(-7deg);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Repère du mode sélectionné */
+.tabs button.active {
+  border-color: #fff;
+}
+
+.tabs button:hover:not(.active) {
+  background: linear-gradient(170deg, #fff1ab, #ffb323);
+  color: #171019;
+}
+
+.tabs button:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 5px;
+}
+
+.tabs button:active {
+  transform: skewX(-7deg) translate(2px, 3px);
+  box-shadow: 1px 1px 0 #171019;
+}
+
+/* Boutons Modifier : style de la home */
+.edit-button {
+  width: calc(100% - 6px);
+  min-height: 40px;
+  margin: 8px 3px 6px;
+  padding: 8px 4px;
+
+  background: linear-gradient(
+    170deg,
+    #ffe178 0%,
+    #ffab19 45%,
+    #ef5909 100%
+  );
+
+  border: 2px solid #171019;
+  border-radius: 3px;
+
+  color: #171019;
+  font-family: 'Shinobi', sans-serif;
+  font-size: 12px;
+  font-weight: normal;
+
+  box-shadow:
+    3px 4px 0 #171019,
+    inset 0 2px 0 rgba(255, 255, 255, 0.6);
+
+  transform: skewX(-7deg);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.edit-button:hover {
+  background: linear-gradient(170deg, #fff1ab, #ffb323);
+  color: #171019;
+}
+
+.edit-button:active {
+  transform: skewX(-7deg) translate(2px, 3px);
+  box-shadow: 1px 1px 0 #171019;
+}
+
+.edit-button:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 4px;
+}
+
+/* Hauteur adaptée au contenu du recto */
+.flip-card,
+.flip-inner {
+  min-height: 0;
+  height: auto;
+}
+
+.card-front {
+  position: relative;
+  inset: auto;
+}
+
+.character-image {
+  flex-shrink: 0;
+}
+
+/* Le détail reste accessible en retournant la carte */
+.card-back {
+  overflow-y: auto;
+}
+
+.card-front .rarity-label,
+.card-front .card-slug {
+  display: none;
+}

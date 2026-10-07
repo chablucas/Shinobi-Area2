@@ -1,11 +1,13 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+
+import App from './App.vue'
 import router from './router'
-import { RouterView } from 'vue-router'
+
 import './styles/shinobi-theme.css'
 import './styles/cards.css'
 
-const app = createApp(RouterView)
+const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)

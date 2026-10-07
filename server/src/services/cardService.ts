@@ -149,12 +149,139 @@ export function serializeCard(card: CardWithStats | null): CardDto | null {
 }
 
 export async function listCards(page: number, limit: number) {
+  const totalStart = performance.now()
+
+  const cardsStart = performance.now()
+
   const [cards, total] = await Promise.all([
-    prisma.card.findMany({ skip: (page - 1) * limit, take: limit, orderBy: { name: 'asc' }, include: cardInclude }),
+    prisma.card.findMany({
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { name: 'asc' },
+      include: cardInclude,
+    }),
     prisma.card.count(),
   ])
-  const data = await Promise.all(cards.map((card) => getEffectiveCard(card.slug, card)))
-  return { data, pagination: { page, limit, total, pages: Math.ceil(total / limit) } }
+
+  const serializeStart = performance.now()
+
+  const serializedCards = cards.map((card) => {
+    const serialized = serializeCard(card)
+
+    if (!serialized) {
+      throw new Error(`Impossible de sérialiser la carte ${card.slug}.`)
+    }
+
+    return serialized
+  })
+
+  const cardSlugs = Array.from(
+    new Set(serializedCards.map((card) => card.slug))
+  )
+
+  const overridesStart = performance.now()
+
+  const [statOverrides, rarityOverrides, modifiers] = await Promise.all([
+    prisma.cardStatOverride.findMany({
+      where: {
+        cardSlug: {
+          in: cardSlugs,
+        },
+      },
+    }),
+
+    prisma.cardRarityOverride.findMany({
+      where: {
+        cardSlug: {
+          in: cardSlugs,
+        },
+      },
+    }),
+
+    prisma.cardModifier.findMany({
+      where: {
+        cardSlug: {
+          in: cardSlugs,
+        },
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+    }),
+  ])
+
+  const buildStart = performance.now()
+
+  const statOverridesBySlug = new Map<string, typeof statOverrides>()
+
+  for (const override of statOverrides) {
+    const existing = statOverridesBySlug.get(override.cardSlug) ?? []
+    existing.push(override)
+    statOverridesBySlug.set(override.cardSlug, existing)
+  }
+
+  const rarityOverrideBySlug = new Map(
+    rarityOverrides.map((override) => [
+      override.cardSlug,
+      override,
+    ])
+  )
+
+  const modifiersBySlug = new Map<string, typeof modifiers>()
+
+  for (const modifier of modifiers) {
+    const existing = modifiersBySlug.get(modifier.cardSlug) ?? []
+    existing.push(modifier)
+    modifiersBySlug.set(modifier.cardSlug, existing)
+  }
+
+  const data = serializedCards.map((serialized) => {
+    const cardStatOverrides =
+      statOverridesBySlug.get(serialized.slug) ?? []
+
+    const rarityOverride =
+      rarityOverrideBySlug.get(serialized.slug)
+
+    const cardModifiers =
+      modifiersBySlug.get(serialized.slug) ?? []
+
+    const effectiveStats = {
+      ...serialized.baseStats,
+    }
+
+    for (const override of cardStatOverrides) {
+      effectiveStats[override.statKey] = override.value
+    }
+
+    const effectiveRarity =
+      rarityOverride?.rarity ?? serialized.baseRarity
+
+    const rarityMetadata =
+      rarityOrder.find(
+        (rarity) => rarity.id === effectiveRarity
+      ) ?? serialized.rarityMetadata
+
+    return {
+      ...serialized,
+      effectiveStats,
+      stats: effectiveStats,
+      effectiveRarity,
+      rarityMetadata,
+      modifiers: cardModifiers,
+      hasStatOverrides: cardStatOverrides.length > 0,
+      hasRarityOverride: Boolean(rarityOverride),
+    }
+  })
+
+  return {
+    data,
+    pagination: {
+      page,
+      limit,
+      total,
+      pages: Math.ceil(total / limit),
+    },
+  }
 }
 
 export async function getCard(idOrSlug: string) {

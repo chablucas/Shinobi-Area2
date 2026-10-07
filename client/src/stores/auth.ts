@@ -20,8 +20,25 @@ export const useAuthStore = defineStore('auth', () => {
   function setSession(session: { token: string; user: authApi.User }) { token.value = session.token; user.value = session.user; localStorage.setItem(TOKEN_KEY, session.token) }
   async function login(email: string, password: string) { setSession(await authApi.login(email, password)) }
   async function register(email: string, password: string, displayName: string) { setSession(await authApi.register(email, password, displayName)) }
+  async function updateAvatar(file: File) {
+  if (!token.value) {
+    throw new Error('Authentification requise.')
+  }
+
+  user.value = await authApi.uploadAvatar(token.value, file)
+}
   async function updateProfile(displayName: string) { if (!token.value) throw new Error('Authentification requise.'); user.value = await authApi.updateProfile(token.value, displayName) }
   async function recordResult(gameId: string, won: boolean) { if (!token.value) return false; const result = await authApi.recordResult(token.value, gameId, won); if (result.recorded) await loadCurrentUser(); return result.recorded }
   function logout() { token.value = null; user.value = null; localStorage.removeItem(TOKEN_KEY) }
-  return { token, user, isAuthenticated, loadCurrentUser, login, register, updateProfile, recordResult, logout }
-})
+return {
+  token,
+  user,
+  isAuthenticated,
+  loadCurrentUser,
+  login,
+  register,
+  updateProfile,
+  updateAvatar,
+  recordResult,
+  logout
+}})

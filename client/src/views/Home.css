@@ -1,0 +1,1867 @@
+/* =====================================================
+   HOME — SHINOBI AREA
+   Mobile first
+   ===================================================== */
+
+
+/* =====================================================
+   PAGE
+   ===================================================== */
+
+.home-page {
+  width: 100%;
+  min-height: 100vh;
+
+  padding:
+    20px
+    16px
+    110px;
+
+  color: #ffffff;
+
+  /*
+   * Aucun background ici.
+   * fond2.png est géré par shinobi-theme.css.
+   */
+}
+
+
+/* =====================================================
+   HEADER
+   ===================================================== */
+
+.home-header {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  margin-bottom: 18px;
+}
+
+.home-user {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: inherit;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+
+/* =====================================================
+   AVATAR
+   ===================================================== */
+
+.home-avatar {
+  width: 52px;
+  height: 52px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  border:
+    2px solid
+    rgba(244, 197, 66, 0.65);
+
+  border-radius: 50%;
+
+  background:
+    rgba(10, 10, 14, 0.82);
+
+  box-shadow:
+    0 5px 18px
+    rgba(0, 0, 0, 0.28);
+
+  color: #f4c542;
+
+  font-size: 20px;
+  font-weight: 900;
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.home-avatar img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+
+/* =====================================================
+   UTILISATEUR
+   ===================================================== */
+
+.home-user-info {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+.home-user-info strong {
+  max-width: 180px;
+
+  overflow: hidden;
+
+  color: #ffffff;
+
+  font-size: 17px;
+  font-weight: 900;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  text-shadow:
+    0 2px 5px
+    rgba(0, 0, 0, 0.65);
+}
+
+.home-user-info span {
+  color:
+    rgba(255, 255, 255, 0.67);
+
+  font-size: 11px;
+  font-weight: 650;
+
+  text-shadow:
+    0 2px 4px
+    rgba(0, 0, 0, 0.65);
+}
+
+
+/* =====================================================
+   NOTIFICATION
+   ===================================================== */
+
+.notification-button {
+  width: 44px;
+  height: 44px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.16);
+
+  border-radius: 50%;
+
+  background:
+    rgba(10, 10, 14, 0.76);
+
+  box-shadow:
+    0 5px 16px
+    rgba(0, 0, 0, 0.25);
+
+  color: #ffffff;
+
+  font-size: 18px;
+
+  cursor: pointer;
+
+  backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px);
+
+  transition:
+    transform 0.16s ease,
+    border-color 0.16s ease,
+    background 0.16s ease;
+}
+
+.notification-button:hover {
+  transform: translateY(-1px);
+
+  border-color:
+    rgba(244, 197, 66, 0.4);
+
+  background:
+    rgba(20, 20, 25, 0.88);
+}
+
+
+/* =====================================================
+   RECHERCHE
+   ===================================================== */
+
+.home-search {
+  width: 100%;
+  height: 46px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 0 15px;
+
+  margin-bottom: 22px;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.14);
+
+  border-radius: 13px;
+
+  background:
+    rgba(10, 10, 14, 0.72);
+
+  box-shadow:
+    0 6px 18px
+    rgba(0, 0, 0, 0.24);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.home-search:focus-within {
+  border-color:
+    rgba(244, 197, 66, 0.48);
+
+  background:
+    rgba(10, 10, 14, 0.84);
+
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.24),
+    0 0 0 3px rgba(244, 197, 66, 0.05);
+}
+
+.search-icon {
+  flex-shrink: 0;
+
+  color: #f4c542;
+
+  font-size: 20px;
+}
+
+.home-search input {
+  width: 100%;
+
+  padding: 0;
+
+  border: 0;
+  outline: none;
+
+  background: transparent;
+
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.home-search input::placeholder {
+  color:
+    rgba(255, 255, 255, 0.4);
+}
+
+
+/* =====================================================
+   LISTE DES MODES
+   ===================================================== */
+
+.game-modes {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 11px;
+}
+
+
+/* =====================================================
+   CARTE MODE
+   ===================================================== */
+
+.game-mode-card {
+  position: relative;
+
+  width: 100%;
+  height: 125px;
+  min-height: 0;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.12);
+
+  border-radius: 15px;
+
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  box-shadow:
+    0 8px 24px
+    rgba(0, 0, 0, 0.3);
+
+  isolation: isolate;
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.game-mode-card:hover {
+  border-color:
+    rgba(244, 197, 66, 0.3);
+
+  box-shadow:
+    0 10px 28px
+    rgba(0, 0, 0, 0.36);
+}
+
+
+/* =====================================================
+   IMAGES MODES
+   ===================================================== */
+
+.character-mode {
+  background-image:
+    url('../assets/home/Perso.png');
+}
+
+.team-mode {
+  background-image:
+    url('../assets/home/Team.png');
+}
+
+.category-mode {
+  background-image:
+    url('../assets/home/Dernier.png');
+}
+
+
+/* =====================================================
+   VOILE
+   ===================================================== */
+
+.game-mode-overlay {
+  position: absolute;
+
+  inset: 0;
+
+  z-index: 0;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.04) 0%,
+      rgba(0, 0, 0, 0.14) 35%,
+      rgba(0, 0, 0, 0.72) 100%
+    );
+
+  pointer-events: none;
+}
+
+
+/* =====================================================
+   CONTENU CARTE
+   ===================================================== */
+
+.game-mode-content {
+  position: relative;
+
+  z-index: 1;
+
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  padding: 12px 14px;
+}
+
+
+/* =====================================================
+   TITRE
+   ===================================================== */
+
+.game-mode-title {
+  color: #ffffff;
+
+  text-shadow:
+    0 2px 6px
+    rgba(0, 0, 0, 0.7);
+}
+
+.game-mode-kicker {
+  display: block;
+
+  margin-bottom: 4px;
+
+  color:
+    rgba(255, 255, 255, 0.74);
+
+  font-size: 8px;
+  font-weight: 850;
+
+  letter-spacing: 2px;
+
+  text-transform: uppercase;
+}
+
+.game-mode-title h2 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 17px;
+  font-weight: 900;
+
+  line-height: 1;
+
+  text-transform: uppercase;
+}
+
+
+/* =====================================================
+   BOUTONS MODES
+   ===================================================== */
+
+.game-mode-buttons {
+  width: 100%;
+
+  display: grid;
+
+  gap: 6px;
+}
+
+.game-mode-buttons.four-buttons {
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+}
+
+.game-mode-buttons.three-buttons {
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+}
+
+.mode-button {
+  min-width: 32px;
+  min-height: 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 5px 3px;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.28);
+
+  border-radius: 7px;
+
+  background:
+    rgba(10, 10, 14, 0.78);
+
+  color: #ffffff;
+
+  box-shadow:
+    0 3px 10px
+    rgba(0, 0, 0, 0.2);
+
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 900;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+
+  transition:
+    transform 0.13s ease,
+    background 0.13s ease,
+    border-color 0.13s ease,
+    color 0.13s ease;
+}
+
+.mode-button:hover {
+  background:
+    linear-gradient(
+      135deg,
+      #a51f28,
+      #d92f38
+    );
+
+  border-color:
+    rgba(244, 197, 66, 0.5);
+}
+
+.mode-button:active {
+  transform: scale(0.95);
+}
+
+
+/* =====================================================
+   INVITATION — OVERLAY
+   ===================================================== */
+
+.invite-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 3000;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+
+  background:
+    rgba(0, 0, 0, 0.72);
+
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+
+/* =====================================================
+   INVITATION — BOTTOM SHEET
+   ===================================================== */
+
+.invite-dialog {
+  position: relative;
+
+  width: 100%;
+  max-height: 85vh;
+
+  overflow-y: auto;
+
+  padding:
+    10px
+    18px
+    calc(24px + env(safe-area-inset-bottom));
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.1);
+
+  border-bottom: 0;
+
+  border-radius:
+    24px
+    24px
+    0
+    0;
+
+  background:
+    rgba(10, 10, 14, 0.97);
+
+  color: #ffffff;
+
+  box-shadow:
+    0 -15px 45px
+    rgba(0, 0, 0, 0.48);
+}
+
+.invite-dialog::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  right: 0;
+  left: 0;
+
+  height: 3px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #a51f28,
+      #d92f38,
+      #f4c542
+    );
+}
+
+
+/* =====================================================
+   HANDLE
+   ===================================================== */
+
+.invite-handle {
+  width: 42px;
+  height: 4px;
+
+  margin:
+    0 auto
+    17px;
+
+  border-radius: 20px;
+
+  background:
+    rgba(255, 255, 255, 0.2);
+}
+
+
+/* =====================================================
+   TITRE INVITATION
+   ===================================================== */
+
+.invite-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  margin-bottom: 9px;
+}
+
+.invite-heading > div {
+  min-width: 0;
+}
+
+.invite-heading span {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: #f4c542;
+
+  font-size: 8px;
+  font-weight: 900;
+
+  letter-spacing: 1.7px;
+
+  text-transform: uppercase;
+}
+
+.invite-heading h2 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 23px;
+  font-weight: 950;
+
+  line-height: 1.1;
+}
+
+.invite-close {
+  width: 37px;
+  height: 37px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.1);
+
+  border-radius: 50%;
+
+  background:
+    rgba(255, 255, 255, 0.06);
+
+  color: #ffffff;
+
+  font-size: 24px;
+  font-weight: 400;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.invite-close:hover {
+  background:
+    rgba(217, 47, 56, 0.14);
+
+  border-color:
+    rgba(217, 47, 56, 0.4);
+}
+
+
+/* =====================================================
+   DESCRIPTION
+   ===================================================== */
+
+.invite-description {
+  margin:
+    0
+    0
+    16px;
+
+  color:
+    rgba(255, 255, 255, 0.48);
+
+  font-size: 12px;
+  font-weight: 500;
+
+  line-height: 1.5;
+}
+
+
+/* =====================================================
+   COMPLÉTER AVEC IA
+   ===================================================== */
+
+.complete-ai-button {
+  width: 100%;
+  min-height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 13px;
+
+  padding: 0 15px;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.11);
+
+  border-radius: 10px;
+
+  background:
+    rgba(255, 255, 255, 0.045);
+
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.complete-ai-button:hover {
+  border-color:
+    rgba(244, 197, 66, 0.3);
+}
+
+.complete-ai-button.active {
+  border-color:
+    rgba(244, 197, 66, 0.5);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(165, 31, 40, 0.9),
+      rgba(217, 47, 56, 0.9)
+    );
+}
+
+.ai-toggle {
+  width: 24px;
+  height: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background:
+    rgba(255, 255, 255, 0.12);
+
+  font-size: 12px;
+}
+
+
+/* =====================================================
+   LISTE AMIS
+   ===================================================== */
+
+.friend-list {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+
+  margin-bottom: 17px;
+}
+
+.friend-item {
+  width: 100%;
+  min-height: 58px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+
+  padding: 8px 11px;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.08);
+
+  border-radius: 10px;
+
+  background:
+    rgba(255, 255, 255, 0.03);
+
+  color: #ffffff;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.14s ease,
+    background 0.14s ease,
+    transform 0.14s ease;
+}
+
+.friend-item:hover {
+  transform: translateX(2px);
+
+  background:
+    rgba(255, 255, 255, 0.05);
+
+  border-color:
+    rgba(244, 197, 66, 0.2);
+}
+
+.friend-item.selected {
+  border-color:
+    rgba(244, 197, 66, 0.45);
+
+  background:
+    rgba(217, 47, 56, 0.1);
+}
+
+
+/* =====================================================
+   AVATAR AMI
+   ===================================================== */
+
+.friend-avatar {
+  width: 41px;
+  height: 41px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    rgba(244, 197, 66, 0.35);
+
+  border-radius: 50%;
+
+  background:
+    rgba(217, 47, 56, 0.12);
+
+  color: #f4c542;
+
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.friend-avatar img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+.friend-item strong {
+  min-width: 0;
+  flex: 1;
+
+  overflow: hidden;
+
+  color: #ffffff;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* =====================================================
+   CHECK AMI
+   ===================================================== */
+
+.friend-selection {
+  width: 25px;
+  height: 25px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border:
+    2px solid
+    rgba(255, 255, 255, 0.16);
+
+  border-radius: 50%;
+
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.friend-selection.active {
+  border-color: #f4c542;
+
+  background:
+    linear-gradient(
+      135deg,
+      #a51f28,
+      #d92f38
+    );
+
+  color: #ffffff;
+}
+
+
+/* =====================================================
+   MESSAGES
+   ===================================================== */
+
+.invite-message {
+  margin: 0;
+
+  padding: 25px 10px;
+
+  color:
+    rgba(255, 255, 255, 0.45);
+
+  font-size: 12px;
+  font-weight: 600;
+
+  text-align: center;
+}
+
+.invite-error {
+  margin:
+    0
+    0
+    14px;
+
+  padding: 11px;
+
+  border:
+    1px solid
+    rgba(217, 47, 56, 0.3);
+
+  border-radius: 8px;
+
+  background:
+    rgba(217, 47, 56, 0.08);
+
+  color: #ff999e;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+
+/* =====================================================
+   BOUTON INVITER
+   ===================================================== */
+
+.create-lobby-button {
+  position: sticky;
+
+  bottom: 0;
+
+  width: 100%;
+  min-height: 51px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.13);
+
+  border-radius: 10px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #a51f28,
+      #d92f38
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    0 7px 20px
+    rgba(0, 0, 0, 0.28);
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 950;
+
+  letter-spacing: 0.5px;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.16s ease,
+    filter 0.16s ease,
+    border-color 0.16s ease;
+}
+
+.create-lobby-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+
+  filter: brightness(1.08);
+
+  border-color:
+    rgba(244, 197, 66, 0.4);
+}
+
+.create-lobby-button:disabled {
+  opacity: 0.35;
+
+  cursor: not-allowed;
+}
+
+
+/* =====================================================
+   TRÈS PETITS ÉCRANS
+   ===================================================== */
+
+@media (max-width: 360px) {
+
+  .home-page {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .game-mode-content {
+    padding: 11px;
+  }
+
+  .game-mode-title h2 {
+    font-size: 16px;
+  }
+
+  .mode-button {
+    min-height: 37px;
+
+    padding-left: 2px;
+    padding-right: 2px;
+
+    font-size: 8px;
+  }
+}
+
+
+/* =====================================================
+   TABLETTE
+   ===================================================== */
+
+@media (min-width: 700px) {
+
+  .home-page {
+    max-width: 760px;
+
+    margin: 0 auto;
+
+    padding:
+      32px
+      24px
+      90px;
+  }
+
+  .home-header {
+    margin-bottom: 20px;
+  }
+
+  .home-avatar {
+    width: 58px;
+    height: 58px;
+  }
+
+  .home-user-info strong {
+    max-width: 300px;
+
+    font-size: 19px;
+  }
+
+  .home-search {
+    height: 50px;
+
+    margin-bottom: 25px;
+  }
+
+  .game-modes {
+    gap: 14px;
+  }
+
+  .game-mode-card {
+    height: 210px;
+  }
+
+  .game-mode-content {
+    padding: 20px;
+  }
+
+  .game-mode-title h2 {
+    font-size: 25px;
+  }
+
+  .game-mode-kicker {
+    font-size: 9px;
+  }
+
+  .mode-button {
+    min-height: 44px;
+
+    font-size: 11px;
+  }
+
+  .invite-dialog {
+    max-width: 560px;
+  }
+}
+
+
+/* =====================================================
+   DESKTOP
+   ===================================================== */
+
+@media (min-width: 1100px) {
+
+  .home-page {
+    max-width: 1180px;
+
+    padding-top: 42px;
+  }
+
+
+  /*
+   * Sur PC on exploite enfin la largeur disponible :
+   * les trois grands modes restent empilés,
+   * mais deviennent beaucoup plus panoramiques.
+   */
+
+  .game-mode-card {
+    height: 245px;
+
+    border-radius: 17px;
+  }
+
+  .game-mode-content {
+    padding: 24px 26px;
+  }
+
+  .game-mode-title h2 {
+    font-size: 30px;
+  }
+
+  .game-mode-kicker {
+    font-size: 10px;
+  }
+
+  .game-mode-buttons {
+    max-width: 650px;
+  }
+
+  .mode-button {
+    min-height: 46px;
+
+    font-size: 12px;
+  }
+}
+
+
+/* =====================================================
+   RÉDUCTION DES ANIMATIONS
+   ===================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .game-mode-card,
+  .mode-button,
+  .notification-button,
+  .friend-item,
+  .create-lobby-button {
+    transition: none;
+  }
+}
+
+/* =====================================================
+   HOME — RECHERCHE / NOTIFICATIONS
+   ===================================================== */
+
+.home-search-wrapper,
+.home-notifications {
+  position: relative;
+}
+
+.home-notifications {
+  z-index: 100;
+}
+
+.notification-button {
+  position: relative;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+
+  min-width: 18px;
+  height: 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 4px;
+
+  border: 2px solid #101014;
+  border-radius: 999px;
+
+  background: #d92f38;
+  color: #fff;
+
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.notification-panel,
+.home-search-results {
+  position: absolute;
+  z-index: 200;
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+
+  background: rgba(10, 10, 14, 0.97);
+
+  box-shadow:
+    0 18px 45px
+    rgba(0, 0, 0, 0.45);
+
+  color: #fff;
+
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.notification-panel {
+  top: calc(100% + 10px);
+  right: 0;
+
+  width: min(390px, calc(100vw - 32px));
+  max-height: 70vh;
+
+  overflow-y: auto;
+
+  padding: 16px;
+}
+
+.notification-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  margin-bottom: 15px;
+}
+
+.notification-panel-header span,
+.search-result-title {
+  color: #f4c542;
+
+  font-size: 9px;
+  font-weight: 900;
+
+  letter-spacing: 1.4px;
+
+  text-transform: uppercase;
+}
+
+.notification-panel-header h2 {
+  margin: 3px 0 0;
+
+  color: #fff;
+
+  font-size: 20px;
+}
+
+.notification-close {
+  width: 32px;
+  height: 32px;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.06);
+
+  color: #fff;
+
+  font-size: 20px;
+
+  cursor: pointer;
+}
+
+.notification-section {
+  display: grid;
+
+  gap: 8px;
+
+  margin-top: 14px;
+}
+
+.notification-section h3 {
+  margin: 0 0 4px;
+
+  color: rgba(255, 255, 255, 0.55);
+
+  font-size: 10px;
+
+  text-transform: uppercase;
+}
+
+.notification-item {
+  padding: 10px;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9px;
+
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.notification-user {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+}
+
+.notification-avatar,
+.search-result-avatar {
+  width: 36px;
+  height: 36px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(244, 197, 66, 0.35);
+  border-radius: 50%;
+
+  background: rgba(217, 47, 56, 0.13);
+
+  color: #f4c542;
+
+  font-weight: 900;
+}
+
+.notification-user div {
+  min-width: 0;
+
+  display: grid;
+
+  gap: 2px;
+}
+
+.notification-user strong {
+  color: #fff;
+
+  font-size: 12px;
+}
+
+.notification-user span {
+  color: rgba(255, 255, 255, 0.45);
+
+  font-size: 10px;
+}
+
+.notification-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+
+  gap: 6px;
+
+  margin-top: 9px;
+}
+
+.notification-accept,
+.notification-reject {
+  min-height: 34px;
+
+  border-radius: 7px;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  cursor: pointer;
+}
+
+.notification-accept {
+  border: 1px solid rgba(244, 197, 66, 0.3);
+
+  background:
+    linear-gradient(
+      135deg,
+      #a51f28,
+      #d92f38
+    );
+
+  color: #fff;
+}
+
+.notification-reject {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  background: rgba(255, 255, 255, 0.05);
+
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.notification-empty,
+.notification-error {
+  margin: 0;
+
+  padding: 18px 8px;
+
+  text-align: center;
+
+  font-size: 11px;
+}
+
+.notification-empty {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.notification-error {
+  color: #ff999e;
+}
+
+
+/* =====================================================
+   RÉSULTATS RECHERCHE
+   ===================================================== */
+
+.home-search-results {
+  top: 54px;
+  right: 0;
+  left: 0;
+
+  max-height: 430px;
+
+  overflow-y: auto;
+
+  padding: 10px;
+}
+
+.search-result-section {
+  display: grid;
+
+  gap: 5px;
+
+  padding: 6px 0;
+}
+
+.search-result-title {
+  padding: 4px 7px 6px;
+}
+
+.search-result-item {
+  width: 100%;
+  min-height: 51px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 7px;
+
+  border: 1px solid transparent;
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: #fff;
+
+  text-align: left;
+
+  transition:
+    background 0.14s ease,
+    border-color 0.14s ease;
+}
+
+.search-result-item:hover {
+  border-color: rgba(244, 197, 66, 0.15);
+
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.search-result-main {
+  min-width: 0;
+  flex: 1;
+
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: inherit;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.search-result-main > span:last-child,
+.search-shinobi > span:last-child {
+  min-width: 0;
+
+  display: grid;
+
+  gap: 2px;
+}
+
+.search-result-item strong {
+  overflow: hidden;
+
+  color: #fff;
+
+  font-size: 12px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-result-item small {
+  color: rgba(255, 255, 255, 0.4);
+
+  font-size: 9px;
+}
+
+.search-result-action {
+  flex-shrink: 0;
+
+  min-height: 30px;
+
+  padding: 0 9px;
+
+  border: 1px solid rgba(244, 197, 66, 0.25);
+  border-radius: 6px;
+
+  background: rgba(217, 47, 56, 0.13);
+
+  color: #f4c542;
+
+  font-size: 9px;
+  font-weight: 900;
+
+  cursor: pointer;
+}
+
+.search-result-status {
+  flex-shrink: 0;
+
+  color: rgba(255, 255, 255, 0.4);
+
+  font-size: 9px;
+}
+
+.search-shinobi {
+  cursor: pointer;
+}
+
+.search-card-image {
+  width: 38px;
+  height: 45px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  border: 1px solid rgba(244, 197, 66, 0.2);
+  border-radius: 5px;
+
+  background: rgba(255, 255, 255, 0.05);
+
+  color: #f4c542;
+
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.search-card-image img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+.search-state,
+.search-error {
+  margin: 0;
+
+  padding: 18px 10px;
+
+  text-align: center;
+
+  font-size: 11px;
+}
+
+.search-state {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.search-error {
+  color: #ff999e;
+}
+
+
+@media (max-width: 600px) {
+
+  .notification-panel {
+    position: fixed;
+
+    top: 80px;
+    right: 12px;
+    left: 12px;
+
+    width: auto;
+
+    max-height:
+      calc(100vh - 110px);
+  }
+}
+/* Affiches avec effet verre */
+.game-mode-card {
+  background-image: none;
+  background-color: rgba(7, 27, 54, 0.15);
+
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+}
+
+.game-mode-card:hover {
+  box-shadow: none;
+}
+
+/* Retire le voile sombre */
+.game-mode-overlay {
+  background: transparent;
+}
+
+/* Titres lisibles */
+.game-mode-title {
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.8);
+}
+
+/* Boutons des modes : style combat arcade */
+.mode-button {
+  min-height: 44px;
+  padding: 8px 5px;
+
+  background: linear-gradient(
+    170deg,
+    #ffe178 0%,
+    #ffab19 45%,
+    #ef5909 100%
+  );
+
+  border: 2px solid #171019;
+  border-radius: 3px;
+
+  color: #171019;
+  font-family: 'Shinobi', sans-serif;
+  font-size: clamp(11px, 2.8vw, 16px);
+  font-weight: normal;
+  letter-spacing: 0.3px;
+
+  box-shadow:
+    3px 4px 0 #171019,
+    inset 0 2px 0 rgba(255, 255, 255, 0.6);
+
+  transform: skewX(-7deg);
+
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+
+/* Survol sur ordinateur */
+@media (hover: hover) {
+  .mode-button:hover {
+    background: linear-gradient(170deg, #fff1ab, #ffb323);
+    border-color: #171019;
+    color: #171019;
+
+    transform: skewX(-7deg) translateY(-2px);
+    box-shadow: 4px 6px 0 #171019;
+  }
+}
+
+/* Navigation au clavier */
+.mode-button:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 5px;
+}
+
+/* Effet de pression */
+.mode-button:active {
+  transform: skewX(-7deg) translate(2px, 3px);
+  box-shadow: 1px 1px 0 #171019;
+}
+
+/* Recherche et notifications : effet verre */
+.home-search,
+.notification-button,
+.notification-panel,
+.home-search-results {
+  background: rgba(7, 27, 54, 0.15);
+
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+}
+
+/* Conserve la transparence pendant l’utilisation */
+.home-search:focus-within,
+.notification-button:hover {
+  background: rgba(7, 27, 54, 0.2);
+  border-color: rgba(244, 197, 66, 0.5);
+  box-shadow: none;
+}
+
+/* Texte de recherche plus visible */
+.home-search input {
+  background: transparent;
+  color: #fff;
+}
+
+.home-search input::placeholder {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Petits textes des panneaux plus lisibles */
+.notification-section h3,
+.notification-user span,
+.notification-empty,
+.search-result-item small,
+.search-result-status,
+.search-state {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Affiches ajustées à leur contenu */
+.game-mode-card {
+  height: auto;
+  min-height: 0;
+}
+
+/* Réduit le vide entre le titre et les boutons */
+.game-mode-content {
+  height: auto;
+  justify-content: flex-start;
+  gap: 16px;
+  padding: 16px;
+}
+
+/* Titres des modes plus grands */
+.game-mode-title h2 {
+  font-size: clamp(24px, 6vw, 34px);
+  line-height: 1.15;
+}
+
+.home-avatar-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  border-radius: 50%;
+}

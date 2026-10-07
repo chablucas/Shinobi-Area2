@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import SocialHeader from '../components/SocialHeader.vue'
-import { fetchAllCards } from '../services/cardApi'
+import { useGameDataStore } from '../stores/gameData'
 import { fetchTeamScores, resetTeamScore, saveCardStats, saveTeamScores, type TeamScoreEntry } from '../services/cardAdminApi'
 import type { Card, CardModifier } from '../types/card'
 import { useAuthStore } from '../stores/auth'
 
 const auth = useAuthStore()
+const gameData = useGameDataStore()
 const route = useRoute()
 const router = useRouter()
 const tab = ref<'creator' | 'team'>(route.query.tab === 'team' ? 'team' : 'creator')
@@ -152,15 +152,58 @@ async function restoreTeamScore(entry: TeamScoreEntry) {
   }
 }
 
+function optimizedCardImage(url: string | null | undefined): string {
+  if (!url) return ''
+
+  // Transformation uniquement pour les images Cloudinary
+  if (!url.includes('res.cloudinary.com') || !url.includes('/upload/')) {
+    return url
+  }
+
+  return url.replace(
+    '/upload/',
+    '/upload/f_auto,q_auto:eco,w_400,c_limit/'
+  )
+}
+
+function teamCard(entry: TeamScoreEntry): Card | undefined {
+  return cards.value.find((card) => card.slug === entry.slug)
+}
+
 onMounted(async () => {
+  loading.value = true
+  error.value = ''
+
+  // 1. CARTES : toujours chargées, indépendamment de l'auth
   try {
-    await auth.loadCurrentUser()
-    const [allCards] = await Promise.all([fetchAllCards(), loadTeamScores()])
-    cards.value = allCards
+    cards.value = await gameData.loadCards()
   } catch (exception) {
-    error.value = exception instanceof Error ? exception.message : 'Cartes indisponibles.'
+    error.value =
+      exception instanceof Error
+        ? exception.message
+        : 'Cartes indisponibles.'
   } finally {
     loading.value = false
+  }
+
+  // 2. AUTH : uniquement pour savoir si les boutons ADMIN doivent apparaître
+  try {
+    await auth.loadCurrentUser()
+  } catch (exception) {
+    console.warn(
+      'Utilisateur non authentifié : affichage public des cartes.',
+      exception
+    )
+  }
+
+  // 3. TEAM : indépendant des cartes classiques
+  try {
+    await loadTeamScores()
+  } catch (exception) {
+    teamError.value =
+      exception instanceof Error
+        ? exception.message
+        : 'Notes Team indisponibles.'
   }
 })
 function toggle(slug: string) {
@@ -186,14 +229,17 @@ function modifierText(modifier: CardModifier) {
 
 <template>
   <main class="characters-page">
-    <SocialHeader />
     <section class="characters-content">
-      <p class="eyebrow">Collection officielle</p>
-      <h1>CARTES</h1>
-      <p class="characters-intro">
-        Explore les 163 cartes de Shinobi Area. Un même personnage peut exister en plusieurs
-        versions, avec des statistiques, raretés, capacités et restrictions différentes.
-      </p>
+      <section class="cards-hero">
+
+  <h1>CARTES</h1>
+
+  <p class="cards-description">
+    Explore les 163 cartes de Shinobi Area. Un même personnage peut exister
+    en plusieurs versions, avec des statistiques, raretés, capacités et
+    restrictions différentes.
+  </p>
+</section>
 
       <nav class="tabs">
         <button type="button" :class="{ active: tab === 'creator' }" @click="tab = 'creator'">Créer ton perso</button>
@@ -237,9 +283,10 @@ function modifierText(modifier: CardModifier) {
                   <div class="character-image">
                     <img
                       v-if="card.imageUrl"
-                      :src="card.imageUrl"
+                      :src="optimizedCardImage(card.imageUrl)"
                       :alt="card.name"
                       loading="lazy"
+                      decoding="async"
                     /><span v-else>{{ card.name.slice(0, 1) }}</span>
                   </div>
                   <p class="rarity-label">{{ card.rarityMetadata.label }}</p>
@@ -276,25 +323,128 @@ function modifierText(modifier: CardModifier) {
       </section>
 
       <section v-else class="panel team-tab">
-        <p class="panel-hint">Note du personnage utilisée par Team Auction (team-auction-power.json). Indépendante des statistiques « Créer ton perso ».</p>
-        <div v-if="teamError" class="state-message error">{{ teamError }}</div>
-        <div v-if="teamStatus" class="state-message">{{ teamStatus }}</div>
-        <input v-model="teamQuery" class="auth-input" type="search" placeholder="Rechercher un personnage" />
-        <div class="team-list">
-          <article v-for="entry in filteredTeamScores" :key="entry.slug" class="team-row">
-            <div class="meta">
-              <strong>{{ entry.name }}</strong>
-              <small>{{ entry.slug }} · note fichier : {{ entry.baseScore }}</small>
-            </div>
-            <template v-if="isAdmin">
-              <input v-model.number="teamEdits[entry.slug]" class="auth-input score" type="number" min="0" max="100" step="1" />
-              <button type="button" :disabled="savingTeamSlug === entry.slug || teamEdits[entry.slug] === entry.score" @click="saveTeamScore(entry)">SAUVEGARDER</button>
-              <button v-if="entry.overridden" type="button" class="secondary" :disabled="savingTeamSlug === entry.slug" @click="restoreTeamScore(entry)">RÉINITIALISER</button>
-            </template>
-            <strong v-else class="score-readonly">{{ entry.score }}</strong>
-          </article>
+  <div class="team-header">
+    <div>
+      <p class="eyebrow">Team Combat</p>
+      <h2>Notes Team</h2>
+    </div>
+
+    <p class="panel-hint">
+      Note utilisée par Team Auction.
+      Elle est indépendante des statistiques de Créer ton perso.
+    </p>
+  </div>
+
+  <div
+    v-if="teamError"
+    class="state-message error"
+  >
+    {{ teamError }}
+  </div>
+
+  <div
+    v-if="teamStatus"
+    class="state-message"
+  >
+    {{ teamStatus }}
+  </div>
+
+  <input
+    v-model="teamQuery"
+    class="auth-input team-search"
+    type="search"
+    placeholder="Rechercher un personnage"
+  />
+
+  <p
+    v-if="loading"
+    class="state-message"
+  >
+    Chargement des personnages...
+  </p>
+
+  <div
+    v-else-if="filteredTeamScores.length"
+    class="team-cards-grid"
+  >
+    <article
+      v-for="entry in filteredTeamScores"
+      :key="entry.slug"
+      class="team-card"
+    >
+      <div class="team-card-image">
+        <img
+          v-if="teamCard(entry)?.imageUrl"
+          :src="optimizedCardImage(teamCard(entry)?.imageUrl)"
+          :alt="entry.name"
+          loading="lazy"
+          decoding="async"
+        />
+
+        <span v-else>
+          {{ entry.name.slice(0, 1) }}
+        </span>
+      </div>
+
+      <div class="team-card-info">
+        <strong class="team-card-name">
+          {{ entry.name }}
+        </strong>
+
+        <div class="team-score-display">
+          <span>NOTE TEAM</span>
+
+          <strong>
+            {{ entry.score }}
+          </strong>
         </div>
-      </section>
+
+        <!-- ADMIN UNIQUEMENT -->
+        <div
+          v-if="isAdmin"
+          class="team-admin-controls"
+        >
+          <input
+            v-model.number="teamEdits[entry.slug]"
+            class="auth-input team-score-input"
+            type="number"
+            min="0"
+            max="100"
+            step="1"
+          />
+
+          <button
+            type="button"
+            :disabled="
+              savingTeamSlug === entry.slug ||
+              teamEdits[entry.slug] === entry.score
+            "
+            @click="saveTeamScore(entry)"
+          >
+            MODIFIER
+          </button>
+
+          <button
+            v-if="entry.overridden"
+            type="button"
+            class="secondary"
+            :disabled="savingTeamSlug === entry.slug"
+            @click="restoreTeamScore(entry)"
+          >
+            RÉINITIALISER
+          </button>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <p
+    v-else
+    class="state-message"
+  >
+    Aucun personnage trouvé.
+  </p>
+</section>
     </section>
 
     <div v-if="selected" class="admin-overlay" @click.self="closeAdmin">
@@ -320,395 +470,4 @@ function modifierText(modifier: CardModifier) {
   </main>
 </template>
 
-<style scoped>
-.characters-page {
-  min-height: 100vh;
-  background: var(--bg-main);
-}
-.characters-content {
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 64px 20px 100px;
-}
-.characters-content h1 {
-  margin: 12px 0;
-  font-size: clamp(2.6rem, 7vw, 6rem);
-  color: var(--accent-orange);
-}
-.characters-intro {
-  max-width: 760px;
-  color: var(--text-muted);
-  line-height: 1.7;
-}
-.characters-toolbar {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr auto;
-  align-items: center;
-  gap: 10px;
-  margin: 38px 0 24px;
-}
-.characters-toolbar strong {
-  color: var(--accent-gold);
-  font-size: 0.7rem;
-}
-.tabs {
-  display: flex;
-  gap: 8px;
-  margin: 28px 0 24px;
-}
-.tabs button {
-  border: 1px solid var(--border-strong);
-  background: transparent;
-  color: var(--text-main);
-  font-weight: 700;
-  min-height: 40px;
-  padding: 0 18px;
-  cursor: pointer;
-}
-.tabs button.active {
-  background: var(--accent-gold);
-  color: #241b12;
-}
-.panel {
-  background: var(--bg-panel);
-  border: 1px solid var(--border-strong);
-  padding: 18px;
-}
-.panel-hint {
-  margin-top: 0;
-  color: var(--text-muted);
-}
-.team-list {
-  display: grid;
-  gap: 12px;
-  margin-top: 16px;
-}
-.team-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 110px auto auto;
-  align-items: center;
-  gap: 14px;
-  padding: 10px 12px;
-  border: 1px solid var(--border-light);
-  background: rgba(255, 255, 255, 0.02);
-}
-.team-row .meta {
-  display: grid;
-  min-width: 0;
-}
-.team-row .meta small {
-  color: var(--text-muted);
-}
-.team-row .score {
-  width: 110px;
-}
-.score-readonly {
-  color: var(--accent-gold);
-  font-size: 1.1rem;
-}
-.team-row button.secondary {
-  background: transparent;
-  color: var(--text-main);
-}
-.save-bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin: 18px 0 8px;
-}
-.dirty-hint {
-  color: var(--accent-gold);
-  font-size: 0.8rem;
-}
-.characters-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 16px;
-}
-.flip-card {
-  min-height: 330px;
-  perspective: 1000px;
-  cursor: pointer;
-}
-.flip-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  min-height: 330px;
-  transition: transform 0.65s ease;
-  transform-style: preserve-3d;
-}
-.flip-card.flipped .flip-inner {
-  transform: rotateY(180deg);
-}
-.card-face {
-  position: absolute;
-  inset: 0;
-  backface-visibility: hidden;
-  padding: 12px;
-  border: 2px solid var(--rarity, var(--border-strong));
-  background: var(--bg-panel);
-}
-.card-front {
-  display: flex;
-  flex-direction: column;
-}
-.character-image {
-  height: 210px;
-  display: grid;
-  place-items: center;
-  background: var(--bg-panel-strong);
-  overflow: hidden;
-  color: var(--accent-orange);
-  font:
-    700 3rem 'Syne',
-    sans-serif;
-}
-.character-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.rarity-label {
-  color: var(--rarity, var(--accent-gold));
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-.card-front h2,
-.card-back h2 {
-  margin: 8px 0 2px;
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: clamp(0.75rem, 1.7vw, 1.12rem);
-  line-height: 1.15;
-  text-transform: uppercase;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.card-slug {
-  color: var(--text-muted);
-  font-size: 0.55rem;
-}
-.card-back {
-  transform: rotateY(180deg);
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow-y: auto;
-  scrollbar-width: thin;
-}
-.card-back-header {
-  display: grid;
-  gap: 6px;
-}
-.card-back-name {
-  margin: 0;
-  color: var(--text-main);
-  font-size: 0.82rem;
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.03em;
-  text-transform: uppercase;
-}
-.card-facts {
-  display: grid;
-  gap: 8px;
-  min-width: 0;
-  margin-top: 10px;
-  color: var(--text-muted);
-  font-size: 9px;
-  line-height: 1.35;
-  word-break: break-word;
-}
-.card-fact-row,
-.card-facts > span {
-  display: grid;
-  gap: 4px;
-  min-width: 0;
-  overflow: hidden;
-}
-.card-fact-label {
-  display: block;
-  color: var(--text-soft);
-  text-transform: uppercase;
-  font-size: 8px;
-  letter-spacing: 0.08em;
-}
-.stats-section {
-  display: grid;
-  gap: 5px;
-}
-.stats-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 4px 10px;
-  padding: 8px 0;
-  border-top: 1px solid var(--border-light);
-  border-bottom: 1px solid var(--border-light);
-}
-.stats-grid > span {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  color: var(--text-muted);
-  font-size: 9px;
-  line-height: 1.25;
-  white-space: nowrap;
-}
-.stats-grid > span > span {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.stats-grid strong {
-  flex: 0 0 auto;
-  color: var(--text-main);
-  font-size: 9px;
-  font-weight: 700;
-  white-space: nowrap;
-  text-align: right;
-}
-.edit-button,
-.admin-panel button {
-  border: 1px solid var(--border-strong);
-  padding: 8px;
-  background: var(--accent-orange);
-  color: #2b2113;
-  font-size: 0.58rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-.admin-panel button:disabled,
-.team-row button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.edit-button {
-  margin-top: 12px;
-}
-.state-message {
-  color: var(--accent-gold);
-}
-.state-message.error {
-  color: #ffb7b7;
-}
-.admin-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 30;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  background: rgba(10, 11, 12, 0.8);
-}
-.admin-panel {
-  position: relative;
-  width: min(760px, 100%);
-  max-height: 92vh;
-  overflow: auto;
-  padding: 28px;
-  background: var(--bg-panel);
-  border: 1px solid var(--border-strong);
-}
-.admin-panel h2 {
-  margin: 8px 0 22px;
-  color: var(--accent-orange);
-}
-.admin-panel h3 {
-  margin: 26px 0 12px;
-  color: var(--accent-gold);
-  font-size: 0.75rem;
-}
-.close-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-}
-.admin-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-.admin-stats label {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 5px;
-  color: var(--text-soft);
-  font-size: 0.6rem;
-}
-.admin-stats label span {
-  grid-column: 1 / -1;
-  color: var(--text-muted);
-  font-size: 0.5rem;
-}
-.admin-stats input {
-  min-width: 0;
-  background: var(--bg-panel-strong);
-  color: var(--text-main);
-  border: 1px solid var(--border-light);
-}
-.modifier-list {
-  display: grid;
-  gap: 8px;
-  padding: 0;
-  list-style: none;
-  color: var(--text-muted);
-  font-size: 0.6rem;
-}
-.modifier-list li {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  align-items: center;
-}
-.modifier-form {
-  display: grid;
-  gap: 8px;
-}
-.auth-input {
-  min-height: 40px;
-}
-@media (max-width: 700px) {
-  .characters-content {
-    padding: 32px 14px 60px;
-  }
-  .characters-toolbar {
-    grid-template-columns: 1fr;
-  }
-  .characters-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-  }
-  .stats-grid {
-    grid-template-columns: 1fr;
-    gap: 5px;
-  }
-  .character-image {
-    height: 160px;
-  }
-  .flip-card {
-    min-height: 270px;
-  }
-  .admin-stats {
-    grid-template-columns: 1fr;
-  }
-  .team-row {
-    grid-template-columns: 1fr;
-  }
-  .team-row .score {
-    width: 100%;
-  }
-}
-
-@media (max-width: 380px) {
-  .characters-grid {
-    grid-template-columns: 1fr;
-  }
-}
-</style>
+<style scoped src="./Personnages.css"></style>

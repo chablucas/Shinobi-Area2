@@ -3,8 +3,18 @@ import jwt from 'jsonwebtoken'
 import { prisma } from '../config/prisma.js'
 import { requireJwtSecret } from '../config/env.js'
 
-export type PublicUser = { id: number; email: string; displayName: string; wins: number; losses: number; role: 'USER' | 'ADMIN'; createdAt: Date; updatedAt: Date }
-
+export type PublicUser = {
+  id: number
+  email: string
+  displayName: string
+  avatarUrl: string | null
+  avatarCloudinaryPublicId: string | null
+  wins: number
+  losses: number
+  role: 'USER' | 'ADMIN'
+  createdAt: Date
+  updatedAt: Date
+}
 function publicUser(user: PublicUser): PublicUser {
   return user
 }

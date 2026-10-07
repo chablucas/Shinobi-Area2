@@ -26,35 +26,56 @@ function getApiBaseUrl(): string {
 export const API_BASE_URL = getApiBaseUrl()
 
 export async function fetchAllCards(): Promise<Card[]> {
-  const cards: Card[] = []
-  let page = 1
-  let pages = 1
+  const requestUrl = `${API_BASE_URL}/cards?limit=200&page=1`
 
-  do {
-    const requestUrl = `${API_BASE_URL}/cards?limit=100&page=${page}`
-    console.debug('[cardApi] URL appelée:', requestUrl)
+  console.debug('[cardApi] URL appelée:', requestUrl)
 
-    let response: Response
-    try {
-      response = await fetch(requestUrl)
-    } catch (error) {
-      console.error('[cardApi] Échec fetch:', error instanceof Error ? error.message : String(error))
-      throw error
+  let response: Response
+
+  try {
+    response = await fetch(requestUrl)
+  } catch (error) {
+    console.error(
+      '[cardApi] Échec fetch:',
+      error instanceof Error ? error.message : String(error)
+    )
+    throw error
+  }
+
+  console.debug('[cardApi] Status HTTP:', response.status)
+
+  if (!response.ok) {
+    throw new Error('Impossible de charger les cartes.')
+  }
+
+  const payload = await response.json().catch(() => null) as {
+    data?: unknown
+    pagination?: {
+      pages?: unknown
+      total?: unknown
     }
+  } | null
 
-    console.debug('[cardApi] Status HTTP:', response.status)
-    if (!response.ok) throw new Error('Impossible de charger les cartes.')
-    const payload = await response.json().catch(() => null) as { data?: unknown; pagination?: { pages?: unknown } } | null
-    if (!payload || !Array.isArray(payload.data) || !payload.pagination || !Number.isInteger(payload.pagination.pages)) throw new Error('Réponse cartes invalide.')
-    const responsePages = payload.pagination.pages as number
-    if (responsePages < page) throw new Error('Réponse cartes invalide.')
-    cards.push(...payload.data as Card[])
-    pages = responsePages
-    page += 1
-  } while (page <= pages)
+  if (
+    !payload ||
+    !Array.isArray(payload.data) ||
+    !payload.pagination
+  ) {
+    throw new Error('Réponse cartes invalide.')
+  }
 
-  const uniqueCards = new Map(cards.map((card) => [card.slug, card]))
-  if (uniqueCards.size !== cards.length) throw new Error('La collection contient des cartes dupliquées.')
+  const cards = payload.data as Card[]
+
+  const uniqueCards = new Map(
+    cards.map((card) => [card.slug, card])
+  )
+
+  if (uniqueCards.size !== cards.length) {
+    throw new Error(
+      'La collection contient des cartes dupliquées.'
+    )
+  }
+
   return [...uniqueCards.values()]
 }
 

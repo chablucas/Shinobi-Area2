@@ -1,0 +1,584 @@
+/* =========================================================
+   SHINOBI AREA — COMBAT DRAW AREA
+   Mobile : affichage vertical
+   Desktop : carte à gauche, infos à droite
+   ========================================================= */
+
+.combat-draw-area {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 12px;
+  padding: 12px;
+  box-sizing: border-box;
+
+  background: rgba(10, 10, 13, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.32);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+
+/* =========================================================
+   PANNEAUX
+   ========================================================= */
+
+.draw-card-panel,
+.draw-stats-panel,
+.draw-bonus-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 12px;
+  box-sizing: border-box;
+  overflow: hidden;
+
+  background: rgba(17, 17, 21, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+}
+
+.draw-card-panel {
+  min-height: 160px;
+}
+
+.draw-info-column {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 12px;
+}
+
+
+/* =========================================================
+   IMAGE
+   ========================================================= */
+
+.draw-card-art {
+  position: relative;
+  display: grid;
+  place-items: center;
+
+  width: 100%;
+  min-height: 110px;
+  overflow: hidden;
+
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(217, 47, 56, 0.12),
+      transparent 60%
+    ),
+    rgba(5, 5, 7, 0.5);
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+.draw-card-art img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.draw-card-art > span {
+  display: grid;
+  place-items: center;
+  min-height: 110px;
+
+  color: #f4c542;
+  font-size: 42px;
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   NOM CARTE
+   ========================================================= */
+
+.draw-card-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.draw-card-copy strong {
+  overflow: hidden;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   CARTE EN ATTENTE
+   ========================================================= */
+
+.draw-card-placeholder {
+  display: grid;
+  place-items: center;
+  flex: 1;
+  min-height: 125px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(217, 47, 56, 0.08),
+      transparent 60%
+    );
+
+  color: rgba(255, 255, 255, 0.42);
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+
+/* =========================================================
+   HEADERS
+   ========================================================= */
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  min-height: 25px;
+  margin-bottom: 9px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.eyebrow {
+  color: #f4c542;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+
+/* =========================================================
+   STATS
+   ========================================================= */
+
+.draw-stat-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 10px;
+  margin: 0;
+}
+
+.draw-stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  gap: 8px;
+  padding: 6px 3px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.draw-stat-row dt {
+  min-width: 0;
+  overflow: hidden;
+
+  color: rgba(255, 255, 255, 0.57);
+  font-size: 11px;
+  font-weight: 500;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.draw-stat-row dd {
+  flex-shrink: 0;
+  margin: 0;
+
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: right;
+}
+
+
+/* =========================================================
+   BONUS
+   ========================================================= */
+
+.draw-bonus-list {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.draw-bonus-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 9px;
+
+  background: rgba(244, 197, 66, 0.06);
+  border: 1px solid rgba(244, 197, 66, 0.15);
+  border-radius: 8px;
+}
+
+.draw-bonus-list strong {
+  color: #f4c542;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.draw-bonus-list span {
+  color: rgba(255, 255, 255, 0.67);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.muted-copy {
+  margin: 0;
+  padding: 5px 2px;
+
+  color: rgba(255, 255, 255, 0.43);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+
+/* =========================================================
+   BOUTON PIOCHER
+   ========================================================= */
+
+.draw-button {
+  position: relative;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 18px;
+  box-sizing: border-box;
+  overflow: hidden;
+
+  background: linear-gradient(135deg, #a71f28, #d92f38);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+
+  cursor: pointer;
+  box-shadow: 0 7px 18px rgba(0, 0, 0, 0.28);
+
+  transition:
+    transform 0.2s ease,
+    filter 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.draw-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.36);
+}
+
+.draw-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.draw-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+
+/* =========================================================
+   TABLETTE / DESKTOP
+   Carte à gauche — Stats + Bonus à droite
+   ========================================================= */
+
+@media (min-width: 768px) {
+  .combat-draw-area {
+    display: grid;
+    grid-template-columns: minmax(220px, 320px) minmax(0, 1fr);
+    grid-template-areas:
+      "card info"
+      "button info";
+
+    align-items: start;
+    gap: 14px;
+    padding: 14px;
+  }
+
+  .draw-card-panel {
+    grid-area: card;
+    min-height: 0;
+  }
+
+  .draw-info-column {
+    grid-area: info;
+    align-self: stretch;
+  }
+
+  .draw-stats-panel {
+    flex: 1;
+  }
+
+  .draw-bonus-panel {
+    flex: 0 0 auto;
+  }
+
+  .draw-button {
+    grid-area: button;
+  }
+
+  .draw-card-art {
+    width: 100%;
+    min-height: 0;
+    aspect-ratio: 4 / 5;
+  }
+
+  .draw-card-art img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .draw-card-art > span {
+    min-height: 0;
+    height: 100%;
+  }
+
+  .draw-stat-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 18px;
+  }
+}
+
+
+/* =========================================================
+   GRAND DESKTOP
+   ========================================================= */
+
+@media (min-width: 1100px) {
+  .combat-draw-area {
+    grid-template-columns: minmax(240px, 340px) minmax(0, 1fr);
+    gap: 18px;
+    padding: 16px;
+  }
+
+  .draw-stat-row dt {
+    font-size: 12px;
+  }
+
+  .draw-stat-row dd {
+    font-size: 13px;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+   On conserve l'affichage vertical
+   ========================================================= */
+
+@media (max-width: 767px) {
+  .combat-draw-area {
+    gap: 10px;
+    padding: 10px;
+    border-radius: 13px;
+  }
+
+  .draw-info-column {
+    display: contents;
+  }
+
+  .draw-card-panel,
+  .draw-stats-panel,
+  .draw-bonus-panel {
+    padding: 10px;
+    border-radius: 10px;
+  }
+
+  .draw-card-panel {
+    min-height: 145px;
+  }
+
+  .draw-card-art {
+    min-height: 105px;
+  }
+
+  .draw-card-art img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .draw-card-copy {
+    margin-top: 8px;
+  }
+
+  .draw-card-copy strong {
+    font-size: 14px;
+  }
+
+  .draw-stat-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .draw-button {
+    min-height: 42px;
+    font-size: 10px;
+  }
+}
+
+
+/* =========================================================
+   PETITS MOBILES
+   ========================================================= */
+
+@media (max-width: 390px) {
+  .combat-draw-area {
+    padding: 8px;
+  }
+
+  .draw-stat-list {
+    gap: 4px 7px;
+  }
+
+  .draw-stat-row {
+    gap: 5px;
+  }
+
+  .draw-stat-row dt {
+    font-size: 10px;
+  }
+
+  .draw-stat-row dd {
+    font-size: 11px;
+  }
+
+  .draw-bonus-list strong {
+    font-size: 9px;
+  }
+
+  .draw-bonus-list span,
+  .muted-copy {
+    font-size: 10px;
+  }
+}
+
+/* Pioche compacte, même sur mobile */
+.combat-draw-area {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  grid-template-areas:
+    "card info"
+    "button button";
+  align-items: start;
+
+  max-width: 680px;
+  margin-inline: auto;
+  gap: 8px;
+  padding: 10px;
+}
+
+.draw-card-panel {
+  grid-area: card;
+  min-height: 0;
+  padding: 6px;
+}
+
+.draw-info-column {
+  grid-area: info;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.draw-card-art {
+  min-height: 0;
+  aspect-ratio: 2 / 3;
+}
+
+.draw-card-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.draw-card-art > span {
+  min-height: 0;
+}
+
+.draw-card-copy {
+  margin-top: 6px;
+}
+
+.draw-card-copy strong {
+  font-family: 'Shinobi', sans-serif;
+  font-size: 15px;
+  font-weight: normal;
+  overflow-wrap: anywhere;
+}
+
+.draw-stats-panel,
+.draw-bonus-panel {
+  padding: 7px;
+}
+
+.panel-header {
+  min-height: 0;
+  margin-bottom: 5px;
+}
+
+.draw-stat-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3px 8px;
+}
+
+.draw-stat-row {
+  padding: 3px 0;
+  gap: 4px;
+}
+
+.draw-stat-row dt {
+  font-size: 10px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.draw-stat-row dd {
+  font-size: 11px;
+}
+
+.draw-bonus-list li {
+  padding: 5px;
+}
+
+.draw-button {
+  grid-area: button;
+}
+
+/* Sur les écrans très étroits, garde les stats lisibles */
+@media (max-width: 360px) {
+  .draw-stat-list {
+    grid-template-columns: 1fr;
+  }
+}

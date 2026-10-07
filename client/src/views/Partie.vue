@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import EmoteSystem from '@/components/EmoteSystem.vue'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import GameCard from '../components/GameCard.vue'
-import { fetchAllCards } from '../services/cardApi'
+import { useGameDataStore } from '../stores/gameData'
 import { useAuthStore } from '../stores/auth'
 import { saveBuild } from '../services/buildApi'
 import { CombatApiError, simulateFight } from '../services/gameApi'
@@ -25,7 +26,6 @@ import {
   type PlayerId,
 } from '../game/gameEngine'
 import { chooseBestCategory } from '../game/ai/categoryEvaluator'
-import SocialHeader from '../components/SocialHeader.vue'
 import CombatDrawArea from '../components/CombatDrawArea.vue'
 
 type Phase = 'construction' | 'combat' | 'result'
@@ -33,7 +33,7 @@ type GameMode = 'solo' | 'local2' | 'local3' | 'local4'
 
 const props = withDefaults(defineProps<{ mode?: GameMode; lobbyId?: string }>(), { mode: 'local2' })
 const auth = useAuthStore()
-
+const gameData = useGameDataStore()
 const cards = ref<Card[]>([])
 const builds = ref<PlayerBuild[]>(createPlayerBuildsForCount(props.mode === 'local4' ? 4 : props.mode === 'local3' ? 3 : 2))
 const usedCardIds = ref(new Set<number>())
@@ -48,7 +48,19 @@ const loading = ref(true)
 const errorMessage = ref('')
 const lobbyAccessError = ref('')
 const saved = ref(false)
-const gameId = ref(crypto.randomUUID())
+
+function createGameId() {
+  if (
+    typeof crypto !== 'undefined' &&
+    typeof crypto.randomUUID === 'function'
+  ) {
+    return crypto.randomUUID()
+  }
+
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
+
+const gameId = ref(createGameId())
 const realtimeState = ref<RealtimeGameState | null>(null)
 const realtimePlayerNumber = ref<number | null>(null)
 const realtimeSocket = ref<GameSocket | null>(null)
@@ -96,21 +108,42 @@ onMounted(async () => {
       })
       socket.on('game:error', (socketError) => { errorMessage.value = socketError.message; drawLoading.value = false })
     } catch (error) {
-      lobbyAccessError.value = error instanceof SocialApiError
-        ? error.status === 404 ? 'Salon introuvable' : error.status === 401 || error.status === 403 ? 'Vous n’avez pas accès à ce combat.' : error.message
-        : 'Accès au combat impossible.'
-      loading.value = false
-      return
-    }
+  console.error('[PARTIE] Erreur accès combat :', error)
+
+  if (error instanceof SocialApiError) {
+    lobbyAccessError.value =
+      error.status === 404
+        ? error.message || 'Partie ou salon introuvable.'
+        : error.status === 401
+          ? 'Session expirée. Reconnecte-toi.'
+          : error.status === 403
+            ? error.message || 'Vous n’avez pas accès à ce combat.'
+            : error.message
+  } else if (error instanceof Error) {
+    lobbyAccessError.value = error.message
+  } else {
+    lobbyAccessError.value = 'Accès au combat impossible.'
+  }
+
+  loading.value = false
+  return
+}
   }
   try {
-    cards.value = await fetchAllCards()
-    if (cards.value.length < 30) errorMessage.value = 'Il faut au moins 30 cartes pour commencer une partie.'
-  } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : 'Impossible de charger les cartes.'
-  } finally {
-    loading.value = false
+  cards.value = await gameData.loadCards()
+
+  if (cards.value.length < 30) {
+    errorMessage.value =
+      'Il faut au moins 30 cartes pour commencer une partie.'
   }
+} catch (error) {
+  errorMessage.value =
+    error instanceof Error
+      ? error.message
+      : 'Impossible de charger les cartes.'
+} finally {
+  loading.value = false
+}
 })
 onUnmounted(() => { realtimeSocket.value?.disconnect() })
 
@@ -286,7 +319,7 @@ function replay() {
   errorMessage.value = ''
   phase.value = 'construction'
   saved.value = false
-  gameId.value = crypto.randomUUID()
+  gameId.value = createGameId()
 }
 
 function slotCard(build: PlayerBuild, slug: CategorySlug) {
@@ -323,21 +356,35 @@ function drawStatsFor(card: DrawCardLike | null) {
 
 function drawBonusesFor(card: DrawCardLike | null) {
   if (!card) return []
-  const bonuses: Array<{ label: string; value: string }> = []
-  const clans = card.clans?.length ? card.clans.join(' · ') : 'Aucun clan'
-  bonuses.push({ label: 'Clan', value: clans })
-  const kekkeiGenkai = card.traits?.abilities?.kekkeiGenkai?.length ? card.traits.abilities.kekkeiGenkai.join(' · ') : 'Aucun'
-  bonuses.push({ label: 'Kekkei Genkai', value: kekkeiGenkai })
-  const kekkeiMora = card.traits?.abilities?.kekkeiMora?.length ? card.traits.abilities.kekkeiMora.join(' · ') : 'Aucun'
-  bonuses.push({ label: 'Kekkei Mōra', value: kekkeiMora })
-  return bonuses
+
+  return [{
+    label: 'Clan',
+    value: card.clans?.length
+      ? card.clans.join(' · ')
+      : 'Aucun clan',
+  }]
 }
+
+function placedCardValue(
+  card: Card | null | undefined,
+  category: CategorySlug,
+) {
+  if (!card) return '—'
+
+  if (category === 'clan') {
+    return card.clans?.join(' · ') || 'Aucun clan'
+  }
+
+  const key = gameStatKeys[category]
+  if (!key) return '—'
+
+  return Number(card.stats[key] ?? 0).toFixed(0)
+}
+
 </script>
 
 <template>
   <main class="game-shell">
-    <SocialHeader />
-
     <header class="page-heading">
       <div>
         <p class="eyebrow">{{ props.mode === 'solo' ? 'Solo · joueur contre ordinateur' : props.mode === 'local3' ? 'Local · 3 joueurs' : 'Local · 2 joueurs' }}</p>
@@ -363,78 +410,123 @@ function drawBonusesFor(card: DrawCardLike | null) {
           <strong>{{ realtimeMyTurn ? 'À TON TOUR' : `AU TOUR DE ${realtimeCurrentPlayerName.toUpperCase()}` }}</strong>
           <span>Tour {{ realtimeState.turnNumber }}</span>
         </div>
+        <div v-if="realtimeMyPlayer" class="realtime-global-draw">
+          <CombatDrawArea
+            :card="realtimeMyPlayer.pendingCard"
+            title="Carte piochée"
+            :show-button="true"
+            :button-disabled="!canDraw"
+            :stats="drawStatsFor(realtimeMyPlayer.pendingCard)"
+            :bonuses="drawBonusesFor(realtimeMyPlayer.pendingCard)"
+            button-label="PIOCHER"
+            empty-text="Aucune carte"
+            :waiting-text="realtimeMyTurn ? 'PIOCHER' : 'EN ATTENTE'"
+            @draw="realtimeDraw"
+          />
+        </div>
 
-        <div class="realtime-boards">
+        <div class="realtime-battle-layout">
           <article
-            v-for="player in realtimeState.players"
+            v-for="player in [
+              ...realtimeState.players.filter((p) => p.playerNumber === realtimePlayerNumber),
+              ...realtimeState.players.filter((p) => p.playerNumber !== realtimePlayerNumber),
+            ]"
             :key="player.playerNumber"
-            class="realtime-board"
-            :class="{ 'is-current': player.playerNumber === realtimeState.currentPlayerNumber }"
+            class="build-panel realtime-build-panel"
+            :class="{
+              'is-active': player.playerNumber === realtimeState.currentPlayerNumber,
+              'is-me': player.userId === auth.user?.id,
+            }"
           >
-            <header>
+            <header class="build-header">
               <div>
                 <p class="eyebrow">Joueur {{ player.playerNumber }}</p>
-                <h2>{{ player.displayName }}<span v-if="player.userId === auth.user?.id"> (Toi)</span></h2>
+                <h2>
+                  {{ player.displayName }}
+                  <span v-if="player.userId === auth.user?.id"> (Toi)</span>
+                </h2>
               </div>
-              <span>{{ player.cardsRemaining }} cartes</span>
+              <span class="build-count">
+                {{ 15 - Object.values(player.slots).filter(Boolean).length }}
+                <small>places libres</small>
+              </span>
             </header>
 
-            <!-- Chaque joueur voit la pioche uniquement sur son propre plateau. -->
-            <div
-              v-if="player.playerNumber === realtimePlayerNumber"
-              class="realtime-draw-zone player-one-draw"
-            >
-              <CombatDrawArea
-                :card="player.pendingCard"
-                title="Carte piochée"
-                :show-button="true"
-                :button-disabled="!canDraw"
-                :stats="drawStatsFor(player.pendingCard)"
-                :bonuses="drawBonusesFor(player.pendingCard)"
-                button-label="PIOCHER"
-                empty-text="Aucune carte"
-                :waiting-text="realtimeMyTurn ? 'PIOCHER' : 'EN ATTENTE'"
-                @draw="realtimeDraw"
-              />
-            </div>
-
-            <div class="realtime-slots">
+            <div class="category-grid">
               <button
                 v-for="[label, category] in CATEGORY_DEFINITIONS"
                 :key="category"
                 type="button"
-                :disabled="!realtimeCanPlaceCategory(category) && !(player.playerNumber === realtimePlayerNumber && player.slots[category] === null && !realtimeMyTurn)"
+                class="category-slot"
+                :disabled="player.playerNumber !== realtimePlayerNumber || !realtimeCanPlaceCategory(category)"
                 :class="{
                   filled: !!player.slots[category],
-                  selectable: player.playerNumber === realtimePlayerNumber && realtimeCanPlaceCategory(category) && !player.slots[category],
+                  selectable:
+                    player.playerNumber === realtimePlayerNumber &&
+                    realtimeCanPlaceCategory(category) &&
+                    !player.slots[category],
                 }"
-                @click="realtimePlace(category)"
+                @click="player.playerNumber === realtimePlayerNumber && realtimePlace(category)"
               >
-                <span>{{ label }}</span>
+                <span class="slot-label">{{ label }}</span>
+
                 <template v-if="player.slots[category]">
-                  <div class="realtime-slot-art">
-                    <img v-if="player.slots[category]?.imageUrl" :src="player.slots[category]?.imageUrl ?? undefined" :alt="`Carte ${player.slots[category]?.name}`" />
-                    <span v-else>{{ player.slots[category]?.name.slice(0, 1) }}</span>
-                  </div>
-                  <strong>{{ player.slots[category]?.name }}</strong>
-                  <small v-if="category === 'ninjutsu'">{{ player.slots[category]?.stats.ninjutsuAttack }} / {{ player.slots[category]?.stats.ninjutsuDefense }}</small>
-                  <small v-else-if="category === 'clan'">{{ player.slots[category]?.clans.join(' · ') || 'Aucun' }}</small>
-                  <small v-else>{{
-                    category === 'vitesse'
-                      ? Number(player.slots[category]?.stats.speed ?? 0).toFixed(0)
-                      : category === 'kekkei-genkai'
-                        ? Number(player.slots[category]?.stats.kekkeiGenkai ?? 0).toFixed(0)
-                        : category === 'kekkei-mora'
-                          ? Number(player.slots[category]?.stats.kekkeiMora ?? 0).toFixed(0)
-                          : typeof player.slots[category]?.stats[category] === 'number'
-                            ? Number(player.slots[category]!.stats[category]).toFixed(0)
-                            : '—'
-                  }}</small>
+                  <span class="slot-card-preview">
+                    <img
+                      v-if="player.slots[category]?.imageUrl"
+                      :src="player.slots[category]?.imageUrl ?? undefined"
+                      :alt="`Miniature de ${player.slots[category]?.name}`"
+                      loading="lazy"
+                    />
+                    <span v-else class="slot-card-fallback">
+                      {{ player.slots[category]?.name.slice(0, 1) }}
+                    </span>
+                  </span>
+
+                  <span class="slot-card-details">
+                    <span class="slot-card-name">{{ player.slots[category]?.name }}</span>
+
+                    <span v-if="category === 'ninjutsu'" class="final-stat-pair">
+                      ATQ {{ player.slots[category]?.stats.ninjutsuAttack }}
+                      · DEF {{ player.slots[category]?.stats.ninjutsuDefense }}
+                    </span>
+
+                    <span v-else-if="category === 'clan'" class="final-stat-value">
+                      {{ player.slots[category]?.clans.join(' · ') || 'Aucun' }}
+                    </span>
+
+                    <span v-else class="final-stat-value">
+                      {{
+                        category === 'vitesse'
+                          ? Number(player.slots[category]?.stats.speed ?? 0).toFixed(0)
+                          : category === 'kekkei-genkai'
+                            ? Number(player.slots[category]?.stats.kekkeiGenkai ?? 0).toFixed(0)
+                            : category === 'kekkei-mora'
+                              ? Number(player.slots[category]?.stats.kekkeiMora ?? 0).toFixed(0)
+                              : typeof player.slots[category]?.stats[category] === 'number'
+                                ? Number(player.slots[category]!.stats[category]).toFixed(0)
+                                : '—'
+                      }}
+                    </span>
+
+                    <span class="slot-state">Posée</span>
+                  </span>
                 </template>
-                <small v-else>VIDE</small>
+
+                <template v-else>
+                  <span class="slot-empty">Libre</span>
+                  <span class="slot-state">
+                    {{
+                      player.playerNumber === realtimePlayerNumber &&
+                      realtimeMyTurn &&
+                      realtimeMyPlayer?.pendingCard
+                        ? 'Placer ici'
+                        : 'En attente'
+                    }}
+                  </span>
+                </template>
               </button>
             </div>
-
           </article>
         </div>
 
@@ -555,13 +647,12 @@ function drawBonusesFor(card: DrawCardLike | null) {
                       v-if="slotCard(builds[0]!, slug)?.imageUrl"
                       :src="slotCard(builds[0]!, slug)?.imageUrl ?? undefined"
                       :alt="`Miniature de ${slotCard(builds[0]!, slug)?.name}`"
-                      loading="lazy"
                     />
                     <span v-else class="slot-card-fallback">{{ slotCard(builds[0]!, slug)?.name.slice(0, 1) }}</span>
                   </span>
                   <span class="slot-card-details">
                     <span class="slot-card-name">{{ slotCard(builds[0]!, slug)?.name }}</span>
-                    <span class="slot-state">Posée</span>
+                    <span class="slot-state">{{ placedCardValue(slotCard(builds[0]!, slug), slug) }}</span>
                   </span>
                 </template>
                 <template v-else>
@@ -629,7 +720,7 @@ function drawBonusesFor(card: DrawCardLike | null) {
                   </span>
                   <span class="slot-card-details">
                     <span class="slot-card-name">{{ slotCard(builds[1]!, slug)?.name }}</span>
-                    <span class="slot-state">Posée</span>
+                    <span class="slot-state">{{ placedCardValue(slotCard(builds[1]!, slug), slug) }}</span>
                   </span>
                 </template>
                 <template v-else>
@@ -680,7 +771,7 @@ function drawBonusesFor(card: DrawCardLike | null) {
                   </span>
                   <span class="slot-card-details">
                     <span class="slot-card-name">{{ slotCard(builds[2]!, slug)?.name }}</span>
-                    <span class="slot-state">Posée</span>
+                    <span class="slot-state">{{ placedCardValue(slotCard(builds[2]!, slug), slug) }}</span>
                   </span>
                 </template>
                 <template v-else>
@@ -730,7 +821,7 @@ function drawBonusesFor(card: DrawCardLike | null) {
                   </span>
                   <span class="slot-card-details">
                     <span class="slot-card-name">{{ slotCard(builds[3]!, slug)?.name }}</span>
-                    <span class="slot-state">Posée</span>
+                    <span class="slot-state">{{ placedCardValue(slotCard(builds[3]!, slug), slug) }}</span>
                   </span>
                 </template>
                 <template v-else>
@@ -793,7 +884,7 @@ function drawBonusesFor(card: DrawCardLike | null) {
                 </span>
                 <span class="slot-card-details">
                   <span class="slot-card-name">{{ slotCard(build, slug)?.name }}</span>
-                  <span class="slot-state">Prête</span>
+                  <span class="slot-state">{{ placedCardValue(slotCard(build, slug), slug) }}</span>
                 </span>
               </div>
             </div>
@@ -901,858 +992,8 @@ function drawBonusesFor(card: DrawCardLike | null) {
       </section>
     </template>
   </main>
+  <EmoteSystem />
+
 </template>
 
-<style scoped>
-.game-shell {
-  min-height: 100vh;
-  background: var(--bg-main);
-  overflow-x: hidden;
-}
-
-.game-shell > * {
-  max-width: 1360px;
-  margin-inline: auto;
-  padding-inline: max(16px, calc((100vw - 1360px) / 2));
-  box-sizing: border-box;
-}
-
-.page-heading {
-  display: block;
-  text-align: center;
-  padding: 32px 0 20px;
-}
-
-.eyebrow {
-  color: var(--accent-gold);
-  font-size: 0.6rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  margin: 0;
-}
-
-.page-heading h1 {
-  margin: 8px 0 0;
-  font-size: clamp(2rem, 5vw, 3.8rem);
-  line-height: 0.96;
-  letter-spacing: -0.06em;
-  text-transform: uppercase;
-}
-
-.turn-status {
-  max-width: 420px;
-  margin: 18px auto 0;
-  text-align: left;
-  padding: 12px 18px;
-  border: 1px solid rgba(246, 128, 72, 0.6);
-  background: linear-gradient(135deg, rgba(41, 23, 16, 0.92), rgba(17, 20, 22, 0.9));
-  box-shadow: var(--shadow-glow-orange);
-  clip-path: var(--clip-soft);
-}
-
-.turn-status.active {
-  border-color: rgba(84, 196, 255, 0.6);
-  background: linear-gradient(135deg, rgba(18, 31, 40, 0.95), rgba(14, 19, 25, 0.9));
-  box-shadow: var(--shadow-glow-blue);
-}
-
-.turn-status strong,
-.turn-status small {
-  display: block;
-}
-
-.turn-status strong {
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.turn-status small {
-  margin-top: 6px;
-  color: var(--text-muted);
-  font-size: 0.58rem;
-  letter-spacing: 0.08em;
-}
-
-.status-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  margin-right: 8px;
-  border-radius: 50%;
-  background: var(--accent-orange);
-  box-shadow: 0 0 12px rgba(246, 128, 72, 0.8);
-}
-
-.turn-status.active .status-dot {
-  background: var(--accent-blue);
-  box-shadow: 0 0 12px rgba(84, 196, 255, 0.8);
-}
-
-/* Global Draw Container - Bloc pioche indépendant */
-.global-draw-container {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin: 20px 0 0 0;
-  width: 100%;
-}
-
-@media (min-width: 768px) {
-  .global-draw-container {
-    margin: 30px 0 0 0;
-  }
-}
-
-/* Vertical Battle Layout (Mobile & Tablet & Desktop responsive) */
-.vertical-battle-layout {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding-bottom: 70px;
-  margin-top: 10px;
-}
-
-@media (min-width: 1024px) {
-  .vertical-battle-layout {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-
-  .vertical-battle-layout > .player-one {
-    flex: 1 1 calc(50% - 10px);
-    margin-right: 0;
-  }
-
-  .vertical-battle-layout > .player-two {
-    flex: 1 1 calc(50% - 10px);
-    margin-left: 0;
-  }
-}
-
-.build-panel {
-  min-width: 0;
-  padding: 18px 16px;
-  background: rgba(17, 20, 24, 0.88);
-  border: 1px solid rgba(160, 174, 175, 0.18);
-  box-shadow: var(--shadow-dark);
-  clip-path: var(--clip-soft);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.build-panel.player-one {
-  border-color: rgba(246, 128, 72, 0.4);
-  background: #353033;
-}
-
-.build-panel.player-two {
-  border-color: rgba(84, 196, 255, 0.4);
-  background: #30363b;
-}
-
-.build-panel.player-three {
-  border-color: rgba(138, 217, 184, 0.45);
-  background: #303936;
-}
-
-.build-panel.is-active {
-  border-color: var(--accent-gold);
-  box-shadow: 0 0 20px rgba(241, 212, 141, 0.25);
-}
-
-.build-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-
-.build-header h2,
-.build-header h3 {
-  margin: 4px 0 0;
-  font-size: clamp(1.2rem, 3vw, 1.8rem);
-  letter-spacing: -0.04em;
-  text-transform: uppercase;
-}
-
-.build-count {
-  color: var(--accent-gold);
-  font-family: 'Syne', sans-serif;
-  font-size: clamp(1.4rem, 2.5vw, 1.9rem);
-  font-weight: 700;
-}
-
-.build-count small {
-  color: var(--text-muted);
-  font-size: 0.58rem;
-}
-
-.draw-action-btn {
-  flex: 1;
-  min-height: 46px;
-  padding: 10px 16px;
-  border: 0;
-  background: linear-gradient(135deg, var(--accent-gold), var(--accent-orange));
-  color: #181a1b;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  clip-path: var(--clip-soft);
-  cursor: pointer;
-  touch-action: manipulation;
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.draw-action-btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(246, 128, 72, 0.4);
-}
-
-.draw-action-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.undo-action-btn {
-  min-height: 46px;
-  padding: 10px 14px;
-  border: 1px solid var(--border-light);
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text-soft);
-  font-size: 0.62rem;
-  cursor: pointer;
-  clip-path: var(--clip-soft);
-}
-
-.draw-waiting-badge {
-  text-align: center;
-  padding: 8px;
-  color: var(--text-muted);
-  font-size: 0.62rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.ai-thinking-badge {
-  text-align: center;
-  padding: 10px;
-  color: var(--accent-cyan);
-  font-size: 0.68rem;
-  letter-spacing: 0.06em;
-  animation: pulse 1.5s infinite ease-in-out;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
-}
-
-.active-draw-preview {
-  padding: 4px;
-}
-
-.card-preview-compact {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 8px;
-  background: rgba(246, 128, 72, 0.12);
-  border: 1px solid var(--accent-orange);
-  clip-path: var(--clip-soft);
-}
-
-.preview-img-box {
-  width: 48px;
-  height: 64px;
-  flex-shrink: 0;
-  background: #000;
-  border: 1px solid var(--accent-gold);
-  overflow: hidden;
-  display: grid;
-  place-items: center;
-}
-
-.preview-img-box img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.preview-letter {
-  font-family: 'Syne', sans-serif;
-  font-size: 1.6rem;
-  font-weight: 800;
-  color: var(--accent-gold);
-}
-
-.preview-info {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.preview-badge {
-  color: var(--accent-gold);
-  font-size: 0.52rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.preview-info strong {
-  font-size: 0.85rem;
-  color: var(--text-main);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.preview-instruction {
-  color: var(--accent-orange);
-  font-size: 0.58rem;
-  font-weight: 600;
-}
-
-/* Zone centrale de combat */
-.battle-center-arena {
-  text-align: center;
-  padding: 16px 20px;
-  border: 1px solid rgba(241, 212, 141, 0.5);
-  background: linear-gradient(135deg, rgba(34, 28, 20, 0.95), rgba(18, 22, 28, 0.95));
-  clip-path: var(--clip-soft);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
-}
-
-.arena-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--accent-gold);
-  font-family: 'Syne', sans-serif;
-  font-weight: 800;
-  font-size: 0.85rem;
-  letter-spacing: 0.14em;
-}
-
-.arena-icon {
-  color: var(--accent-orange);
-  font-size: 1.1rem;
-}
-
-.arena-status {
-  margin: 6px 0 0;
-  color: var(--text-muted);
-  font-size: 0.68rem;
-  line-height: 1.5;
-}
-
-/* Grille des catégories (Deck) */
-.category-grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 6px;
-}
-
-.category-slot {
-  display: flex;
-  min-width: 0;
-  min-height: 68px;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: space-between;
-  padding: 6px;
-  border: 1px solid rgba(150, 170, 167, 0.2);
-  background: rgba(11, 14, 18, 0.75);
-  color: var(--text-muted);
-  text-align: left;
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-  touch-action: manipulation;
-  cursor: pointer;
-}
-
-.category-slot.selectable {
-  border-color: rgba(241, 212, 141, 0.8);
-  background: rgba(48, 38, 22, 0.8);
-  box-shadow: 0 0 10px rgba(241, 212, 141, 0.3);
-  animation: pulse-border 1.2s infinite alternate ease-in-out;
-}
-
-@keyframes pulse-border {
-  from { border-color: rgba(241, 212, 141, 0.5); }
-  to { border-color: rgba(241, 212, 141, 1); }
-}
-
-.category-slot.selectable:hover {
-  transform: translateY(-2px);
-  border-color: var(--accent-gold);
-}
-
-.category-slot.filled {
-  display: grid;
-  grid-template-columns: 36px minmax(0, 1fr);
-  column-gap: 6px;
-  row-gap: 4px;
-  padding: 6px;
-  background: rgba(27, 18, 17, 0.9);
-  border-color: rgba(246, 128, 72, 0.4);
-}
-
-.player-two .category-slot.filled {
-  background: rgba(15, 24, 34, 0.92);
-  border-color: rgba(84, 196, 255, 0.4);
-}
-
-.player-three .category-slot.filled {
-  background: rgba(18, 32, 26, 0.92);
-  border-color: rgba(138, 217, 184, 0.4);
-}
-
-.slot-label {
-  color: var(--accent-gold);
-  font-size: 0.5rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.category-slot.filled .slot-label {
-  grid-column: 1 / -1;
-}
-
-.slot-card-preview {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 50px;
-  min-width: 36px;
-  overflow: hidden;
-  border: 1px solid rgba(246, 128, 72, 0.4);
-  background: rgba(8, 12, 16, 0.8);
-}
-
-.player-two .slot-card-preview {
-  border-color: rgba(84, 196, 255, 0.45);
-}
-
-.player-three .slot-card-preview {
-  border-color: rgba(138, 217, 184, 0.45);
-}
-
-.slot-card-preview img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.slot-card-fallback {
-  display: grid;
-  place-items: center;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.4);
-  color: var(--accent-gold);
-  font-weight: 700;
-  font-size: 0.8rem;
-}
-
-.slot-card-details {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  justify-content: center;
-  gap: 2px;
-}
-
-.slot-card-name {
-  color: var(--text-main);
-  font-size: 0.55rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.slot-state,
-.slot-empty {
-  font-size: 0.5rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.slot-empty {
-  color: var(--text-muted);
-}
-
-.slot-state {
-  color: var(--accent-gold);
-}
-
-.player-two .slot-state {
-  color: var(--accent-cyan);
-}
-
-.player-three .slot-state {
-  color: var(--accent-green);
-}
-
-/* Phase Combat & Results */
-.combat-panel,
-.result-panel {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 24px 0 80px;
-}
-
-.combat-intro h2,
-.result-panel h2 {
-  margin: 10px 0 8px;
-  font-size: clamp(1.8rem, 4vw, 3.2rem);
-  text-transform: uppercase;
-  letter-spacing: -0.04em;
-}
-
-.combat-intro p,
-.result-panel > p {
-  color: var(--text-muted);
-  font-size: 0.72rem;
-  line-height: 1.6;
-}
-
-.combat-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin: 24px 0 32px;
-}
-
-.btn-simulate {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  min-height: 52px;
-  padding: 12px 20px;
-  border: 1px solid var(--accent-gold);
-  background: linear-gradient(135deg, var(--accent-gold), var(--accent-orange));
-  color: #181a1b;
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  clip-path: var(--clip-soft);
-  cursor: pointer;
-  touch-action: manipulation;
-}
-
-.manual-choices {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-
-.manual-choices button {
-  min-height: 44px;
-  padding: 8px 12px;
-  border: 1px solid var(--border-light);
-  background: var(--bg-panel-strong);
-  color: var(--text-soft);
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  clip-path: var(--clip-soft);
-  cursor: pointer;
-}
-
-.manual-choices button:hover {
-  border-color: var(--accent-gold);
-  color: var(--accent-gold);
-}
-
-.combat-builds,
-.result-builds {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.combat-score {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 16px;
-  margin: 24px 0;
-}
-
-.score-card {
-  padding: 18px;
-  text-align: center;
-  border: 1px solid var(--border-light);
-  background: rgba(15, 20, 27, 0.9);
-  clip-path: var(--clip-soft);
-}
-
-.score-card h3 {
-  margin: 0 0 6px;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.score-card strong {
-  display: block;
-  font-family: 'Syne', sans-serif;
-  font-size: clamp(2rem, 5vw, 3.2rem);
-  color: var(--accent-gold);
-}
-
-.score-card span {
-  display: block;
-  font-size: 0.55rem;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.score-vs {
-  font-family: 'Syne', sans-serif;
-  font-size: 1.4rem;
-  color: var(--accent-orange);
-}
-
-.final-stat-value,
-.final-stat-pair {
-  color: var(--text-main);
-  font-size: 0.52rem;
-  line-height: 1.3;
-  text-transform: uppercase;
-}
-
-.final-stat-pair {
-  color: var(--accent-cyan);
-}
-
-.rules-applied-section {
-  margin-top: 18px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border-light);
-}
-
-.rules-applied-section h4 {
-  margin: 0 0 8px;
-  color: var(--accent-gold);
-  font-size: 0.65rem;
-  text-transform: uppercase;
-}
-
-.rule-row {
-  display: block;
-  margin: 4px 0;
-  font-size: 0.58rem;
-  color: var(--text-muted);
-  line-height: 1.4;
-}
-
-.rule-row.bonus {
-  color: #8ee6b2;
-}
-
-.rule-row.malus {
-  color: #ffaaaa;
-}
-
-.rule-row small {
-  color: var(--accent-cyan);
-  margin-left: 4px;
-}
-
-.result-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 28px;
-}
-
-.primary-button,
-.secondary-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 48px;
-  padding: 10px 18px;
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  clip-path: var(--clip-soft);
-  cursor: pointer;
-  touch-action: manipulation;
-  text-decoration: none;
-}
-
-.primary-button {
-  background: linear-gradient(135deg, var(--accent-gold), var(--accent-orange));
-  color: #181a1b;
-  border: 0;
-}
-
-.secondary-button {
-  border: 1px solid var(--border-light);
-  background: var(--bg-panel-strong);
-  color: var(--text-soft);
-}
-
-/* Realtime elements */
-.realtime-game {
-  display: grid;
-  gap: 18px;
-  padding-bottom: 76px;
-}
-
-.realtime-turn {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 14px 18px;
-  border: 1px solid rgba(241, 212, 141, 0.45);
-  background: rgba(30, 27, 20, 0.92);
-}
-
-.realtime-turn.active { border-color: rgba(84, 196, 255, 0.7); }
-.realtime-turn strong { color: var(--accent-gold); font-size: clamp(0.85rem, 2vw, 1.1rem); }
-.realtime-turn span { color: var(--text-muted); font-size: 0.65rem; text-transform: uppercase; }
-
-.realtime-boards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.realtime-board { min-width: 0; padding: 16px; border: 1px solid rgba(246, 128, 72, 0.35); background: #353033; }
-.realtime-board:nth-child(2) { border-color: rgba(84, 196, 255, 0.35); background: #30363b; }
-.realtime-board.is-current { box-shadow: 0 0 0 2px rgba(241, 212, 141, 0.55); }
-.realtime-board > header { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
-.realtime-board h2 { margin-top: 4px; font-size: clamp(1.1rem, 2vw, 1.5rem); text-transform: uppercase; }
-.realtime-board > header > span { color: var(--text-muted); font-size: 0.62rem; text-transform: uppercase; }
-
-.realtime-slots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
-.realtime-slots button { display: flex; min-width: 0; min-height: 64px; flex-direction: column; justify-content: space-between; gap: 4px; padding: 6px; border: 1px solid rgba(157, 173, 170, 0.25); background: rgba(11, 14, 18, 0.72); color: var(--text-muted); text-align: left; }
-.realtime-slots button.selectable { border-color: var(--accent-gold); cursor: pointer; }
-.realtime-slots button > span { overflow: hidden; color: var(--accent-gold); font-size: 0.5rem; letter-spacing: 0.08em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
-.realtime-slots button strong { overflow: hidden; color: var(--text-main); font-size: 0.6rem; text-overflow: ellipsis; white-space: nowrap; }
-.realtime-slots button small { overflow: hidden; color: var(--text-muted); font-size: 0.54rem; text-overflow: ellipsis; white-space: nowrap; }
-.realtime-slots button.filled { border-color: rgba(246, 128, 72, 0.5); }
-
-.realtime-draw-zone { display: grid; grid-template-columns: minmax(180px, 280px) 1fr; align-items: center; gap: 18px; padding: 14px; border: 1px dashed rgba(241, 212, 141, 0.4); margin: 10px 0; }
-.realtime-drawn-card, .realtime-empty-draw { display: grid; min-height: 70px; place-items: center; margin: 6px 0; border: 1px dashed rgba(241, 212, 141, 0.5); background: rgba(17, 20, 24, 0.7); text-align: center; }
-.realtime-drawn-card strong { color: var(--text-main); font-size: 0.72rem; }
-.realtime-drawn-card span { color: var(--accent-gold); font-size: 0.52rem; text-transform: uppercase; }
-.realtime-empty-draw { color: var(--accent-gold); font-size: 0.68rem; letter-spacing: 0.1em; }
-.realtime-draw-zone button { width: 100%; min-height: 42px; padding: 0.65rem; border: 0; background: linear-gradient(135deg, var(--accent-gold), var(--accent-orange)); color: #181a1b; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; }
-.realtime-draw-zone button:disabled { cursor: not-allowed; opacity: 0.4; }
-
-.realtime-result { padding: 20px; border: 1px solid var(--accent-gold); }
-.realtime-result h2 { margin-bottom: 8px; font-size: 1.4rem; text-transform: uppercase; }
-.realtime-result p { color: var(--text-muted); font-size: 0.7rem; }
-
-.manual-result-modal { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; background: rgba(0, 0, 0, 0.8); padding: 16px; }
-.manual-result-modal section { display: grid; gap: 10px; width: min(100%, 420px); padding: 24px; background: var(--bg-panel); border: 1px solid var(--accent-gold); }
-.manual-result-modal button { min-height: 44px; padding: 10px; border: 1px solid var(--border-light); background: var(--bg-panel-strong); color: var(--text-main); font-size: 0.68rem; font-weight: 700; cursor: pointer; }
-
-/* Responsive Media Queries */
-@media (min-width: 768px) {
-  .realtime-draw-zone {
-    grid-template-columns: minmax(0, 1fr);
-    width: 100%;
-    box-sizing: border-box;
-  }
-}
-
-@media (min-width: 1024px) {
-  .global-draw-container {
-    width: 100%;
-    max-width: 100%;
-  }
-
-  .vertical-battle-layout {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 20px;
-  }
-
-  .vertical-battle-layout > .player-one {
-    flex: 1 1 calc(50% - 10px);
-  }
-
-  .vertical-battle-layout > .player-two {
-    flex: 1 1 calc(50% - 10px);
-  }
-
-  .battle-center-arena {
-    flex: 0 0 100%;
-    order: -1;
-  }
-}
-
-@media (min-width: 768px) and (max-width: 1023px) {
-  .global-draw-container {
-    width: 100%;
-  }
-
-  .vertical-battle-layout {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .category-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 767px) {
-  .category-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .manual-choices {
-    grid-template-columns: 1fr;
-  }
-
-  .combat-score {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  .score-vs {
-    text-align: center;
-  }
-
-  .result-actions {
-    flex-direction: column;
-  }
-
-  .result-actions button,
-  .result-actions a {
-    width: 100%;
-  }
-}
-
-@media (max-width: 900px) {
-  .realtime-boards {
-    grid-template-columns: 1fr;
-  }
-
-  .combat-builds,
-  .result-builds {
-    grid-template-columns: 1fr;
-  }
-}
-</style>
+<style scoped src="./Partie.css"></style>

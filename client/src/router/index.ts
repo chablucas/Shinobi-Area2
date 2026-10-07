@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import App from '../App.vue'
+import Home from '../views/Home.vue'
 import Partie from '../views/Partie.vue'
 import Profil from '../views/Profil.vue'
 import Connexion from '../views/Connexion.vue'
@@ -10,7 +10,6 @@ import CarteDetail from '../views/CarteDetail.vue'
 import Lobby from '../views/Lobby.vue'
 import Personnages from '../views/Personnages.vue'
 import Regles from '../views/Regles.vue'
-import AdminDashboard from '../views/AdminDashboard.vue'
 import Simulation from '../views/Simulation.vue'
 import TeamAuction from '../views/TeamAuction.vue'
 import { useAuthStore } from '../stores/auth'
@@ -18,7 +17,7 @@ import { useAuthStore } from '../stores/auth'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/', component: App },
+    { path: '/', component: Home },
     { path: '/partie', component: Partie, props: { mode: 'local2' } },
     { name: 'partie-lobby', path: '/partie/:lobbyId', component: Partie, props: (route) => ({ lobbyId: String(route.params.lobbyId), mode: route.query.mode === '1v1v1v1' ? 'local4' : route.query.mode === '1v1v1' ? 'local3' : 'local2' }) },
     { path: '/4-joueurs', component: Partie, props: { mode: 'local4' } },
@@ -36,11 +35,6 @@ const router = createRouter({
     { path: '/regles', component: Regles },
     { path: '/simulation', component: Simulation },
     { path: '/team-game', component: TeamAuction },
-    {
-      path: '/admin',
-      component: AdminDashboard,
-      meta: { requiresAdmin: true },
-    },
   ],
 })
 

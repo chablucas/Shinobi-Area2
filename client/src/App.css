@@ -1,0 +1,39 @@
+/* =====================================================
+   APP — LAYOUT GLOBAL
+   ===================================================== */
+
+.app-layout {
+  position: relative;
+
+  width: 100%;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+
+/* =====================================================
+   CONTENU DES PAGES
+   ===================================================== */
+
+.app-content {
+  width: 100%;
+  min-height: 100vh;
+
+  /*
+    Espace réservé au footer fixe.
+    Comme ça, le bas des pages ne passe pas dessous.
+  */
+  padding-bottom:
+    calc(64px + env(safe-area-inset-bottom));
+}
+
+
+/* =====================================================
+   TABLETTE / DESKTOP
+   ===================================================== */
+
+@media (min-width: 700px) {
+  .app-content {
+    width: 100%;
+  }
+}

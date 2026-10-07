@@ -1,0 +1,272 @@
+/* =========================================================
+   SHINOBI AREA — CATEGORY SELECTOR
+   ========================================================= */
+
+.category-selector {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+
+  width: 100%;
+
+  gap: 9px;
+}
+
+
+/* =========================================================
+   CATÉGORIE
+   ========================================================= */
+
+.category-button {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  min-width: 0;
+  min-height: 54px;
+
+  gap: 10px;
+  padding: 10px 13px;
+
+  overflow: hidden;
+
+  box-sizing: border-box;
+
+  background: rgba(14, 14, 18, 0.82);
+
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 10px;
+
+  color: #ffffff;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+
+/* =========================================================
+   HOVER
+   ========================================================= */
+
+.category-button:hover:not(:disabled):not(.selected) {
+  transform: translateY(-2px);
+
+  background: rgba(24, 24, 29, 0.94);
+
+  border-color: rgba(244, 197, 66, 0.4);
+
+  box-shadow:
+    0 8px 18px rgba(0, 0, 0, 0.25);
+}
+
+
+/* =========================================================
+   NOM DE LA CATÉGORIE
+   ========================================================= */
+
+.category-name {
+  min-width: 0;
+
+  overflow: hidden;
+
+  color: rgba(255, 255, 255, 0.9);
+
+  font-size: 12px;
+  font-weight: 700;
+
+  line-height: 1.25;
+
+  text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   ACTION
+   ========================================================= */
+
+.category-action {
+  flex-shrink: 0;
+
+  color: rgba(244, 197, 66, 0.72);
+
+  font-size: 9px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+
+/* =========================================================
+   CATÉGORIE SÉLECTIONNÉE
+   ========================================================= */
+
+.category-button.selected {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(135, 25, 32, 0.94),
+      rgba(190, 37, 46, 0.9)
+    );
+
+  border-color: rgba(244, 197, 66, 0.7);
+
+  box-shadow:
+    0 0 0 1px rgba(244, 197, 66, 0.1),
+    0 9px 22px rgba(0, 0, 0, 0.3);
+}
+
+
+/* Petite barre Naruto */
+.category-button.selected::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 3px;
+
+  background: #f4c542;
+}
+
+
+.category-button.selected .category-name {
+  color: #ffffff;
+
+  font-weight: 800;
+}
+
+
+.category-button.selected .category-action {
+  color: #f4c542;
+}
+
+
+/* =========================================================
+   DISABLED
+   ========================================================= */
+
+.category-button:disabled {
+  opacity: 0.4;
+
+  cursor: not-allowed;
+
+  transform: none;
+
+  box-shadow: none;
+}
+
+
+/* La catégorie déjà choisie reste identifiable même
+   lorsque le sélecteur entier est désactivé. */
+
+.category-button.selected:disabled {
+  opacity: 0.72;
+}
+
+
+/* =========================================================
+   TABLETTE
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .category-selector {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+
+    gap: 8px;
+  }
+
+  .category-button {
+    min-height: 51px;
+
+    padding:
+      9px
+      11px;
+  }
+
+  .category-name {
+    font-size: 11px;
+  }
+
+  .category-action {
+    font-size: 8px;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+  .category-selector {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 7px;
+  }
+
+  .category-button {
+    min-height: 48px;
+
+    gap: 6px;
+
+    padding:
+      8px
+      9px;
+
+    border-radius: 8px;
+  }
+
+  .category-name {
+    font-size: 10px;
+  }
+
+  .category-action {
+    font-size: 7px;
+
+    letter-spacing: 0.05em;
+  }
+}
+
+
+/* =========================================================
+   PETITS MOBILES
+   ========================================================= */
+
+@media (max-width: 390px) {
+  .category-selector {
+    gap: 6px;
+  }
+
+  .category-button {
+    min-height: 45px;
+
+    padding:
+      7px
+      8px;
+  }
+
+  .category-name {
+    font-size: 9px;
+  }
+
+  .category-action {
+    font-size: 7px;
+  }
+}

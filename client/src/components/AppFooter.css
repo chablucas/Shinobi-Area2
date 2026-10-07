@@ -1,0 +1,168 @@
+/* =====================================================
+   FOOTER GLOBAL — SHINOBI AREA
+   ===================================================== */
+
+.app-footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+
+  width: 100%;
+  height: calc(64px + env(safe-area-inset-bottom));
+
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: center;
+
+  padding-bottom: env(safe-area-inset-bottom);
+
+  background: #071b36;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+
+  box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.25);
+}
+
+
+/* =====================================================
+   BOUTONS
+   ===================================================== */
+
+.footer-button {
+  position: relative;
+
+  width: 100%;
+  height: 64px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  cursor: pointer;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+
+/* =====================================================
+   IMAGES
+   ===================================================== */
+
+.footer-button-image {
+  display: block;
+
+  width: 42px;
+  height: 42px;
+
+  object-fit: contain;
+
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease;
+}
+
+
+/* Bouton non sélectionné */
+
+.footer-button:not(.active) .footer-button-image {
+  opacity: 0.55;
+}
+
+
+/* Bouton sélectionné */
+
+.footer-button.active .footer-button-image {
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+
+/* Petite barre sous le bouton actif */
+
+.footer-button.active::after {
+  content: '';
+
+  position: absolute;
+
+  left: 50%;
+  bottom: 3px;
+
+  width: 22px;
+  height: 3px;
+
+  transform: translateX(-50%);
+
+  border-radius: 10px;
+
+  background: #ffffff;
+}
+
+
+/* Effet quand on appuie */
+
+.footer-button:active .footer-button-image {
+  transform: scale(0.9);
+}
+
+
+/* =====================================================
+   TABLETTE / DESKTOP
+   ===================================================== */
+
+@media (min-width: 700px) {
+  .app-footer {
+    left: 0;
+    right: 0;
+
+    width: 100%;
+
+    transform: none;
+  }
+
+  .footer-button-image {
+    width: 44px;
+    height: 44px;
+  }
+}
+@media (max-width: 699px) {
+  .app-footer {
+    height: calc(110px + env(safe-area-inset-bottom));
+  }
+
+  .footer-button {
+    height: 60px;
+  }
+
+  .footer-button-image {
+    width: 70px;
+    height: 70px;
+  }
+}
+
+/* Fond translucide : seul l’arrière-plan est flouté */
+.app-footer {
+  background: rgba(7, 27, 54, 0.15);
+
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
+
+/* Icônes bien visibles, même non sélectionnées */
+.footer-button-image {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.7));
+}
+
+.footer-button:not(.active) .footer-button-image {
+  opacity: 0.9;
+}

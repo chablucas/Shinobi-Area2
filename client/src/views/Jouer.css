@@ -1,0 +1,463 @@
+/* =========================================================
+   SHINOBI AREA — JOUER / CRÉE TON PERSO
+   ========================================================= */
+
+.mode-page {
+  min-height: 100vh;
+  overflow-x: hidden;
+  color: #ffffff;
+
+  /* Le nouveau fond image global reste visible */
+}
+
+.mode-content {
+  width: min(1240px, calc(100% - 40px));
+
+  margin: 0 auto;
+  padding: 52px 0 90px;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   TITRE
+   ========================================================= */
+
+.mode-heading {
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0;
+
+  color: #f4c542;
+
+  font-size: 9px;
+  font-weight: 850;
+
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+.mode-heading h1 {
+  margin: 9px 0 10px;
+
+  color: #ffffff;
+
+  font-size: clamp(2.7rem, 7vw, 5.2rem);
+  font-weight: 900;
+
+  line-height: 0.94;
+
+  text-transform: uppercase;
+  letter-spacing: -0.05em;
+}
+
+.mode-heading > p:last-child {
+  margin: 0;
+
+  color: rgba(255, 255, 255, 0.48);
+
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+
+/* =========================================================
+   GRILLE
+   ========================================================= */
+
+.mode-choice-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 13px;
+
+  margin-top: 34px;
+}
+
+
+/* =========================================================
+   CARTE MODE
+   ========================================================= */
+
+.mode-choice {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+  min-height: 330px;
+
+  padding: 22px;
+
+  overflow: hidden;
+
+  box-sizing: border-box;
+
+  background: rgba(10, 10, 14, 0.84);
+
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 14px;
+
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.28);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.mode-choice::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 3px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #a51f28,
+      #d92f38,
+      #f4c542
+    );
+}
+
+.mode-choice::after {
+  content: "";
+
+  position: absolute;
+
+  top: -80px;
+  right: -80px;
+
+  width: 190px;
+  height: 190px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(217, 47, 56, 0.12),
+      transparent 70%
+    );
+
+  pointer-events: none;
+}
+
+.mode-choice:hover {
+  transform: translateY(-5px);
+
+  border-color: rgba(244, 197, 66, 0.28);
+
+  box-shadow:
+    0 20px 45px rgba(0, 0, 0, 0.38),
+    0 0 25px rgba(217, 47, 56, 0.07);
+}
+
+
+/* =========================================================
+   VARIANTES
+   ========================================================= */
+
+/*
+ * On garde les classes mode-solo / duel / triple
+ * mais avec la nouvelle identité visuelle.
+ */
+
+.mode-solo {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(90, 20, 25, 0.2),
+      rgba(10, 10, 14, 0.88) 55%
+    );
+}
+
+.mode-duel {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(165, 31, 40, 0.18),
+      rgba(10, 10, 14, 0.88) 55%
+    );
+}
+
+.mode-triple {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(244, 197, 66, 0.08),
+      rgba(10, 10, 14, 0.88) 55%
+    );
+}
+
+
+/* =========================================================
+   NUMÉRO
+   ========================================================= */
+
+.mode-number {
+  position: relative;
+
+  z-index: 1;
+
+  margin: 0;
+
+  color: #f4c542;
+
+  font-size: 10px;
+  font-weight: 850;
+
+  letter-spacing: 0.16em;
+}
+
+
+/* =========================================================
+   NOM MODE
+   ========================================================= */
+
+.mode-choice h2 {
+  position: relative;
+
+  z-index: 1;
+
+  margin: auto 0 0;
+
+  color: #ffffff;
+
+  font-size: clamp(1.6rem, 3vw, 2.5rem);
+  font-weight: 900;
+
+  line-height: 1;
+
+  text-transform: uppercase;
+  letter-spacing: -0.04em;
+}
+
+
+/* =========================================================
+   DESCRIPTION
+   ========================================================= */
+
+.mode-choice > p:not(.mode-number) {
+  position: relative;
+
+  z-index: 1;
+
+  max-width: 280px;
+  min-height: 45px;
+
+  margin: 11px 0 0;
+
+  color: rgba(255, 255, 255, 0.48);
+
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+
+/* =========================================================
+   BOUTON JOUER
+   ========================================================= */
+
+.mode-play {
+  position: relative;
+
+  z-index: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  min-height: 45px;
+
+  margin-top: 22px;
+  padding: 0 15px;
+
+  box-sizing: border-box;
+
+  background:
+    linear-gradient(
+      135deg,
+      #a51f28,
+      #d92f38
+    );
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+
+  color: #ffffff;
+
+  font-size: 9px;
+  font-weight: 900;
+
+  letter-spacing: 0.1em;
+  text-decoration: none;
+  text-transform: uppercase;
+
+  touch-action: manipulation;
+
+  box-shadow:
+    0 7px 18px rgba(0, 0, 0, 0.27);
+
+  transition:
+    transform 0.18s ease,
+    filter 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.mode-play:hover {
+  transform: translateY(-2px);
+
+  filter: brightness(1.1);
+
+  border-color: rgba(244, 197, 66, 0.35);
+
+  box-shadow:
+    0 11px 24px rgba(0, 0, 0, 0.36);
+}
+
+.mode-play span {
+  color: #f4c542;
+
+  font-size: 17px;
+
+  transition: transform 0.18s ease;
+}
+
+.mode-play:hover span {
+  transform: translateX(3px);
+}
+
+
+/* =========================================================
+   TABLETTE
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .mode-content {
+    width: calc(100% - 28px);
+
+    padding:
+      34px
+      0
+      65px;
+  }
+
+  .mode-choice-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    margin-top: 27px;
+  }
+
+  .mode-choice:last-child {
+    grid-column: 1 / -1;
+
+    min-height: 240px;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+  .mode-content {
+    width: calc(100% - 18px);
+
+    padding:
+      24px
+      0
+      45px;
+  }
+
+  .mode-heading h1 {
+    margin-top: 6px;
+
+    font-size: clamp(2.5rem, 14vw, 3.7rem);
+  }
+
+  .mode-heading > p:last-child {
+    font-size: 9px;
+  }
+
+  .mode-choice-grid {
+    grid-template-columns: 1fr;
+
+    gap: 8px;
+
+    margin-top: 20px;
+  }
+
+  .mode-choice,
+  .mode-choice:last-child {
+    grid-column: auto;
+
+    min-height: 190px;
+
+    padding: 16px;
+
+    border-radius: 11px;
+  }
+
+  .mode-number {
+    font-size: 8px;
+  }
+
+  .mode-choice h2 {
+    font-size: 1.65rem;
+  }
+
+  .mode-choice > p:not(.mode-number) {
+    min-height: auto;
+
+    margin-top: 7px;
+
+    font-size: 9px;
+  }
+
+  .mode-play {
+    min-height: 40px;
+
+    margin-top: 14px;
+
+    font-size: 8px;
+  }
+}
+
+
+/* =========================================================
+   PETIT MOBILE
+   ========================================================= */
+
+@media (max-width: 390px) {
+  .mode-content {
+    width: calc(100% - 12px);
+  }
+
+  .mode-choice {
+    min-height: 180px;
+
+    padding: 14px;
+  }
+
+  .mode-choice h2 {
+    font-size: 1.45rem;
+  }
+}

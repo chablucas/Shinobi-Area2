@@ -1,0 +1,1829 @@
+/* =========================================================
+   SHINOBI AREA — RÈGLES
+   ========================================================= */
+
+.rules-page {
+  min-height: 100vh;
+
+  /* Le fond image global du nouveau site reste visible */
+  color: #ffffff;
+}
+
+.rules-shell {
+  width: min(1100px, calc(100% - 40px));
+
+  margin: 0 auto;
+  padding: 46px 0 90px;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.rules-header {
+  position: relative;
+
+  margin-bottom: 16px;
+  padding: 20px;
+
+  overflow: hidden;
+
+  background: rgba(10, 10, 13, 0.76);
+
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 14px;
+
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.28);
+}
+
+.rules-header h1 {
+  margin: 7px 0 0;
+
+  color: #ffffff;
+
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 900;
+
+  line-height: 1;
+
+  letter-spacing: -0.04em;
+}
+
+
+/* =========================================================
+   EYEBROW
+   ========================================================= */
+
+.eyebrow {
+  margin: 0;
+
+  color: #f4c542;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+
+/* =========================================================
+   ONGLETS
+   ========================================================= */
+
+.tabs {
+  display: inline-flex;
+
+  gap: 4px;
+  margin-bottom: 18px;
+  padding: 4px;
+
+  background: rgba(10, 10, 13, 0.72);
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+
+}
+
+.tabs button {
+  min-height: 40px;
+
+  padding: 0 17px;
+
+  background: transparent;
+
+  border: 0;
+  border-radius: 7px;
+
+  color: rgba(255, 255, 255, 0.58);
+
+  font-size: 10px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.tabs button:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.06);
+
+  color: #ffffff;
+}
+
+.tabs button.active {
+  background:
+    linear-gradient(
+      135deg,
+      #a51f28,
+      #d92f38
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    0 5px 14px rgba(0, 0, 0, 0.3);
+}
+
+
+/* =========================================================
+   MESSAGES
+   ========================================================= */
+
+.state-message {
+  margin-bottom: 14px;
+  padding: 11px 13px;
+
+  background: rgba(244, 197, 66, 0.07);
+
+  border: 1px solid rgba(244, 197, 66, 0.2);
+  border-radius: 8px;
+
+  color: #f4c542;
+
+  font-size: 11px;
+  font-weight: 700;
+
+}
+
+.state-message.error {
+  background: rgba(217, 47, 56, 0.09);
+
+  border-color: rgba(217, 47, 56, 0.25);
+
+  color: #ff969b;
+}
+
+
+/* =========================================================
+   DOCUMENTATION CRÉER TON PERSO
+   ========================================================= */
+
+.rules-content {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 11px;
+
+  margin-bottom: 20px;
+}
+
+
+/* =========================================================
+   SECTION DE RÈGLE
+   ========================================================= */
+
+.rule-section {
+  position: relative;
+
+  min-width: 0;
+
+  padding: 18px;
+
+  overflow: hidden;
+
+  background: rgba(10, 10, 14, 0.8);
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 11px;
+
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.22);
+
+
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.rule-section:hover {
+  transform: translateY(-2px);
+
+  border-color: rgba(244, 197, 66, 0.25);
+}
+
+.rule-section::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 0;
+
+  width: 3px;
+  height: 100%;
+
+  background:
+    linear-gradient(
+      to bottom,
+      #d92f38,
+      rgba(217, 47, 56, 0.15)
+    );
+}
+
+.rule-section h2 {
+  margin: 6px 0 9px;
+
+  color: #ffffff;
+
+  font-size: 16px;
+  font-weight: 850;
+}
+
+.rule-section > p:last-of-type {
+  margin: 0;
+
+  color: rgba(255, 255, 255, 0.57);
+
+  font-size: 11px;
+
+  line-height: 1.65;
+}
+
+
+/* =========================================================
+   CATÉGORIES
+   ========================================================= */
+
+.category-list {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 5px;
+
+  margin-top: 13px;
+}
+
+.category-list span {
+  padding: 6px 8px;
+
+  background: rgba(244, 197, 66, 0.05);
+
+  border: 1px solid rgba(244, 197, 66, 0.17);
+  border-radius: 6px;
+
+  color: #f4c542;
+
+  font-size: 8px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   PANNEAUX
+   ========================================================= */
+
+.panel {
+  padding: 17px;
+
+  box-sizing: border-box;
+
+  background: rgba(10, 10, 14, 0.86);
+
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 13px;
+
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.28);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.panel h2 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 17px;
+  font-weight: 850;
+}
+
+
+/* =========================================================
+   BOUTONS GÉNÉRAUX
+   ========================================================= */
+
+.rules-page button {
+  min-height: 38px;
+
+  padding: 0 14px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #a51f28,
+      #d92f38
+    );
+
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 7px;
+
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 850;
+
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.18s ease,
+    filter 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.rules-page button:hover:not(:disabled) {
+  transform: translateY(-1px);
+
+  filter: brightness(1.08);
+}
+
+.rules-page button.secondary {
+  background: rgba(255, 255, 255, 0.045);
+
+  border-color: rgba(255, 255, 255, 0.13);
+
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.rules-page button.secondary:hover:not(:disabled) {
+  border-color: rgba(244, 197, 66, 0.35);
+
+  color: #ffffff;
+}
+
+.rules-page button.danger {
+  background: rgba(143, 43, 43, 0.65);
+
+  border-color: rgba(255, 107, 114, 0.25);
+
+  color: #ffffff;
+}
+
+.rules-page button.danger:hover:not(:disabled) {
+  background: rgba(176, 45, 52, 0.85);
+}
+
+.rules-page button:disabled {
+  opacity: 0.4;
+
+  cursor: not-allowed;
+
+  transform: none;
+}
+
+
+/* =========================================================
+   LISTE DES RÈGLES
+   ========================================================= */
+
+.rules-list-panel {
+  margin-bottom: 20px;
+}
+
+.rule-card {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto;
+
+  align-items: center;
+
+  gap: 14px;
+
+  margin-top: 8px;
+  padding: 12px;
+
+  background: rgba(255, 255, 255, 0.035);
+
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  border-radius: 8px;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.rule-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+
+  border-color: rgba(244, 197, 66, 0.18);
+}
+
+.rule-card.inactive {
+  opacity: 0.52;
+}
+
+
+/* =========================================================
+   TEXTE RÈGLE
+   ========================================================= */
+
+.rule-body {
+  min-width: 0;
+}
+
+.rule-body small {
+  color: rgba(255, 255, 255, 0.35);
+
+  font-size: 8px;
+
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rule-sentence {
+  margin: 0 0 6px;
+
+  color: rgba(255, 255, 255, 0.83);
+
+  font-size: 11px;
+
+  line-height: 1.5;
+}
+
+.rule-sentence.advanced strong {
+  color: #f4c542;
+}
+
+.rule-sentence-human {
+  margin: 0 0 6px;
+
+  color: rgba(255, 255, 255, 0.67);
+
+  font-size: 10px;
+  font-style: italic;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   RÈGLE AVANCÉE
+   ========================================================= */
+
+.raw-list {
+  margin: 7px 0;
+  padding-left: 17px;
+
+  color: rgba(255, 255, 255, 0.43);
+
+  font-size: 9px;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   ACTIONS RÈGLE
+   ========================================================= */
+
+.rule-actions {
+  display: flex;
+  flex-direction: column;
+
+  align-items: stretch;
+
+  gap: 5px;
+
+  min-width: 92px;
+}
+
+.rule-actions button {
+  width: 100%;
+
+  min-height: 31px;
+
+  padding-inline: 9px;
+
+  font-size: 7px;
+}
+
+
+/* =========================================================
+   TEAM DOCUMENTATION
+   ========================================================= */
+
+.team-doc > h2 {
+  margin-bottom: 15px;
+}
+
+.team-doc dl {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 8px;
+
+  margin: 0;
+}
+
+.team-doc dl > div {
+  min-width: 0;
+
+  padding: 12px;
+
+  background: rgba(255, 255, 255, 0.035);
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+}
+
+.team-doc dt {
+  margin-bottom: 5px;
+
+  color: #f4c542;
+
+  font-size: 10px;
+  font-weight: 850;
+
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.team-doc dd {
+  margin: 0;
+
+  color: rgba(255, 255, 255, 0.55);
+
+  font-size: 10px;
+
+  line-height: 1.55;
+}
+
+
+/* =========================================================
+   OVERLAY FORMULAIRE ADMIN
+   ========================================================= */
+
+.rule-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 3000;
+
+  display: grid;
+  place-items: center;
+
+  padding: 20px;
+
+  box-sizing: border-box;
+
+  background: rgba(0, 0, 0, 0.8);
+
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+}
+
+
+/* =========================================================
+   FORMULAIRE
+   ========================================================= */
+
+.rule-form-panel {
+  position: relative;
+
+  width: min(720px, 100%);
+  max-height: 90vh;
+
+  overflow-y: auto;
+
+  padding: 24px;
+
+  box-sizing: border-box;
+
+  background: rgba(13, 13, 17, 0.98);
+
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 14px;
+
+  box-shadow:
+    0 25px 70px rgba(0, 0, 0, 0.58);
+}
+
+.rule-form-panel h2 {
+  margin: 3px 40px 18px 0;
+
+  color: #ffffff;
+
+  font-size: 20px;
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   FERMER
+   ========================================================= */
+
+.close-button {
+  position: absolute;
+
+  top: 11px;
+  right: 11px;
+
+  display: grid;
+  place-items: center;
+
+  width: 34px;
+  min-height: 34px !important;
+
+  padding: 0 !important;
+
+  background: rgba(255, 255, 255, 0.055) !important;
+
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+
+  color: rgba(255, 255, 255, 0.65) !important;
+
+  font-size: 18px !important;
+}
+
+.close-button:hover {
+  color: #ffffff !important;
+}
+
+
+/* =========================================================
+   FORM
+   ========================================================= */
+
+.rule-form-panel form {
+  display: grid;
+
+  gap: 13px;
+}
+
+.rule-form-panel label {
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+
+  color: rgba(255, 255, 255, 0.55);
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   INPUT / SELECT
+   ========================================================= */
+
+.rule-form-panel input,
+.rule-form-panel select {
+  width: 100%;
+  min-height: 39px;
+
+  padding: 0 10px;
+
+  box-sizing: border-box;
+
+  outline: none;
+
+  background: rgba(255, 255, 255, 0.055);
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 7px;
+
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 11px;
+
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.rule-form-panel input:focus,
+.rule-form-panel select:focus {
+  background: rgba(255, 255, 255, 0.075);
+
+  border-color: rgba(244, 197, 66, 0.5);
+
+  box-shadow:
+    0 0 0 3px rgba(244, 197, 66, 0.06);
+}
+
+.rule-form-panel select option {
+  background: #161619;
+
+  color: #ffffff;
+}
+
+
+/* =========================================================
+   MULTI SELECT
+   ========================================================= */
+
+.multi-select {
+  min-height: 110px !important;
+
+  padding: 6px !important;
+}
+
+
+/* =========================================================
+   GRILLE FORMULAIRE
+   ========================================================= */
+
+.field-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(160px, 1fr));
+
+  gap: 10px;
+}
+
+
+/* =========================================================
+   CHECKBOX ACTIVE
+   ========================================================= */
+
+.check-row {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+
+  gap: 7px !important;
+
+  min-height: 39px;
+
+  padding: 0 10px;
+
+  background: rgba(255, 255, 255, 0.035);
+
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 7px;
+}
+
+.check-row input {
+  width: 15px !important;
+  min-height: auto !important;
+
+  margin: 0;
+
+  accent-color: #d92f38;
+}
+
+
+/* =========================================================
+   FIELDSET
+   ========================================================= */
+
+.rule-form-panel fieldset {
+  margin: 0;
+  padding: 11px;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.rule-form-panel legend {
+  padding: 0 6px;
+
+  color: rgba(255, 255, 255, 0.5);
+
+  font-size: 9px;
+  font-weight: 700;
+
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   CHECKBOX CATÉGORIES
+   ========================================================= */
+
+.checkbox-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fill, minmax(125px, 1fr));
+
+  gap: 6px;
+}
+
+.checkbox-item {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+
+  gap: 6px !important;
+
+  min-height: 31px;
+
+  padding: 5px 7px;
+
+  background: rgba(255, 255, 255, 0.03);
+
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 6px;
+
+  color: rgba(255, 255, 255, 0.68) !important;
+
+  font-size: 9px !important;
+}
+
+.checkbox-item input {
+  width: 14px !important;
+  min-height: auto !important;
+
+  margin: 0;
+
+  accent-color: #d92f38;
+}
+
+
+/* =========================================================
+   OPTIONS AVANCÉES
+   ========================================================= */
+
+.advanced-toggle {
+  justify-self: start;
+
+  min-height: 34px !important;
+
+  color: #f4c542 !important;
+
+  border-color: rgba(244, 197, 66, 0.22) !important;
+}
+
+
+/* =========================================================
+   BOUTON SAUVEGARDE
+   ========================================================= */
+
+.rule-form-panel form > button[type="submit"] {
+  min-height: 44px;
+
+  margin-top: 4px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #a51f28,
+      #d92f38
+    );
+
+  color: #ffffff;
+
+  font-size: 10px;
+}
+
+
+/* =========================================================
+   TABLETTE
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .rules-shell {
+    width: calc(100% - 28px);
+
+    padding-top: 26px;
+  }
+
+  .rules-content {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .team-doc dl {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+  .rules-shell {
+    width: calc(100% - 18px);
+
+    padding:
+      14px
+      0
+      45px;
+  }
+
+  .rules-header {
+    margin-bottom: 10px;
+    padding: 14px;
+
+    border-radius: 11px;
+  }
+
+  .rules-header h1 {
+    font-size: 25px;
+  }
+
+  .tabs {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    width: 100%;
+
+    box-sizing: border-box;
+  }
+
+  .tabs button {
+    width: 100%;
+
+    padding-inline: 8px;
+
+    font-size: 9px;
+  }
+
+  .rules-content {
+    grid-template-columns: 1fr;
+
+    gap: 8px;
+
+    margin-bottom: 12px;
+  }
+
+  .rule-section {
+    padding: 14px;
+
+    border-radius: 9px;
+  }
+
+  .rule-section h2 {
+    margin:
+      5px
+      0
+      7px;
+
+    font-size: 14px;
+  }
+
+  .rule-section > p:last-of-type {
+    font-size: 10px;
+
+    line-height: 1.55;
+  }
+
+  .category-list {
+    gap: 4px;
+
+    margin-top: 10px;
+  }
+
+  .category-list span {
+    padding: 5px 6px;
+
+    font-size: 7px;
+  }
+
+  .panel {
+    padding: 12px;
+
+    border-radius: 10px;
+  }
+
+  .panel-header {
+    align-items: flex-start;
+
+    margin-bottom: 8px;
+    padding-bottom: 9px;
+  }
+
+  .panel h2 {
+    font-size: 14px;
+  }
+
+  .panel-header button {
+    min-height: 33px;
+
+    padding-inline: 9px;
+
+    font-size: 7px;
+  }
+
+  .rule-card {
+    grid-template-columns: 1fr;
+
+    gap: 9px;
+
+    padding: 10px;
+  }
+
+  .rule-sentence {
+    font-size: 10px;
+  }
+
+  .rule-actions {
+    display: grid;
+
+    grid-template-columns:
+      repeat(3, 1fr);
+
+    width: 100%;
+  }
+
+  .rule-actions button {
+    min-width: 0;
+
+    padding-inline: 4px;
+
+    font-size: 6px;
+  }
+
+  .team-doc dl {
+    grid-template-columns: 1fr;
+
+    gap: 6px;
+  }
+
+  .team-doc dl > div {
+    padding: 10px;
+  }
+
+  .rule-overlay {
+    padding: 7px;
+  }
+
+  .rule-form-panel {
+    max-height: 94vh;
+
+    padding: 15px;
+
+    border-radius: 11px;
+  }
+
+  .rule-form-panel h2 {
+    font-size: 16px;
+  }
+
+  .field-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .checkbox-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+/* =========================================================
+   PETITS MOBILES
+   ========================================================= */
+
+@media (max-width: 390px) {
+  .rules-shell {
+    width: calc(100% - 12px);
+  }
+
+  .rule-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .checkbox-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .rule-form-panel {
+    padding: 12px;
+  }
+}
+/* =========================================================
+   DASHBOARD INTÉGRÉ AUX RÈGLES
+   ========================================================= */
+
+.dashboard-tab {
+  width: 100%;
+}
+
+
+/* =========================================================
+   HEADER DASHBOARD
+   ========================================================= */
+
+.dashboard-tab .admin-header {
+  position: relative;
+
+  margin-bottom: 16px;
+  padding: 20px;
+
+  overflow: hidden;
+
+  background: rgba(10, 10, 14, 0.82);
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 13px;
+
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.28);
+
+}
+
+.dashboard-tab .admin-header::before {
+  content: "";
+
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+
+  height: 3px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #a51f28,
+      #d92f38,
+      #f4c542
+    );
+}
+
+.dashboard-tab .admin-header::after {
+  content: "";
+
+  position: absolute;
+  top: -100px;
+  right: -100px;
+
+  width: 230px;
+  height: 230px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(217, 47, 56, 0.11),
+      transparent 70%
+    );
+
+  pointer-events: none;
+}
+
+.dashboard-tab .admin-header > div {
+  position: relative;
+  z-index: 1;
+}
+
+.dashboard-tab .admin-header h2 {
+  margin: 7px 0 0;
+
+  color: #fff;
+
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 900;
+
+  line-height: 1;
+
+  text-transform: uppercase;
+  letter-spacing: -0.04em;
+}
+
+.dashboard-tab .subtitle {
+  margin: 8px 0 0;
+
+  color: rgba(255, 255, 255, 0.45);
+
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   STATISTIQUES DASHBOARD
+   ========================================================= */
+
+.dashboard-tab .stats-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 11px;
+
+  margin-bottom: 16px;
+}
+
+.dashboard-tab .stat-card {
+  position: relative;
+
+  display: grid;
+
+  min-width: 0;
+
+  gap: 8px;
+  padding: 18px;
+
+  overflow: hidden;
+
+  background: rgba(10, 10, 14, 0.82);
+
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 10px;
+
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.24);
+
+
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.dashboard-tab .stat-card:hover {
+  transform: translateY(-2px);
+
+  border-color: rgba(244, 197, 66, 0.24);
+}
+
+.dashboard-tab .stat-card::before {
+  content: "";
+
+  position: absolute;
+
+  top: 12px;
+  bottom: 12px;
+  left: 0;
+
+  width: 3px;
+
+  background:
+    linear-gradient(
+      to bottom,
+      #d92f38,
+      #f4c542
+    );
+
+  border-radius: 999px;
+}
+
+.dashboard-tab .stat-card span {
+  color: rgba(255, 255, 255, 0.42);
+
+  font-size: 8px;
+  font-weight: 750;
+
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.dashboard-tab .stat-card strong {
+  color: #f4c542;
+
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 900;
+
+  line-height: 1;
+}
+
+
+/* =========================================================
+   PANEL UTILISATEURS
+   ========================================================= */
+
+.dashboard-tab .admin-tools h2 {
+  margin: 0 0 14px;
+
+  color: #fff;
+
+  font-size: 18px;
+  font-weight: 900;
+
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
+
+/* =========================================================
+   RECHERCHE UTILISATEURS
+   ========================================================= */
+
+.dashboard-tab .auth-input {
+  width: 100%;
+  min-height: 43px;
+
+  margin-bottom: 16px;
+  padding: 0 12px;
+
+  box-sizing: border-box;
+
+  outline: none;
+
+  background: rgba(255, 255, 255, 0.045);
+
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 8px;
+
+  color: #fff;
+
+  font-family: inherit;
+  font-size: 10px;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.dashboard-tab .auth-input::placeholder {
+  color: rgba(255, 255, 255, 0.28);
+}
+
+.dashboard-tab .auth-input:hover {
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.dashboard-tab .auth-input:focus {
+  background: rgba(255, 255, 255, 0.065);
+
+  border-color: rgba(244, 197, 66, 0.5);
+
+  box-shadow:
+    0 0 0 3px rgba(244, 197, 66, 0.05);
+}
+
+
+/* =========================================================
+   LISTE UTILISATEURS
+   ========================================================= */
+
+.dashboard-tab .user-list {
+  display: grid;
+
+  gap: 7px;
+}
+
+.dashboard-tab .user-row {
+  position: relative;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(180px, 1fr)
+    auto
+    auto;
+
+  align-items: center;
+
+  gap: 13px;
+  padding: 11px 12px;
+
+  overflow: hidden;
+
+  background: rgba(255, 255, 255, 0.025);
+
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 8px;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.dashboard-tab .user-row:hover {
+  transform: translateX(2px);
+
+  background: rgba(255, 255, 255, 0.04);
+
+  border-color: rgba(244, 197, 66, 0.18);
+}
+
+.dashboard-tab .user-row.blocked {
+  background: rgba(217, 47, 56, 0.045);
+
+  border-color: rgba(217, 47, 56, 0.28);
+}
+
+.dashboard-tab .user-row.blocked::before {
+  content: "";
+
+  position: absolute;
+
+  top: 8px;
+  bottom: 8px;
+  left: 0;
+
+  width: 2px;
+
+  background: #d92f38;
+
+  border-radius: 999px;
+}
+
+
+/* =========================================================
+   INFOS UTILISATEUR
+   ========================================================= */
+
+.dashboard-tab .meta {
+  display: grid;
+
+  min-width: 0;
+
+  gap: 3px;
+}
+
+.dashboard-tab .meta strong {
+  overflow: hidden;
+
+  color: rgba(255, 255, 255, 0.88);
+
+  font-size: 10px;
+  font-weight: 850;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-tab .meta small {
+  overflow: hidden;
+
+  color: rgba(255, 255, 255, 0.34);
+
+  font-size: 8px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   BADGES
+   ========================================================= */
+
+.dashboard-tab .badges {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 5px;
+}
+
+.dashboard-tab .badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 23px;
+
+  padding: 0 8px;
+
+  background: rgba(255, 255, 255, 0.035);
+
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 5px;
+
+  color: rgba(255, 255, 255, 0.5);
+
+  font-size: 7px;
+  font-weight: 850;
+
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dashboard-tab .badge.admin {
+  background: rgba(244, 197, 66, 0.06);
+
+  border-color: rgba(244, 197, 66, 0.27);
+
+  color: #f4c542;
+}
+
+.dashboard-tab .badge.user {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.dashboard-tab .badge.danger {
+  background: rgba(217, 47, 56, 0.07);
+
+  border-color: rgba(217, 47, 56, 0.25);
+
+  color: #ff9298;
+}
+
+.dashboard-tab .badge.ok {
+  background: rgba(86, 180, 117, 0.06);
+
+  border-color: rgba(86, 180, 117, 0.22);
+
+  color: #83d9a0;
+}
+
+
+/* =========================================================
+   ACTIONS UTILISATEURS
+   ========================================================= */
+
+.dashboard-tab .actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+
+  gap: 5px;
+}
+
+.dashboard-tab .actions button {
+  min-height: 34px;
+
+  padding: 0 10px;
+
+  font-size: 7px;
+}
+
+.dashboard-tab .actions button.secondary {
+  background: rgba(255, 255, 255, 0.035);
+
+  color: rgba(255, 255, 255, 0.67);
+}
+
+.dashboard-tab .actions button.secondary:hover:not(:disabled) {
+  background: rgba(217, 47, 56, 0.08);
+
+  border-color: rgba(217, 47, 56, 0.3);
+
+  color: #ff9da2;
+}
+
+
+/* =========================================================
+   TABLETTE — DASHBOARD
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .dashboard-tab .user-row {
+    grid-template-columns:
+      minmax(160px, 1fr)
+      auto;
+  }
+
+  .dashboard-tab .actions {
+    grid-column: 1 / -1;
+
+    justify-content: flex-start;
+  }
+}
+
+
+/* =========================================================
+   MOBILE — 3 ONGLETS ADMIN
+   ========================================================= */
+
+@media (max-width: 600px) {
+  /*
+   USER = 2 boutons
+   ADMIN = 3 boutons
+
+   auto-fit permet de gérer automatiquement les deux cas.
+  */
+
+  .tabs {
+    grid-template-columns:
+      repeat(auto-fit, minmax(0, 1fr));
+  }
+
+  .tabs button {
+    min-width: 0;
+
+    padding-inline: 5px;
+
+    font-size: 7px;
+  }
+
+
+  /* Dashboard */
+
+  .dashboard-tab .admin-header {
+    margin-bottom: 10px;
+    padding: 14px;
+
+    border-radius: 10px;
+  }
+
+  .dashboard-tab .admin-header h2 {
+    font-size: 22px;
+  }
+
+  .dashboard-tab .subtitle {
+    font-size: 9px;
+  }
+
+  .dashboard-tab .stats-grid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+
+    gap: 5px;
+
+    margin-bottom: 8px;
+  }
+
+  .dashboard-tab .stat-card {
+    gap: 5px;
+
+    padding: 11px 7px;
+
+    border-radius: 7px;
+  }
+
+  .dashboard-tab .stat-card::before {
+    top: 7px;
+    bottom: 7px;
+
+    width: 2px;
+  }
+
+  .dashboard-tab .stat-card span {
+    font-size: 6px;
+
+    letter-spacing: 0.02em;
+  }
+
+  .dashboard-tab .stat-card strong {
+    font-size: 1.65rem;
+  }
+
+  .dashboard-tab .admin-tools h2 {
+    margin-bottom: 9px;
+
+    font-size: 15px;
+  }
+
+  .dashboard-tab .auth-input {
+    min-height: 40px;
+
+    margin-bottom: 11px;
+
+    font-size: 9px;
+  }
+
+  .dashboard-tab .user-row {
+    grid-template-columns: 1fr;
+
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .dashboard-tab .actions {
+    grid-column: auto;
+
+    display: grid;
+
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    width: 100%;
+  }
+
+  .dashboard-tab .actions button {
+    width: 100%;
+
+    min-height: 35px;
+
+    padding-inline: 6px;
+
+    font-size: 6px;
+  }
+}
+
+
+/* =========================================================
+   PETIT MOBILE — DASHBOARD
+   ========================================================= */
+
+@media (max-width: 390px) {
+  .dashboard-tab .stats-grid {
+    gap: 3px;
+  }
+
+  .dashboard-tab .stat-card {
+    padding: 9px 5px;
+  }
+
+  .dashboard-tab .stat-card span {
+    font-size: 5px;
+  }
+
+  .dashboard-tab .stat-card strong {
+    font-size: 1.4rem;
+  }
+
+  .dashboard-tab .badge {
+    min-height: 21px;
+
+    padding-inline: 6px;
+
+    font-size: 6px;
+  }
+}
+
+/* Boutons de la page Règles */
+.rules-page button:not(.close-button) {
+  min-height: 44px;
+  padding: 8px 14px;
+
+  background: linear-gradient(
+    170deg,
+    #ffe178 0%,
+    #ffab19 45%,
+    #ef5909 100%
+  );
+
+  border: 2px solid #171019;
+  border-radius: 3px;
+
+  color: #171019;
+  font-family: 'Shinobi', sans-serif;
+  font-size: 13px;
+  font-weight: normal;
+  letter-spacing: 0.3px;
+
+  box-shadow:
+    3px 4px 0 #171019,
+    inset 0 2px 0 rgba(255, 255, 255, 0.6);
+
+  transform: skewX(-7deg);
+  cursor: pointer;
+}
+
+/* Survol */
+.rules-page button:not(.close-button):hover:not(:disabled) {
+  background: linear-gradient(170deg, #fff1ab, #ffb323);
+  border-color: #171019;
+  color: #171019;
+}
+
+/* Pression */
+.rules-page button:not(.close-button):active:not(:disabled) {
+  transform: skewX(-7deg) translate(2px, 3px);
+  box-shadow: 1px 1px 0 #171019;
+}
+
+/* Onglet sélectionné */
+.rules-page .tabs button.active {
+  border-color: #fff;
+}
+
+/* Navigation au clavier */
+.rules-page button:not(.close-button):focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 5px;
+}
+
+/* Boutons indisponibles */
+.rules-page button:not(.close-button):disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Espacement entre les onglets */
+.rules-page .tabs {
+  gap: 12px;
+  padding: 8px;
+  background: transparent;
+  border: none;
+}
+
+/* Retire les liserés du dashboard admin */
+.dashboard-tab .admin-header::before,
+.dashboard-tab .stat-card::before,
+.dashboard-tab .user-row.blocked::before {
+  display: none;
+}
+.rule-section::before {
+  display: none;
+}

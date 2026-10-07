@@ -24,6 +24,8 @@ model User {
   email       String      @unique
   passwordHash String
   displayName String
+  avatarUrl                String?
+  avatarCloudinaryPublicId String?
   wins        Int         @default(0)
   losses      Int         @default(0)
   createdAt   DateTime    @default(now())
