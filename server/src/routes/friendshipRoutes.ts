@@ -1,9 +1,8 @@
 import { Router } from 'express'
 import { acceptRequest, cancelRequest, deleteFriend, getFriends, getPublicProfile, getReceivedRequests, getSentRequests, postFriendRequest, rejectRequest, searchFriendUsers } from '../controllers/friendshipController.js'
-import { requireAuth } from '../middleware/auth.js'
-
+import { requireApprovedUser, requireAuth } from '../middleware/auth.js'
 export const friendshipRoutes = Router()
-friendshipRoutes.use(requireAuth)
+friendshipRoutes.use(requireAuth, requireApprovedUser)
 friendshipRoutes.get('/', getFriends)
 friendshipRoutes.get('/requests/received', getReceivedRequests)
 friendshipRoutes.get('/requests/sent', getSentRequests)

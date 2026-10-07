@@ -18,6 +18,8 @@ import {
 import {
   fetchAdminOverview,
   fetchAdminUsers,
+  approveAdminUser,
+  deletePendingAdminUser,
   updateAdminUserBlocked,
   updateAdminUserRole,
   type AdminOverview,
@@ -143,7 +145,15 @@ const rules = ref<ClassicRule[]>([])
 const teamRules = ref<TeamRulesPayload | null>(null)
 const cards = ref<Card[]>([])
 
-const isAdmin = computed(() => auth.user?.role === 'ADMIN')
+const isAdmin = computed(
+  () =>
+    auth.user?.role === 'ADMIN' ||
+    auth.user?.role === 'SUPER_ADMIN'
+)
+
+const isSuperAdmin = computed(
+  () => auth.user?.role === 'SUPER_ADMIN'
+)
 
 /* =========================================================
    ÉDITEUR RÈGLES CRÉER TON PERSO
@@ -169,11 +179,34 @@ const adminStatus = ref('')
 
 const pendingUserId = ref<number | null>(null)
 
-const sortedUsers = computed(() =>
-  [...users.value].sort((left, right) =>
-    left.displayName.localeCompare(right.displayName),
-  ),
+const sortUsers = (list: AdminUser[]) =>
+  [...list].sort((a, b) =>
+    a.displayName.localeCompare(b.displayName),
+  )
+
+const pendingUsers = computed(() =>
+  sortUsers(
+    users.value.filter(user => user.accessStatus === 'PENDING')
+  )
 )
+
+const approvedUsers = computed(() =>
+  sortUsers(
+    users.value.filter(user => user.accessStatus === 'APPROVED')
+  )
+)
+
+const blockedUsers = computed(() =>
+  sortUsers(
+    users.value.filter(user => user.accessStatus === 'BLOCKED')
+  )
+)
+
+const sortedUsers = computed(() => [
+  ...pendingUsers.value,
+  ...approvedUsers.value,
+  ...blockedUsers.value,
+])
 
 /* =========================================================
    NAVIGATION
@@ -362,7 +395,7 @@ async function refreshRules() {
 ========================================================= */
 
 async function loadDashboard() {
-  if (!auth.token || !isAdmin.value) return
+  if (!auth.token || !isSuperAdmin.value) return
 
   adminLoading.value = true
   adminError.value = ''
@@ -410,7 +443,7 @@ async function applyAdminAction(
   action: () => Promise<AdminUser>,
   message: string,
 ) {
-  if (!isAdmin.value) return
+  if (!isSuperAdmin.value) return
 
   pendingUserId.value = userId
   adminStatus.value = ''
@@ -436,6 +469,60 @@ async function applyAdminAction(
       exception instanceof Error
         ? exception.message
         : 'Action impossible.'
+  } finally {
+    pendingUserId.value = null
+  }
+}
+
+function approvePendingUser(user: AdminUser) {
+  if (
+    !auth.token ||
+    !isSuperAdmin.value ||
+    user.accessStatus !== 'PENDING'
+  ) return
+
+  const token = auth.token
+
+  void applyAdminAction(
+    user.id,
+    () => approveAdminUser(token, user.id),
+    `${user.displayName} a été autorisé à accéder au jeu.`,
+  )
+}
+
+async function deletePendingUser(user: AdminUser) {
+  if (
+    !auth.token ||
+    !isSuperAdmin.value ||
+    user.accessStatus !== 'PENDING'
+  ) return
+
+  if (!window.confirm(
+    `Supprimer définitivement la demande de ${user.displayName} ?`
+  )) return
+
+  const token = auth.token
+
+  pendingUserId.value = user.id
+  adminStatus.value = ''
+  adminError.value = ''
+
+  try {
+    await deletePendingAdminUser(token, user.id)
+
+    users.value = users.value.filter(
+      current => current.id !== user.id
+    )
+
+    overview.value = await fetchAdminOverview(token)
+
+    adminStatus.value =
+      `${user.displayName} a été supprimé.`
+  } catch (exception) {
+    adminError.value =
+      exception instanceof Error
+        ? exception.message
+        : 'Suppression impossible.'
   } finally {
     pendingUserId.value = null
   }
@@ -469,8 +556,7 @@ function toggleBlocked(user: AdminUser) {
   if (!auth.token || !isAdmin.value) return
 
   const token = auth.token
-  const nextBlocked = !user.blocked
-
+const nextBlocked = user.accessStatus !== 'BLOCKED'
   void applyAdminAction(
     user.id,
     () =>
@@ -493,33 +579,23 @@ onMounted(async () => {
   try {
     await auth.loadCurrentUser()
 
-    /*
-     * Sécurité :
-     * un USER ne peut jamais rester sur l'onglet Dashboard,
-     * même avec ?tab=dashboard dans l'URL.
+    /**
+     * Seul le SUPER_ADMIN peut accéder
+     * au Dashboard de gestion des utilisateurs.
      */
     if (
       route.query.tab === 'dashboard' &&
-      !isAdmin.value
+      !isSuperAdmin.value
     ) {
       tab.value = 'creator'
     }
 
-    /*
-     * Pour un ADMIN, Dashboard devient le premier
-     * onglet affiché lorsqu'aucun onglet n'est demandé.
-     */
     if (
-      isAdmin.value &&
+      isSuperAdmin.value &&
       !route.query.tab
     ) {
       tab.value = 'dashboard'
     }
-
-    /*
-     * Lecture des règles :
-     * USER et ADMIN ont accès aux règles.
-     */
     await rulesData.loadRules(
       auth.token || undefined,
     )
@@ -527,17 +603,13 @@ onMounted(async () => {
     rules.value = rulesData.classicRules
     teamRules.value = rulesData.teamRules
 
-    /*
-     * Les cartes complètes servent à l'éditeur admin
-     * des règles Créer ton perso.
-     */
     if (isAdmin.value) {
-      const [,] = await Promise.all([
-        gameData.loadCards(),
-        loadDashboard(),
-      ])
-
+      await gameData.loadCards()
       cards.value = gameData.cards
+    }
+
+    if (isSuperAdmin.value) {
+      await loadDashboard()
     }
   } catch (exception) {
     error.value =
@@ -705,13 +777,13 @@ async function removeRule(
       <nav class="tabs">
 
         <button
-          v-if="isAdmin"
-          type="button"
-          :class="{ active: tab === 'dashboard' }"
-          @click="tab = 'dashboard'"
-        >
-          Dashboard
-        </button>
+  v-if="isSuperAdmin"
+  type="button"
+  :class="{ active: tab === 'dashboard' }"
+  @click="tab = 'dashboard'"
+>
+  Dashboard
+</button>
 
         <button
           type="button"
@@ -758,176 +830,232 @@ async function removeRule(
              DASHBOARD ADMIN
         ================================================= -->
 
-        <section
-          v-if="tab === 'dashboard' && isAdmin"
-          class="dashboard-tab"
+       
+<section
+  v-if="tab === 'dashboard' && isSuperAdmin"
+  class="dashboard-tab"
+>
+  <header class="admin-header">
+    <div>
+      <p class="eyebrow">Administration</p>
+      <h2>Dashboard</h2>
+      <p class="subtitle">
+        Gestion des utilisateurs du site.
+      </p>
+    </div>
+  </header>
+
+  <div
+    v-if="adminLoading"
+    class="state-message"
+  >
+    Chargement du dashboard...
+  </div>
+
+  <template v-else>
+    <div
+      v-if="adminError"
+      class="state-message error"
+    >
+      {{ adminError }}
+    </div>
+
+    <div
+      v-if="adminStatus"
+      class="state-message"
+    >
+      {{ adminStatus }}
+    </div>
+
+    <section class="stats-grid">
+      <article class="stat-card">
+        <span>Utilisateurs</span>
+        <strong>{{ overview?.totalUsers ?? 0 }}</strong>
+      </article>
+
+      <article class="stat-card">
+        <span>En attente</span>
+        <strong>{{ overview?.totalPending ?? 0 }}</strong>
+      </article>
+
+      <article class="stat-card">
+        <span>Autorisés</span>
+        <strong>{{ overview?.totalApproved ?? 0 }}</strong>
+      </article>
+
+      <article class="stat-card">
+        <span>Bloqués</span>
+        <strong>{{ overview?.totalBlocked ?? 0 }}</strong>
+      </article>
+    </section>
+
+    <section class="panel admin-tools">
+      <h2>Gestion des utilisateurs</h2>
+
+      <input
+        v-model="adminQuery"
+        class="auth-input"
+        type="search"
+        placeholder="Rechercher par pseudo ou email"
+        @input="refreshUsers"
+      />
+
+      <!-- EN ATTENTE -->
+      <section class="user-group">
+        <h3>En attente ({{ pendingUsers.length }})</h3>
+
+        <p
+          v-if="pendingUsers.length === 0"
+          class="state-message"
         >
+          Aucune demande en attente.
+        </p>
 
-          <header class="admin-header">
-            <div>
-              <p class="eyebrow">
-                Administration
-              </p>
-
-              <h2>Dashboard</h2>
-
-              <p class="subtitle">
-                Gestion des utilisateurs du site.
-              </p>
-            </div>
-          </header>
-
-          <div
-            v-if="adminLoading"
-            class="state-message"
+        <div v-else class="user-list">
+          <article
+            v-for="user in pendingUsers"
+            :key="user.id"
+            class="user-row"
           >
-            Chargement du dashboard...
-          </div>
+            <div class="meta">
+              <strong>{{ user.displayName }}</strong>
+              <small>{{ user.email }}</small>
+            </div>
 
-          <template v-else>
+            <div class="badges">
+              <span class="badge pending">EN ATTENTE</span>
+            </div>
 
-            <div
-              v-if="adminError"
-              class="state-message error"
-            >
-              {{ adminError }}
+            <div class="actions">
+              <button
+                type="button"
+                :disabled="pendingUserId === user.id"
+                @click="approvePendingUser(user)"
+              >
+                ACCEPTER
+              </button>
+
+              <button
+                type="button"
+                class="secondary"
+                :disabled="pendingUserId === user.id"
+                @click="deletePendingUser(user)"
+              >
+                SUPPRIMER
+              </button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- AUTORISÉS -->
+      <section class="user-group">
+        <h3>Autorisés ({{ approvedUsers.length }})</h3>
+
+        <p
+          v-if="approvedUsers.length === 0"
+          class="state-message"
+        >
+          Aucun utilisateur autorisé.
+        </p>
+
+        <div v-else class="user-list">
+          <article
+            v-for="user in approvedUsers"
+            :key="user.id"
+            class="user-row"
+          >
+            <div class="meta">
+              <strong>{{ user.displayName }}</strong>
+              <small>{{ user.email }}</small>
+            </div>
+
+            <div class="badges">
+              <span
+                class="badge"
+                :class="
+                  user.role === 'USER' ? 'user' : 'admin'
+                "
+              >
+                {{ user.role }}
+              </span>
+              <span class="badge ok">AUTORISÉ</span>
             </div>
 
             <div
-              v-if="adminStatus"
-              class="state-message"
+              v-if="user.role !== 'SUPER_ADMIN'"
+              class="actions"
             >
-              {{ adminStatus }}
+              <button
+                type="button"
+                :disabled="pendingUserId === user.id"
+                @click="toggleRole(user)"
+              >
+                {{
+                  user.role === 'ADMIN'
+                    ? 'RETIRER ADMIN'
+                    : 'RENDRE ADMIN'
+                }}
+              </button>
+
+              <button
+                type="button"
+                class="secondary"
+                :disabled="pendingUserId === user.id"
+                @click="toggleBlocked(user)"
+              >
+                BLOQUER
+              </button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- BLOQUÉS -->
+      <section class="user-group">
+        <h3>Bloqués ({{ blockedUsers.length }})</h3>
+
+        <p
+          v-if="blockedUsers.length === 0"
+          class="state-message"
+        >
+          Aucun utilisateur bloqué.
+        </p>
+
+        <div v-else class="user-list">
+          <article
+            v-for="user in blockedUsers"
+            :key="user.id"
+            class="user-row blocked"
+          >
+            <div class="meta">
+              <strong>{{ user.displayName }}</strong>
+              <small>{{ user.email }}</small>
             </div>
 
-            <section class="stats-grid">
+            <div class="badges">
+              <span class="badge danger">BLOQUÉ</span>
+            </div>
 
-              <article class="stat-card">
-                <span>Utilisateurs</span>
-                <strong>
-                  {{ overview?.totalUsers ?? 0 }}
-                </strong>
-              </article>
+            <div
+              v-if="user.role !== 'SUPER_ADMIN'"
+              class="actions"
+            >
+              <button
+                type="button"
+                :disabled="pendingUserId === user.id"
+                @click="toggleBlocked(user)"
+              >
+                DÉBLOQUER
+              </button>
+            </div>
+          </article>
+        </div>
+      </section>
+    </section>
+  </template>
+</section>
 
-              <article class="stat-card">
-                <span>Administrateurs</span>
-                <strong>
-                  {{ overview?.totalAdmins ?? 0 }}
-                </strong>
-              </article>
-
-              <article class="stat-card">
-                <span>Comptes bloqués</span>
-                <strong>
-                  {{ overview?.totalBlocked ?? 0 }}
-                </strong>
-              </article>
-
-            </section>
-
-            <section class="panel admin-tools">
-
-              <h2>Utilisateurs</h2>
-
-              <input
-                v-model="adminQuery"
-                class="auth-input"
-                type="search"
-                placeholder="Rechercher par pseudo ou email"
-                @input="refreshUsers"
-              />
-
-              <div class="user-list">
-
-                <article
-                  v-for="user in sortedUsers"
-                  :key="user.id"
-                  class="user-row"
-                  :class="{ blocked: user.blocked }"
-                >
-
-                  <div class="meta">
-                    <strong>
-                      {{ user.displayName }}
-                    </strong>
-
-                    <small>
-                      {{ user.email }}
-                    </small>
-                  </div>
-
-                  <div class="badges">
-
-                    <span
-                      class="badge"
-                      :class="
-                        user.role === 'ADMIN'
-                          ? 'admin'
-                          : 'user'
-                      "
-                    >
-                      {{ user.role }}
-                    </span>
-
-                    <span
-                      class="badge"
-                      :class="
-                        user.blocked
-                          ? 'danger'
-                          : 'ok'
-                      "
-                    >
-                      {{
-                        user.blocked
-                          ? 'BLOQUÉ'
-                          : 'ACTIF'
-                      }}
-                    </span>
-
-                  </div>
-
-                  <div class="actions">
-
-                    <button
-                      type="button"
-                      :disabled="
-                        pendingUserId === user.id
-                      "
-                      @click="toggleRole(user)"
-                    >
-                      {{
-                        user.role === 'ADMIN'
-                          ? 'RETIRER ADMIN'
-                          : 'RENDRE ADMIN'
-                      }}
-                    </button>
-
-                    <button
-                      type="button"
-                      class="secondary"
-                      :disabled="
-                        pendingUserId === user.id
-                      "
-                      @click="toggleBlocked(user)"
-                    >
-                      {{
-                        user.blocked
-                          ? 'DÉBLOQUER'
-                          : 'BLOQUER'
-                      }}
-                    </button>
-
-                  </div>
-
-                </article>
-
-              </div>
-
-            </section>
-
-          </template>
-
-        </section>
 
         <!-- ================================================
              CRÉER TON PERSO

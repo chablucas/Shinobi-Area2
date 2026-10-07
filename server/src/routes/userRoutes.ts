@@ -8,7 +8,10 @@ import {
   updateAvatar,
 } from '../controllers/userController.js'
 
-import { requireAuth } from '../middleware/auth.js'
+import {
+  requireApprovedUser,
+  requireAuth,
+} from '../middleware/auth.js'
 
 export const userRoutes = Router()
 
@@ -39,23 +42,27 @@ const avatarUpload = multer({
   },
 })
 
-userRoutes.patch('/me', requireAuth, updateProfile)
+// Toutes les routes utilisateur nécessitent
+// un compte connecté ET approuvé.
+userRoutes.use(requireAuth, requireApprovedUser)
+
+userRoutes.patch(
+  '/me',
+  updateProfile
+)
 
 userRoutes.post(
   '/me/avatar',
-  requireAuth,
   avatarUpload.single('avatar'),
   updateAvatar
 )
 
 userRoutes.post(
   '/me/results',
-  requireAuth,
   recordGameResult
 )
 
 userRoutes.get(
   '/:userId',
-  requireAuth,
   getPublicProfile
 )

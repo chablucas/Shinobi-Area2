@@ -330,7 +330,10 @@ function statusLabel(
       <a href="/regles">Règles</a>
 
       <a
-        v-if="auth.user?.role === 'ADMIN'"
+        v-if="
+          auth.user?.role === 'ADMIN' ||
+          auth.user?.role === 'SUPER_ADMIN'
+        "
         href="/admin"
       >
         Admin

@@ -18,7 +18,11 @@ const sort = ref<'name' | 'rarity-asc' | 'rarity-desc'>('rarity-asc')
 const flipped = ref(new Set<string>())
 const error = ref('')
 const loading = ref(true)
-const isAdmin = computed(() => auth.user?.role === 'ADMIN')
+const isAdmin = computed(
+  () =>
+    auth.user?.role === 'ADMIN' ||
+    auth.user?.role === 'SUPER_ADMIN'
+)
 
 watch(tab, (value) => {
   void router.replace({ query: { ...route.query, tab: value } })

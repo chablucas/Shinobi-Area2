@@ -8,7 +8,8 @@ export type User = {
   avatarCloudinaryPublicId: string | null
   wins: number
   losses: number
-  role: 'USER' | 'ADMIN'
+  role: 'USER' | 'ADMIN' | 'SUPER_ADMIN'
+  accessStatus: 'PENDING' | 'APPROVED' | 'BLOCKED'
   createdAt: string
   updatedAt: string
 }

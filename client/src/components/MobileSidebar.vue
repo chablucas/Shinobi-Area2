@@ -20,7 +20,8 @@ const navItems = computed(() => [
   { label: 'Cartes', path: '/personnages', icon: '🂠' },
   { label: 'Simulation', path: '/simulation', icon: '⚙' },
   { label: 'Règles', path: '/regles', icon: '📜' },
-  ...(auth.user?.role === 'ADMIN' ? [{ label: 'Admin', path: '/admin', icon: '🛡' }] : []),
+  ...(auth.user?.role === 'ADMIN' ||
+auth.user?.role === 'SUPER_ADMIN' ? [{ label: 'Admin', path: '/admin', icon: '🛡' }] : []),
   { label: 'Profil', path: auth.isAuthenticated ? '/profil' : '/connexion', icon: '👤' },
 ])
 
