@@ -666,42 +666,73 @@
    ========================================================= */
 
 .ta-team-cards {
-  display: flex;
-  flex-direction: column;
+  --card-max-width: 90px;
+  --card-gap: 5px;
 
-  gap: 5px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+
+  gap: var(--card-gap);
+  width: 100%;
+  min-width: 0;
 
   margin: 0;
   padding: 0;
-
   list-style: none;
 }
 
 .ta-team-cards li {
+  flex: 0 1 var(--card-max-width);
+
+  width: min(
+    var(--card-max-width),
+    calc(
+      (100% - (var(--team-capacity) - 1) * var(--card-gap))
+      / var(--team-capacity)
+    )
+  );
+
+  min-width: 0;
+  min-height: 0;
+
   display: flex;
+  flex-direction: column;
   align-items: center;
 
-  min-height: 30px;
-
-  gap: 8px;
-
-  color: rgba(255, 255, 255, 0.76);
-
-  font-size: 11px;
+  gap: 4px;
+  overflow: hidden;
 }
 
-.ta-team-cards img {
-  width: 28px;
-  height: 28px;
+.ta-team-card-image {
+  width: 100%;
+  aspect-ratio: 3 / 4;
 
-  flex-shrink: 0;
-
-  object-fit: cover;
-
-  border: 1px solid rgba(255, 255, 255, 0.13);
+  overflow: hidden;
   border-radius: 6px;
+  background: rgba(0, 0, 0, 0.45);
 }
 
+.ta-team-card-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ta-team-card-name {
+  display: block;
+  width: 100%;
+
+  color: #fff;
+  font-size: clamp(6px, 0.8vw, 10px);
+  text-align: center;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 /* =========================================================
    ADVERSAIRE
@@ -1313,15 +1344,6 @@
 
   .ta-placement-grid {
     grid-template-columns: 1fr;
-  }
-
-  .ta-team-cards li {
-    font-size: 10px;
-  }
-
-  .ta-team-cards img {
-    width: 25px;
-    height: 25px;
   }
 }
 

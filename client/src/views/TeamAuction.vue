@@ -316,9 +316,21 @@ onUnmounted(() => {
         <div class="ta-teams-panel ta-teams-mine">
           <h3>Mes équipes</h3>
           <div v-for="team in me?.teams ?? []" :key="team.teamNumber" class="ta-team-block" :class="{ complete: team.cards.length >= team.capacity }">
-            <ul class="ta-team-cards">
-              <li v-for="card in team.cards" :key="card.id"><img v-if="card.imageUrl" :src="card.imageUrl" :alt="card.name" />{{ card.name }}</li>
-            </ul>
+            <ul
+  class="ta-team-cards"
+  :style="{ '--team-capacity': team.capacity }"
+>
+  <li v-for="card in team.cards" :key="card.id">
+    <div class="ta-team-card-image">
+      <img
+        v-if="card.imageUrl"
+        :src="card.imageUrl"
+        :alt="card.name"
+      />
+    </div>
+    <span class="ta-team-card-name">{{ card.name }}</span>
+  </li>
+</ul>
             <p class="ta-team-title">Équipe {{ team.teamNumber }} · {{ team.cards.length }}/{{ team.capacity }}<span v-if="team.cards.length >= team.capacity"> · COMPLÈTE</span></p>
             <p class="ta-team-meta">{{ team.capacity - team.cards.length }} place(s) restante(s) · Moyenne {{ teamAverageLabel(team.average) }}</p>
           </div>
@@ -428,9 +440,21 @@ onUnmounted(() => {
           <div v-for="opponent in opponents" :key="String(opponent.id)" class="ta-opponent-block">
             <p class="ta-opponent-name">{{ opponent.displayName }}<span v-if="opponent.isAi"> (IA)</span> · {{ opponent.budget }} M</p>
             <div v-for="team in opponent.teams" :key="team.teamNumber" class="ta-team-block" :class="{ complete: team.cards.length >= team.capacity }">
-              <ul class="ta-team-cards">
-                <li v-for="card in team.cards" :key="card.id"><img v-if="card.imageUrl" :src="card.imageUrl" :alt="card.name" />{{ card.name }}</li>
-              </ul>
+              <ul
+  class="ta-team-cards"
+  :style="{ '--team-capacity': team.capacity }"
+>
+  <li v-for="card in team.cards" :key="card.id">
+    <div class="ta-team-card-image">
+      <img
+        v-if="card.imageUrl"
+        :src="card.imageUrl"
+        :alt="card.name"
+      />
+    </div>
+    <span class="ta-team-card-name">{{ card.name }}</span>
+  </li>
+</ul>
               <p class="ta-team-title">Équipe {{ team.teamNumber }} · {{ team.cards.length }}/{{ team.capacity }}</p>
               <p class="ta-team-meta">{{ team.capacity - team.cards.length }} place(s) restante(s) · Moyenne {{ teamAverageLabel(team.average) }}</p>
             </div>
