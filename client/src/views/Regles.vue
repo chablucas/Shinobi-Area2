@@ -840,7 +840,7 @@ async function removeRule(
   :class="{ active: tab === 'legal' }"
   @click="tab = 'legal'"
 >
-  Informations légales
+  Informations legales
 </button>
 
       </nav>
