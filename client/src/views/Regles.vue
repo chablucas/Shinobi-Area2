@@ -824,7 +824,7 @@ async function removeRule(
           :class="{ active: tab === 'creator' }"
           @click="tab = 'creator'"
         >
-          Créer ton perso
+          Creer ton perso
         </button>
 
         <button
@@ -832,7 +832,7 @@ async function removeRule(
           :class="{ active: tab === 'team' }"
           @click="tab = 'team'"
         >
-          Créer ta team
+          Creer ta team
         </button>
 
         <button
