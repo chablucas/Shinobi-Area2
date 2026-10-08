@@ -316,6 +316,10 @@ async function toggleNotifications() {
   searchOpen.value = false
 }
 
+async function openNotificationHome() {
+  notificationsOpen.value = false
+  await router.push('/')
+}
 
 async function acceptRequest(
   requestId: number,
@@ -896,6 +900,8 @@ onBeforeUnmount(() => {
                 v-for="request in friendRequests"
                 :key="request.id"
                 class="notification-item"
+                  @click="openNotificationHome"
+
               >
                 <div class="notification-user">
                   <span class="notification-avatar">
@@ -960,6 +966,8 @@ onBeforeUnmount(() => {
                 v-for="invite in gameInvites"
                 :key="invite.id"
                 class="notification-item"
+                  @click="openNotificationHome"
+
               >
                 <div class="notification-user">
                   <span class="notification-avatar">
