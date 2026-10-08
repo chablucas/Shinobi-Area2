@@ -74,21 +74,29 @@ export async function updateUserAvatar(
     },
   })
 
-  /*
-   * Puis on supprime l'ancienne image Cloudinary.
-   */
   if (user.avatarCloudinaryPublicId) {
-    try {
-      await cloudinary.uploader.destroy(
-        user.avatarCloudinaryPublicId
-      )
-    } catch (error) {
-      console.error(
-        "Impossible de supprimer l'ancien avatar Cloudinary :",
-        error
-      )
-    }
+  const oldAvatarPublicId = user.avatarCloudinaryPublicId
+
+  try {
+    await deleteUserAvatar(oldAvatarPublicId)
+  } catch (error) {
+    console.error(
+      "Suppression de l'ancien avatar à réessayer :",
+      error
+    )
+
+    await prisma.pendingAvatarDeletion.upsert({
+      where: {
+        publicId: oldAvatarPublicId,
+      },
+      create: {
+        publicId: oldAvatarPublicId,
+      },
+      update: {},
+    })
   }
+}
+
 
   return updatedUser
 }

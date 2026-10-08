@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-
+import InformationsLegales from '../components/legal/InformationsLegales.vue'
 import { useAuthStore } from '../stores/auth'
 import { useGameDataStore } from '../stores/gameData'
 import { useRulesDataStore } from '../stores/rulesData'
@@ -39,8 +39,7 @@ import {
 
 import type { Card } from '../types/card'
 
-type RulesTab = 'dashboard' | 'creator' | 'team'
-
+type RulesTab = 'dashboard' | 'creator' | 'team' | 'legal'
 const auth = useAuthStore()
 const gameData = useGameDataStore()
 const rulesData = useRulesDataStore()
@@ -129,11 +128,13 @@ const sections = [
 ========================================================= */
 
 const tab = ref<RulesTab>(
-  route.query.tab === 'team'
-    ? 'team'
-    : route.query.tab === 'dashboard'
-      ? 'dashboard'
-      : 'creator',
+  route.query.tab === 'legal'
+    ? 'legal'
+    : route.query.tab === 'team'
+      ? 'team'
+      : route.query.tab === 'dashboard'
+        ? 'dashboard'
+        : 'creator',
 )
 
 const loading = ref(true)
@@ -834,6 +835,14 @@ async function removeRule(
           Créer ta team
         </button>
 
+        <button
+  type="button"
+  :class="{ active: tab === 'legal' }"
+  @click="tab = 'legal'"
+>
+  Informations légales
+</button>
+
       </nav>
 
       <div
@@ -1100,11 +1109,17 @@ async function removeRule(
     SUPPRIMER
   </button>
 </div>
+
           </article>
+          
         </div>
+        
       </section>
+      
     </section>
+    
   </template>
+  
 </section>
 
 
@@ -1458,6 +1473,7 @@ async function removeRule(
         </section>
 
       </template>
+  <InformationsLegales v-if="tab === 'legal'" />
 
     </section>
 
