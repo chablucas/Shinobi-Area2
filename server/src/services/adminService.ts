@@ -1,4 +1,5 @@
 import { prisma } from '../config/prisma.js'
+import { deleteUserAvatar } from './avatarService.js'
 
 // Comptes créés par les tests automatisés : jamais de vrais utilisateurs.
 const TECHNICAL_ACCOUNT_FILTER = {
@@ -353,6 +354,86 @@ export async function deletePendingUser(
       id: userId,
     },
   })
+
+  return {
+    deleted: true,
+    userId,
+  }
+}
+
+// Supprimer définitivement un compte utilisateur.
+// Les deux SUPER_ADMIN sont protégés.
+export async function deleteUserCompletely(
+  actorId: number,
+  userId: number
+) {
+  if (actorId === userId) {
+    throw httpError(
+      'Vous ne pouvez pas supprimer votre propre compte.',
+      403
+    )
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      role: true,
+      avatarCloudinaryPublicId: true,
+    },
+  })
+
+  if (!user) {
+    throw httpError('Utilisateur introuvable.', 404)
+  }
+
+  if (user.role === 'SUPER_ADMIN') {
+    throw httpError(
+      'Un SUPER_ADMIN ne peut pas être supprimé.',
+      403
+    )
+  }
+
+  // Suppression du compte et enregistrement
+  // du nettoyage Cloudinary dans une transaction.
+  await prisma.$transaction(async (tx) => {
+    if (user.avatarCloudinaryPublicId) {
+      await tx.pendingAvatarDeletion.upsert({
+        where: {
+          publicId: user.avatarCloudinaryPublicId,
+        },
+        create: {
+          publicId: user.avatarCloudinaryPublicId,
+        },
+        update: {},
+      })
+    }
+
+    await tx.user.delete({
+      where: {
+        id: userId,
+        role: { not: 'SUPER_ADMIN' },
+      },
+    })
+  })
+
+  // Tentative immédiate de suppression de l'avatar.
+  if (user.avatarCloudinaryPublicId) {
+    try {
+      await deleteUserAvatar(user.avatarCloudinaryPublicId)
+
+      await prisma.pendingAvatarDeletion.delete({
+        where: {
+          publicId: user.avatarCloudinaryPublicId,
+        },
+      })
+    } catch (error) {
+      console.error(
+        'Nettoyage Cloudinary à réessayer :',
+        error
+      )
+    }
+  }
 
   return {
     deleted: true,

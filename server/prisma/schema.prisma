@@ -301,3 +301,9 @@ model PushSubscription {
 
   @@index([userId])
 }
+
+model PendingAvatarDeletion {
+  id        Int      @id @default(autoincrement())
+  publicId  String   @unique
+  createdAt DateTime @default(now())
+}

@@ -92,3 +92,18 @@ export async function updateUserAvatar(
 
   return updatedUser
 }
+
+export async function deleteUserAvatar(
+  publicId: string
+): Promise<void> {
+  const result = await cloudinary.uploader.destroy(publicId, {
+    resource_type: 'image',
+    invalidate: true,
+  })
+
+  if (result.result !== 'ok' && result.result !== 'not found') {
+    throw new Error(
+      `Suppression Cloudinary impossible : ${result.result}`
+    )
+  }
+}

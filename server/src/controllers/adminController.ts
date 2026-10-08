@@ -2,6 +2,7 @@ import type { Request, Response } from 'express'
 import {
   approveUser,
   deletePendingUser,
+  deleteUserCompletely,
   getAdminOverview,
   listAdminUsers,
   promoteAdminByEmail,
@@ -95,6 +96,25 @@ export async function deletePendingAdminUserController(
   response.json(
     await deletePendingUser(actorId, userId)
   )
+}
+
+export async function deleteAdminUserController(
+  request: Request,
+  response: Response
+) {
+  const actorId = (request as AuthenticatedRequest).userId
+  const userId = Number(request.params.id)
+
+  if (!Number.isSafeInteger(userId) || userId <= 0) {
+    response.status(400).json({
+      error: 'Utilisateur invalide.',
+    })
+    return
+  }
+
+  const result = await deleteUserCompletely(actorId, userId)
+
+  response.json(result)
 }
 
 export async function promoteAdminController(

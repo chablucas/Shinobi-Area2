@@ -20,6 +20,7 @@ import {
   fetchAdminUsers,
   approveAdminUser,
   deletePendingAdminUser,
+  deleteAdminUser,
   updateAdminUserBlocked,
   updateAdminUserRole,
   type AdminOverview,
@@ -440,7 +441,7 @@ async function refreshUsers() {
 
 async function applyAdminAction(
   userId: number,
-  action: () => Promise<AdminUser>,
+  action: () => Promise<AdminUser | { deleted: boolean; userId: number }>,
   message: string,
 ) {
   if (!isSuperAdmin.value) return
@@ -450,13 +451,21 @@ async function applyAdminAction(
   adminError.value = ''
 
   try {
-    const updated = await action()
+    const result = await action()
 
-    users.value = users.value.map((user) =>
-      user.id === updated.id
-        ? updated
-        : user,
-    )
+    if ('deleted' in result) {
+      // Suppression : retirer l'utilisateur de la liste
+      users.value = users.value.filter(
+        (user) => user.id !== result.userId
+      )
+    } else {
+      // Modification : mettre à jour l'utilisateur
+      users.value = users.value.map((user) =>
+        user.id === result.id
+          ? result
+          : user,
+      )
+    }
 
     if (auth.token) {
       overview.value =
@@ -568,6 +577,30 @@ const nextBlocked = user.accessStatus !== 'BLOCKED'
     nextBlocked
       ? `${user.displayName} n’a plus accès au site.`
       : `${user.displayName} peut de nouveau accéder au site.`,
+  )
+}
+
+async function deleteApprovedUser(user: AdminUser) {
+  if (!auth.token || !isSuperAdmin.value) return
+
+  if (user.role === 'SUPER_ADMIN') return
+
+  const confirmed = window.confirm(
+    `ATTENTION !\n\n` +
+    `Supprimer définitivement le compte de ${user.displayName} ?\n\n` +
+    `Cette action supprimera son compte et ses données associées.\n` +
+    `Elle est irréversible.\n\n` +
+    `L'utilisateur pourra toutefois refaire une demande d'inscription.`
+  )
+
+  if (!confirmed) return
+
+  const token = auth.token
+
+  await applyAdminAction(
+    user.id,
+    () => deleteAdminUser(token, user.id),
+    `Le compte de ${user.displayName} a été supprimé.`
   )
 }
 
@@ -983,30 +1016,39 @@ async function removeRule(
             </div>
 
             <div
-              v-if="user.role !== 'SUPER_ADMIN'"
-              class="actions"
-            >
-              <button
-                type="button"
-                :disabled="pendingUserId === user.id"
-                @click="toggleRole(user)"
-              >
-                {{
-                  user.role === 'ADMIN'
-                    ? 'RETIRER ADMIN'
-                    : 'RENDRE ADMIN'
-                }}
-              </button>
+  v-if="user.role !== 'SUPER_ADMIN'"
+  class="actions"
+>
+  <button
+    type="button"
+    :disabled="pendingUserId === user.id"
+    @click="toggleRole(user)"
+  >
+    {{
+      user.role === 'ADMIN'
+        ? 'RETIRER ADMIN'
+        : 'RENDRE ADMIN'
+    }}
+  </button>
 
-              <button
-                type="button"
-                class="secondary"
-                :disabled="pendingUserId === user.id"
-                @click="toggleBlocked(user)"
-              >
-                BLOQUER
-              </button>
-            </div>
+  <button
+    type="button"
+    class="secondary"
+    :disabled="pendingUserId === user.id"
+    @click="toggleBlocked(user)"
+  >
+    BLOQUER
+  </button>
+
+  <button
+    type="button"
+    class="danger"
+    :disabled="pendingUserId === user.id"
+    @click="deleteApprovedUser(user)"
+  >
+    SUPPRIMER
+  </button>
+</div>
           </article>
         </div>
       </section>
@@ -1038,17 +1080,26 @@ async function removeRule(
             </div>
 
             <div
-              v-if="user.role !== 'SUPER_ADMIN'"
-              class="actions"
-            >
-              <button
-                type="button"
-                :disabled="pendingUserId === user.id"
-                @click="toggleBlocked(user)"
-              >
-                DÉBLOQUER
-              </button>
-            </div>
+  v-if="user.role !== 'SUPER_ADMIN'"
+  class="actions"
+>
+  <button
+    type="button"
+    :disabled="pendingUserId === user.id"
+    @click="toggleBlocked(user)"
+  >
+    DÉBLOQUER
+  </button>
+
+  <button
+    type="button"
+    class="danger"
+    :disabled="pendingUserId === user.id"
+    @click="deleteApprovedUser(user)"
+  >
+    SUPPRIMER
+  </button>
+</div>
           </article>
         </div>
       </section>

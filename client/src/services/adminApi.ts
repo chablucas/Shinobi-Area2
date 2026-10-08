@@ -131,3 +131,16 @@ export function updateAdminUserBlocked(
     token
   )
 }
+
+export function deleteAdminUser(
+  token: string,
+  userId: number
+) {
+  return request<{ deleted: boolean; userId: number }>(
+    `/admin/users/${userId}`,
+    {
+      method: 'DELETE',
+    },
+    token
+  )
+}

@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import {
   approveAdminUserController,
+  deleteAdminUserController,
   deletePendingAdminUserController,
   getAdminOverviewController,
   getAdminUsersController,
@@ -33,6 +34,12 @@ adminRoutes.patch(
 adminRoutes.delete(
   '/users/:id/pending',
   deletePendingAdminUserController
+)
+
+// Supprimer définitivement un compte utilisateur
+adminRoutes.delete(
+  '/users/:id',
+  deleteAdminUserController
 )
 
 // Gestion des rôles
