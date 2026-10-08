@@ -1099,14 +1099,7 @@
     grid-template-columns:
       repeat(2, minmax(0, 1fr));
   }
-   /* Dashboard utilisateurs sur mobile */
 
-.dashboard-tab .user-row .actions {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 5px;
-  width: 100%;
-  min-width: 0;
 }
 
 .dashboard-tab .user-row .actions button {
@@ -1724,23 +1717,26 @@
 
   .dashboard-tab .actions {
     grid-column: auto;
-
     display: grid;
-
-    grid-template-columns:
-      repeat(2, minmax(0, 1fr));
-
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
     width: 100%;
+    min-width: 0;
   }
 
   .dashboard-tab .actions button {
     width: 100%;
-
+    min-width: 0;
     min-height: 35px;
+    padding: 7px 2px;
+    font-size: 8px;
+    line-height: 1.2;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
 
-    padding-inline: 6px;
-
-    font-size: 6px;
+  .dashboard-tab .actions button.danger {
+    grid-column: auto;
   }
 }
 
@@ -1850,4 +1846,35 @@
 }
 .rule-section::before {
   display: none;
+}
+/* Dashboard : trois actions sur une ligne sur téléphone.
+   Placé en fin de fichier pour primer sur les styles généraux des boutons. */
+@media (max-width: 600px) {
+  .dashboard-tab .user-row {
+    min-width: 0;
+  }
+
+  .dashboard-tab .user-row .actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .rules-page .dashboard-tab .user-row .actions button {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    min-height: 35px;
+    padding: 7px 2px;
+    font-size: 8px;
+    line-height: 1.2;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .dashboard-tab .user-row .actions button.danger {
+    grid-column: auto;
+  }
 }
