@@ -1099,6 +1099,30 @@
     grid-template-columns:
       repeat(2, minmax(0, 1fr));
   }
+   /* Dashboard utilisateurs sur mobile */
+
+.dashboard-tab .user-row .actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+  width: 100%;
+  min-width: 0;
+}
+
+.dashboard-tab .user-row .actions button {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 9px 3px;
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+/* Supprimer occupe une seule colonne */
+.dashboard-tab .user-row .actions button.danger {
+  grid-column: auto;
+}
+
 }
 
 
